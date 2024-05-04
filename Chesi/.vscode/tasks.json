@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "make",
+            "command": "make",
+            "args": [
+				"clean",
+                "${relativeFileDirname}"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "detail": "Build the current file"
+        }
+    ]
+}

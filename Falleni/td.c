@@ -175,6 +175,7 @@ int main(int argc, char *argv[])
     while (1)
     { // validazione codice per identificare il Table D.
 
+        printf("Avvio del Table Device\n");
         printf("Inserisci Codice: \n");
 
         fgets(buffer, BUFFER_SIZE, stdin);

@@ -25,7 +25,7 @@
 
 void comandi_cliente()
 {
-    printf("\n*********************** BENVENUTO ************************\n");
+    printf("\n*********************** BENVENUTO CLIENTE ************************\n");
     printf("*               Comandi per prenotare!                   *\n");
     printf("*                                                        *\n");
     printf("* find --> ricerca la disponibilità per una prenotazione *\n");

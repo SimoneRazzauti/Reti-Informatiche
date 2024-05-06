@@ -65,7 +65,7 @@ struct client client_fds[MAX_CLIENTS]; // array di client attualmente connessi
 
 void comandi_disponibili()
 {
-    printf("\n*********************** BENVENUTO ***********************\n");
+    printf("\n*********************** AVVIO SERVER ***********************\n");
     printf("*                  Digita un comando:                   *\n");
     printf("*                                                       *\n");
     printf("* stat --> mostra lo stato delle comande ai vari tavoli *\n");

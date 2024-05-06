@@ -23,6 +23,7 @@
 
 void comandi_table()
 {
+    printf("Benvenuti al Table device! \n");
     printf("Digita un comando: \n\n");
     printf("1) help \t\t --> mostra i dettagli dei comandi \n");
     printf("2) menu \t\t --> mostra il menu dei piatti e \n");

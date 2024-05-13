@@ -1,16 +1,16 @@
 all: server client td kd
 
-server: server.c strutture.h funzioni.c funzioni.h
-	gcc -Wall -o server server.c funzioni.c -lpthread
+server: server.o
+	gcc -Wall server.o -o server
 
-client: client.c
-	gcc -Wall -o cli client.c
+client: client.o
+	gcc -Wall -o client.o -o client
 
-td: td.c
-	gcc -Wall -o td td.c
+td: td.o
+	gcc -Wall td.o -o td
 
-kd: kd.c
-	gcc -Wall -o kd kd.c
+kd: kd.o
+	gcc -Wall kd.o -o kd
 
 clean:
-	rm -f server client td kd
+	rm *.o server client td kd

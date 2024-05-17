@@ -646,6 +646,7 @@ int main(int argc, char *argv[])
     FD_SET(0, &master);
     max_fd = sockfd;
 
+    // Stampa dei comandi disponibili
     comandi_disponibili();
     while (1)
     {

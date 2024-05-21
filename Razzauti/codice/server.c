@@ -63,7 +63,7 @@ int main(int argc, char* argv[]){
         socklen_t client_len = sizeof(client_addr);
 
         // Accetto nuove connesioni
-        new_sockfd = accept(sockfd, (struct sockaddr*)&client_addr, sizeof(client_addr));
+        new_sockfd = accept(sockfd, (struct sockaddr*)&client_addr, &client_len);
         if(new_sockfd < 0){
             perror("ERRORE: Impossibile creare un nuovo socket di ascolto\n");
             exit(1);

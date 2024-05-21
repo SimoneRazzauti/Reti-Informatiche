@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
     if(ret < 0){
         perror("ERRORE: errore nella bind del client\n");
         printf("ARRESTO DEL SISTEMA IN CORSO...\n");
-        ffush(stdout);
+        fflush(stdout);
         exit(1);
     }
 
@@ -52,11 +52,11 @@ int main(int argc, char *argv[]){
     server_addr.sin_port = htons(PORTA);
     server_addr.sin_addr.s_addr = INADDR_ANY;
 
-    ret = connnect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));
+    ret = connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));
     if(ret < 0){
         perror("ERRORE: errore nella connect del client\n");
         printf("ARRESTO DEL SISTEMA IN CORSO...\n");
-        ffush(stdout);
+        fflush(stdout);
         exit(1);
     }
     len = LEN_REPLY;

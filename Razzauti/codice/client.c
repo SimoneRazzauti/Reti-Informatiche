@@ -9,9 +9,12 @@
 #include <sys/time.h>
 #include <time.h>
 
+#define PORTA 4242 // porta del server in ascolto
 #define LEN_REPLY 6 // lunghezza del messaggio di risposta
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 1024 // dimensione massima del buffer
+
 #define WELCOME_CLIENT "\n*********************** BENVENUTO CLIENTE ************************\n*               Comandi disponibili!                   *\n*                                                        *\n* find --> ricerca la disponibilità per una prenotazione *\n* book --> invia una prenotazione                        *\n* esc --> termina il client                              *\n*                                                        *\n**********************************************************\n"
+
 int main(int argc, char *argv[]){
     int sockfd, ret; // variabili utili al socket
     char buffer[BUFFER_SIZE];
@@ -45,7 +48,7 @@ int main(int argc, char *argv[]){
 
     // Inizializzazione della struttura server
     server_addr.sin_family = AF_INET;
-    server_addr.port = door;
+    server_addr.sin_port = htons(PORTA);
     server_addr.sin_addr.s_addr = INADDR_ANY;
 
     ret = connnect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));

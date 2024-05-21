@@ -17,6 +17,7 @@
 
 int main(int argc, char *argv[]){
     int sockfd, ret; // variabili utili al socket
+    int len;
     char buffer[BUFFER_SIZE];
     struct  sockaddr_in server_addr, client_addr;
     in_port_t door = htons(atoi(argv[1])); // utilizzo della funzione atoi per convertire la stringa rappresentante il numero di porta inserito dall'utente da terminale in un intero

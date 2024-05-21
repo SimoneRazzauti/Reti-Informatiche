@@ -35,7 +35,7 @@ int main(int argc, char* argv[]){
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sinport = door;
+    server_addr.sin_port = door;
 
     // BIND sul nuovo socket creato
     if(bind(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0){
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]){
         // Pronto descrittore socket di ascolto
 
         // Dimensione dell'indirizzo del client
-        socklen_t client_len = sizeof(client_addr)
+        socklen_t client_len = sizeof(client_addr);
 
         // Accetto nuove connesioni
         new_sockfd = accept(sockfd, (struct sockaddr*)&client_addr, sizeof(client_addr));

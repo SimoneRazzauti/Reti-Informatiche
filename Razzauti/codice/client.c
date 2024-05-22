@@ -27,7 +27,7 @@
 
 /* ########### FUNZIONI DI UTILITA' (avrei potuto scriverle in un file separato ma dovrei riscrivere il makefile, ho lasciato tutto in un file per compattezza) */
 
-// Gestione errori e gestione in caso di chiusura del socket remoto, chiusura del socket
+// Gestione errori per la send e la receive tra client e server
 void check_errors(int ret, int socket){ 
     if (ret == -1)
     {
@@ -91,6 +91,7 @@ int main(int argc, char *argv[]){
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sockfd < 0){
         perror("ERRORE: Impossibile creare un nuovo socket\n");
+        fflush(stdout);
         exit(1);
     }
 
@@ -98,7 +99,7 @@ int main(int argc, char *argv[]){
     memset((void*)&server_addr, 0, sizeof(server_addr)); // pulizia
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORTA);
-    inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
+    inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr); // localhost
 
     // Connessione tramite la primitiva CONNECT
     ret = connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));

@@ -228,9 +228,9 @@ int main(int argc, char *argv[])
             printf("%s\n", buffer); // Mi serve allora solo stampare il messaggio.
             fflush(stdout);
         }
-        else
+        else // pronto il socket di input
         {
-
+            
             fgets(buffer, BUFFER_SIZE, stdin);
 
             // Estrae le parole dalla frase utilizzando la funzione 'strtok'

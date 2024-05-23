@@ -13,17 +13,13 @@
 #define BUFFER_SIZE 1024 // dimensione massima del buffer in byte
 #define WELCOME_CLIENT "\n*********************** BENVENUTO CLIENTE ************************\n*Comandi disponibili!*\n**\n* find --> ricerca la disponibilità per una prenotazione*\n* book --> invia una prenotazione*\n*esc --> termina il client*\n**\n**********************************************************\n"
 
-/* #define MAX_WORDS 10       // Numero massimo di parole che possono essere estratte dalla frase
+#define MAX_WORDS 10       // Numero massimo di parole che possono essere estratte dalla frase
 #define MAX_WORD_LENGTH 50 // Lunghezza massima di ogni parola
 
 #define GIORNI_IN_UN_MESE 31 // informazioni che mi serviranno nella funziona di verifica Data corretta
 #define GIORNI_FEBBRAIO 28
 #define GIORNI_FEBBRAIO_BISESTILE 29
 #define GIORNI_IN_UN_MESE_CORTO 30
-
-#define validLen 2  // Lunghezza codici fissati tra client - server per send/ recv
-#define codiceLen 5 // lunghezza dei codici da mandare al server */
-
 
 /* ########### FUNZIONI DI UTILITA' (avrei potuto scriverle in un file separato ma dovrei riscrivere il makefile, ho lasciato tutto in un file per compattezza) */
 
@@ -72,6 +68,236 @@ int ricevi(int j, int lunghezza, char* buffer) {
 	int ret;
 	ret = recv(j, (void*)buffer, lunghezza, 0);
 	return ret;
+}
+
+// Verifica se la data e l'ora passate come parametro sono valide
+int data_valida(int GG, int MM, int AA, int HH)
+{
+    int is_valid = 0;
+    if (MM < 1 || MM > 12)
+    {
+        return 0; // mese non valido
+    }
+    // Verifica se l'anno è bisestile
+    if (AA % 4 == 0 && (AA % 100 != 0 || AA % 400 == 0))
+    {
+        switch (MM)
+        { // verifica mesi
+        case 2:
+            is_valid = (GG >= 1 && GG <= GIORNI_FEBBRAIO_BISESTILE); // verifica il mese di febbraio bisestile
+            break;
+        case 4:
+        case 6:
+        case 9:
+        case 11:
+            is_valid = (GG >= 1 && GG <= GIORNI_IN_UN_MESE_CORTO); // verifica i mesi con 30 giorni
+            break;
+        default:
+            is_valid = (GG >= 1 && GG <= GIORNI_IN_UN_MESE); // verifica i mesi con 31 giorni
+            break;
+        }
+    }
+    else
+    { // anno non bisestile
+        switch (MM)
+        { // verifica mesi
+        case 2:
+            is_valid = (GG >= 1 && GG <= GIORNI_FEBBRAIO); // verifica il mese di febbraio non bisestile
+            break;
+        case 4:
+        case 6:
+        case 9:
+        case 11:
+            is_valid = (GG >= 1 && GG <= GIORNI_IN_UN_MESE_CORTO); // verifica i mesi con 30 giorni
+            break;
+        default:
+            is_valid = (GG >= 1 && GG <= GIORNI_IN_UN_MESE); // verifica i mesi con 31 giorni
+            break;
+        }
+    }
+    return is_valid && HH >= 10 && HH <= 23; // verifica ora. Orario valido dalle 10 alle 23.
+}
+
+// Funzione che analizza se la data inserita tramite comando find è una data futura
+int data_futura(int GG, int MM, int AA, int HH){
+    // Inizializzo a zero una variabile time_t per contenere il tempo corrente
+    time_t input_time = 0;
+    // Ottengo la struttura tm corrispondente al tempo corrente
+    struct tm *input_timeinfo = localtime(&input_time);
+    // Imposto i campi della struttura tm con i valori passati come parametro
+    input_timeinfo->tm_mday = GG;
+    input_timeinfo->tm_mon = MM - 1;
+    // Converto l'anno in formato a quattro cifre, se necessario
+    input_timeinfo->tm_year = (AA < 100 ? AA + 2000 - 1900 : AA - 1900);
+    input_timeinfo->tm_hour = HH;
+    // Converto la struttura tm in un tempo in formato time_t
+    input_time = mktime(input_timeinfo);
+    // Confronto il tempo corrente con il tempo della data passata come parametro
+    // e restituisco 1 se la data è futura, 0 altrimenti
+    return (input_time >= time(NULL));
+}
+
+// Funzione che invia al server il comando digitato da tastiera che può essere: find o book
+void invia_server(int sd, char* buff){
+    // variabili di utilità
+    char *comando = NULL;           // find o book da inviare al server
+    char cognome[30];
+    int quantita, wordLen, numPersone, tavoliDisp = 0; // tavoliDisp = numero tavoli restituiti dalla Find
+    int ordine = 0;                                    // per controllare che chiami prima la find
+    int giorno, mese, anno, ora, ret, lmgs;
+
+    char *datiInformazioni[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
+    int word_count = 0;                // Il numero di parole estratte dalla frase
+
+    uint32_t len_HO; // lunghezza del messaggio espressa in host order
+    uint32_t len_NO; // lunghezza del messaggio espressa in network order
+
+    // Estrae le parole dalla frase memorizzate in buffer a blocchi di chunk
+    char *chunk = strtok(buff, " "); // Estrae la prima parola utilizzando lo spazio come delimitatore
+    //word_count = 0; 
+    // finchè ci sono parole da estrarre e finchè non si supera il limite massimo di parole 
+    while (chunk != NULL && word_count < MAX_WORDS){
+        wordLen = strlen(chunk);
+        // rimuovo il carattere di fine riga dalla parola (se presente)
+        if(chunk[wordLen - 1] == '\n'){
+            chunk[wordLen - 1] = '\0';
+        }
+
+        // Aggiungo la parola estratta all'array di parole
+        datiInformazioni[word_count] = chunk; // memorizza il puntatore alla parola nell'array
+        word_count++; // incremento il contatore di parole estratte
+
+        // Estraggo la prossima parola
+        chunk = strtok(NULL, " "); // Utilizzo NULL come primo parametro per estrarre le parole successive
+
+        // CASO 1: HO UTILIZZATO IL COMANDO FIND
+        if (strcmp(datiInformazioni[0], "find") == 0)
+            { // se siamo qui datiInformazioni[1] = cognome, datiInformazioni[2] = Num. persone, datiInformazioni[3] = data (GG-MM-AA) e datiInformazioni[4] = ora
+                // analizza la stringa e assegna i valori alle variabili
+                sscanf(datiInformazioni[2], "%d", &numPersone);
+                sscanf(datiInformazioni[3], "%d-%d-%d", &giorno, &mese, &anno);
+                sscanf(datiInformazioni[4], "%d", &ora);
+
+                comando = "find\0";
+                // controllo data inserita sia nel formato giusto
+                if (data_valida(giorno, mese, anno, ora))
+                {
+                    if (data_futura(giorno, mese, anno, ora))
+                    {
+
+                        // invio comando "find" al server
+                        ret = invia(sd, comando);
+                        check_errors(ret, sd);
+
+                        sscanf(datiInformazioni[1], "%s", &cognome);
+
+                        sprintf(buff, "%d-%d-%d-%d %d %s", numPersone, giorno, mese, anno, ora, cognome);
+                        ret = invia(sd, buff);
+                        check_errors(ret, sd);
+
+                        sleep(1); // per gestire il delay
+
+                        printf("I tavoli disponibili che soddisfano la tua richiesta sono:\n");
+                        fflush(stdout);
+                        tavoliDisp = 0;
+                        for (;;)
+                        {
+                            ret = riceviLunghezza(sd, &lmsg);
+                            check_errors(ret, sd);
+                            ret = ricevi(sd, lmsg, buff);
+                            check_errors(ret, sd);
+
+                            if (strncmp(buff, "STOP", strlen("STOP")) == 0) // per fare terminare il loop
+                            {
+                                printf("\n");
+                                fflush(stdout);
+                                if (tavoliDisp == 0)
+                                { // se nessun tavolo è stato proposto, avviso
+                                    printf("Non sono disponibili tavoli che soddisfino i requisiti richiesti. \nTi invitiamo a provare con una data differente o con un numero inferiore di ospiti.\n");
+                                    fflush(stdout);
+                                }
+                                break;
+                            }
+                            tavoliDisp++;
+                            printf("%s\n", buff);
+                        }
+                        fflush(stdout);
+
+                        // TAVOLI DISPONIBILI
+                        ordine = 1; // adesso è possibile selezionare book
+                    }
+                    else
+                    {
+                        printf("La data inserita non risulta essere futura rispetto all'attuale momento corrente.\n");
+                        continue;
+                    }
+                }
+                else
+                {
+                    printf("La data inserita non è valida.\n");
+                    continue;
+                }
+
+                // dopo questo possiamo andare a book. Inserito alla fine, dopo tutte le conferme è valido
+            }
+            else if (strcmp(datiInformazioni[0], "book") == 0 && ordine == 0)
+            {
+                printf("Prima del book eseguire una Find correttamente\n\n");
+                fflush(stdout);
+            }
+            else if (strcmp(datiInformazioni[0], "book") == 0 && ordine == 1)
+            {
+
+                sscanf(datiInformazioni[1], "%d", &quantita);
+
+                if (tavoliDisp < quantita) // se il numeri scelto è > di quanti la find abbia restituito
+                {
+                    printf("Numero non valido, ri eseguire la prenotazione...\n");
+                    // ordine = 0;
+                    fflush(stdout);
+                    continue;
+                }
+                else
+                {
+                    // mando comando "book"
+                    comando = "book\0";
+                    ret = invia(sd, comando);
+                    check_errors(ret, sd);
+
+                    sprintf(buff, "%d %d-%d-%d-%d %d %s", quantita, numPersone, giorno, mese, anno, ora, cognome);
+                    ret = invia(sd, buff);
+                    check_errors(ret, sd);
+
+                    // ricevo se ha confermato prenotazione o no
+                    ret = riceviLunghezza(sd, &lmgs);
+                    check_errors(ret, sd);
+                    ret = ricevi(sd, lmgs, buff);
+                    check_errors(ret, sd);
+
+                    if (strcmp(buff, "NO") == 0)
+                    {
+                        printf("Ripetere prenotazione. \n Il tavolo scelto è stato occupato. \n");
+                    }
+                    else
+                    {
+                        memset(buff, 0, sizeof(buff));
+                        // ricevo se ha confermato prenotazione o no
+                        ret = riceviLunghezza(sd, &lmgs);
+                        check_errors(ret, sd);
+                        ret = ricevi(sd, lmgs, buff);
+                        check_errors(ret, sd);
+                        printf("PRENOTAZIONE EFFETTUATA, codice: %s.\n", buff);
+                    }
+                }
+            }
+            else
+            { // nessun comando inserito
+                printf("ERRORE! Comando inserito non valido. RIPROVARE...\n\n");
+                fflush(stdout);
+                continue;
+            }
+
+    }
 }
 /* ########### FINE FUNZIONI DI UTILITA' ###################### */
 
@@ -180,7 +406,7 @@ int main(int argc, char *argv[]){
                         close(sockfd);
                         return 0;
                     }
-                    invia(sockfd, buffer); // invio al server il comando digitato
+                    invia_server(sockfd, buffer); // invio al server il comando digitato
                 }
                 else{ // il descrittore pronto è quello di sockfd
                     ret = riceviLunghezza(sockfd, &lmsg);
@@ -195,7 +421,7 @@ int main(int argc, char *argv[]){
                         close(sockfd);
                         return 0;
                     }
-                    printf(buffer);
+                    printf("%s\n", buffer);
                     fflush(stdout);
                 }
             }

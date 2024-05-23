@@ -61,4 +61,4 @@ printf("ciao 3");
 printf("ciao dopo la conenct");
     // Invio del codice identificativo al server: client == 'C'
     
-}
+}//ciao

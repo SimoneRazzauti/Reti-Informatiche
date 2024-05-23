@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-
+#define validLen 2 
 #define PORTA 4242 // porta del server in ascolto
 #define BUFFER_SIZE 1024 // dimensione massima del buffer in byte
 #define WELCOME_CLIENT "\n*********************** BENVENUTO CLIENTE ************************\n*Comandi disponibili!*\n**\n* find --> ricerca la disponibilità per una prenotazione*\n* book --> invia una prenotazione*\n*esc --> termina il client*\n**\n**********************************************************\n"
@@ -26,15 +26,7 @@
 
 // Invia al socket in input il messaggio dentro buffer
 int invia(int j, char* buffer) {
-	int len = strlen(buffer)+1;
-	int lmsg = htons(len);
-	int ret;
-
-	// Invio la dimensione del messaggio
-	ret = send(j, (void*) &lmsg, sizeof(uint16_t), 0);
-	// Invio il messaggio
-	ret = send(j, (void*) buffer, len, 0);
-
+	
 	// Comunico l'esito
 	return ret;
 }
@@ -103,11 +95,14 @@ printf("ciao dopo la conenct");
     
     // Invio del codice identificativo al server: client == 'C'
     strcpy(buffer, "C\0");
-    ret = invia(sockfd, buffer);
+    int len = strlen(buffer)+1;
 
-    // Ricezione della lunghezza del messaggio dal server
-    ret = riceviLunghezza(sockfd, &lmsg);
+    ret = send(sockfd, (void *)buffer, validLen, 0);
+
+
+    printf("OK");
+
     while(1){
-        
+
     }
 }//ciao

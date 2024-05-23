@@ -144,7 +144,7 @@ void invia_server(int sd, char* buff){
     char cognome[30];
     int quantita, wordLen, numPersone, tavoliDisp = 0; // tavoliDisp = numero tavoli restituiti dalla Find
     int ordine = 0;                                    // per controllare che chiami prima la find
-    int giorno, mese, anno, ora, ret, lmgs;
+    int giorno, mese, anno, ora, ret, lmsg;
 
     char *datiInformazioni[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
     int word_count = 0;                // Il numero di parole estratte dalla frase

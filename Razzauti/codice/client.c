@@ -82,7 +82,7 @@ int main(int argc, char *argv[]){
     struct  sockaddr_in server_addr, client_addr;
     char buffer[BUFFER_SIZE];
     
-    // Variabili di utilità
+    // Variabili di utilità per l'IO-MULTIPLEXING
     fd_set master; // set di descrittori da monitorare
     fd_set read_fds; // set di descrittori in stato pronti
     int fdmax; // descrittore max
@@ -115,16 +115,20 @@ int main(int argc, char *argv[]){
     ret = invia(sockfd, buffer);
     check_errors(ret, sockfd);
 
+    // Ricezione della lunghezza del messaggio dal server
     ret = riceviLunghezza(sockfd, &lmsg);
     check_errors(ret, sockfd);
 
     // ripulisco il buffer per la ricezione
     memset(buffer, 0, BUFFER_SIZE);
 
+    // Ricezione del messaggio dal server
     ret = ricevi(sockfd, lmsg, buffer);
     check_errors(ret, sockfd);
-    if (buffer[0] != 'S')
-    {
+
+    // Verifica del messaggio di risposta del server
+    //if (buffer[0] != 'S'){ variante precedente
+    if(strcmp(buffer, "SERVER_OK") != 0){
         perror("Troppi Client connessi. RIPROVARE.\n\n");
         fflush(stdout);
         close(sockfd);
@@ -149,5 +153,52 @@ int main(int argc, char *argv[]){
     for(;;){
         memset(buffer, 0, BUFFER_SIZE); // ripulisco il buffer di comunicazione
 
+		// Inizializzo il set read_fds, manipolato dalla select(), la select eliminerà da read_fds tutti quei descrittori che non sono pronti, lasciando quindi una lista di descrittori pronti che devono essere letti
+        read_fds = master; 
+
+        // Controllo i descrittori
+		ret = select(fdmax+1, &read_fds, NULL, NULL, NULL);
+		if(ret < 0) {
+			perror("Errore nella select!");
+			exit(1);
+		}
+
+        // Scorro i descrittori "i"
+        for(i = 0; i <= fdmax; i++){
+            if(FD_ISSET(i, &read_fds)){
+                strcpy(buffer, ""); // pulisco il buffer inserendo il carattere di fine stringa
+                if(i == 0){ // il descrittore pronto è quello dello stdin
+                    scanf("%[^\n]", buffer); // leggo dallo stdin e copio il contenuto in buffer finchè non premo invio
+                    if(strcmp(buffer, "esc\0") == 0){ // se digito esc chiudo la connessione 
+                        printf("Chiusura....\nArrivederci\n");
+
+                        // Invio un messaggio di disconnessione al server
+                        strcpy(buffer, "DISCONNECT");
+                        invia(sockfd, buffer);
+
+                        // Chiudo la connesione
+                        close(sockfd);
+                        return 0;
+                    }
+                    invia(sockfd, buffer); // invio al server il comando digitato
+                }
+                else{ // il descrittore pronto è quello di sockfd
+                    ret = riceviLunghezza(sockfd, &lmsg);
+                    check_errors(ret, i);
+                    ret = ricevi(sockfd, lmsg, buffer);
+                    check_errors(ret, i);
+                    if(strcmp(buffer, "STOP\0") == 0){
+                        printf("SERVER chiuso correttamente tramite comando STOP\n");
+                        fflush(stdout);
+
+                        // Chiudo la connessione
+                        close(sockfd);
+                        return 0;
+                    }
+                    printf(buffer);
+                    fflush(stdout);
+                }
+            }
+        }
     }
 }

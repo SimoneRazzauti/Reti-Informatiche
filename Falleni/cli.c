@@ -104,9 +104,10 @@ printf("ciao dopo la conenct");
     
     // Invio del codice identificativo al server: client == 'C'
     strcpy(buffer, "C\0");
+    char identificativo[] = "C\0";
     int len = strlen(buffer)+1;
 
-    ret = send(sockfd, (void *)buffer, validLen, 0);
+    ret = send(sockfd, (void *)identificativo, validLen, 0);
 
 
     printf("OK");

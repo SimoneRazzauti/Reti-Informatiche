@@ -97,8 +97,8 @@ printf("ciao 3");
     FD_SET(0, &master);
     FD_SET(sockfd, &master);
 
-    max_fd = sockfd;
-    
+    fdmax = sockfd;
+
 printf("ciao dopo la conenct");
     // Invio del codice identificativo al server: client == 'C'
     

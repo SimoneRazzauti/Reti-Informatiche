@@ -23,6 +23,37 @@
 #define GIORNI_IN_UN_MESE_CORTO 30
 /* ########### FINE FUNZIONI DI UTILITA' ###################### */
 
+
+// Invia al socket in input il messaggio dentro buffer
+int invia(int j, char* buffer) {
+	int len = strlen(buffer)+1;
+	int lmsg = htons(len);
+	int ret;
+
+	// Invio la dimensione del messaggio
+	ret = send(j, (void*) &lmsg, sizeof(uint16_t), 0);
+	// Invio il messaggio
+	ret = send(j, (void*) buffer, len, 0);
+
+	// Comunico l'esito
+	return ret;
+}
+
+// Ricevi dal socket in input la lunghezza del messaggio e lo mette dentro lmsg
+int riceviLunghezza(int j, int *lmsg) {
+	int ret;
+	ret = recv(j, (void*)lmsg, sizeof(uint16_t), 0);
+	return ret;
+}
+
+// Riceve dal socket in input il messaggio e lo mette dentro buffer
+int ricevi(int j, int lunghezza, char* buffer) {
+	int ret;
+	ret = recv(j, (void*)buffer, lunghezza, 0);
+	return ret;
+}
+
+
 int main(int argc, char *argv[]){
     printf("ciao uno");
     // Variabili dei socket
@@ -70,4 +101,13 @@ printf("ciao 3");
 printf("ciao dopo la conenct");
     // Invio del codice identificativo al server: client == 'C'
     
+    // Invio del codice identificativo al server: client == 'C'
+    strcpy(buffer, "C\0");
+    ret = invia(sockfd, buffer);
+
+    // Ricezione della lunghezza del messaggio dal server
+    ret = riceviLunghezza(sockfd, &lmsg);
+    while(1){
+        
+    }
 }//ciao

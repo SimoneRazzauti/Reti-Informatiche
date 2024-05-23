@@ -813,6 +813,7 @@ int main(int argc, char *argv[])
                     switch (buffer[0])
                     {
                     case 'C':
+                        printf("cliente rompi palle");
                         if (n_clients >= MAX_CLIENTS)
                         {
                             fprintf(stderr, "Troppi client connessi, connessione rifiutata.\n");

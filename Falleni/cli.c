@@ -90,6 +90,15 @@ printf("ciao 3");
         fflush(stdout);
         exit(1);
     }
+
+    // CREAZIONE SET E ALTRE INIZIALIZZAZIONI
+    FD_ZERO(&master);
+    FD_ZERO(&read_fds);
+    FD_SET(0, &master);
+    FD_SET(sockfd, &master);
+
+    max_fd = sockfd;
+    
 printf("ciao dopo la conenct");
     // Invio del codice identificativo al server: client == 'C'
     
@@ -102,6 +111,15 @@ printf("ciao dopo la conenct");
 
     printf("OK");
 
+    ret = recv(sockfd, (void *)buffer, validLen, 0);
+    
+    if (buffer[0] != 'S')
+    {
+        perror("Troppi Client connessi. RIPROVARE.\n\n");
+        fflush(stdout);
+        close(sockfd);
+        exit(1);
+    }
     while(1){
 
     }

@@ -111,20 +111,5 @@ printf("ciao dopo la conenct");
 
     printf("OK");
 
-    ret = recv(sockfd, (void *)buffer, validLen, 0);
-    
-    if (buffer[0] != 'S')
-    {
-        perror("Troppi Client connessi. RIPROVARE.\n\n");
-        fflush(stdout);
-        close(sockfd);
-        exit(1);
-    }
-    while(1){
-        memset(buffer, 0, sizeof(buffer)); // In caso contrario, rimarrebbe l'ultima cosa che c'era dentro.
-        read_fds = master;
-        select(fdmax + 1, &read_fds, NULL, NULL, NULL);
-    break;
-    }
     printf("esco");
 }//ciao

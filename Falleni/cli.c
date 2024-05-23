@@ -269,9 +269,9 @@ void invia_server(int sd, char* buff){
                     check_errors(ret, sd);
 
                     // ricevo se ha confermato prenotazione o no
-                    ret = riceviLunghezza(sd, &lmgs);
+                    ret = riceviLunghezza(sd, &lmsg);
                     check_errors(ret, sd);
-                    ret = ricevi(sd, lmgs, buff);
+                    ret = ricevi(sd, lmsg, buff);
                     check_errors(ret, sd);
 
                     if (strcmp(buff, "NO") == 0)
@@ -282,9 +282,9 @@ void invia_server(int sd, char* buff){
                     {
                         memset(buff, 0, sizeof(buff));
                         // ricevo se ha confermato prenotazione o no
-                        ret = riceviLunghezza(sd, &lmgs);
+                        ret = riceviLunghezza(sd, &lmsg);
                         check_errors(ret, sd);
-                        ret = ricevi(sd, lmgs, buff);
+                        ret = ricevi(sd, lmsg, buff);
                         check_errors(ret, sd);
                         printf("PRENOTAZIONE EFFETTUATA, codice: %s.\n", buff);
                     }

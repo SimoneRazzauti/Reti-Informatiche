@@ -121,6 +121,10 @@ printf("ciao dopo la conenct");
         exit(1);
     }
     while(1){
-
+        memset(buffer, 0, sizeof(buffer)); // In caso contrario, rimarrebbe l'ultima cosa che c'era dentro.
+        read_fds = master;
+        select(fdmax + 1, &read_fds, NULL, NULL, NULL);
+    break;
     }
+    printf("esco");
 }//ciao

@@ -26,7 +26,7 @@
 
 // Invia al socket in input il messaggio dentro buffer
 int invia(int j, char* buffer) {
-	
+	int ret;
 	// Comunico l'esito
 	return ret;
 }

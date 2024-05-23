@@ -137,168 +137,6 @@ int data_futura(int GG, int MM, int AA, int HH){
     return (input_time >= time(NULL));
 }
 
-// Funzione che invia al server il comando digitato da tastiera che può essere: find o book
-void invia_server(int sd, char* buff){
-    // variabili di utilità
-    char *comando = NULL;           // find o book da inviare al server
-    char cognome[30];
-    int quantita, wordLen, numPersone, tavoliDisp = 0; // tavoliDisp = numero tavoli restituiti dalla Find
-    int ordine = 0;                                    // per controllare che chiami prima la find
-    int giorno, mese, anno, ora, ret, lmsg;
-
-    char *datiInformazioni[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
-    int word_count = 0;                // Il numero di parole estratte dalla frase
-
-    uint32_t len_HO; // lunghezza del messaggio espressa in host order
-    uint32_t len_NO; // lunghezza del messaggio espressa in network order
-
-    // Estrae le parole dalla frase memorizzate in buffer a blocchi di chunk
-    char *chunk = strtok(buff, " "); // Estrae la prima parola utilizzando lo spazio come delimitatore
-    //word_count = 0; 
-    // finchè ci sono parole da estrarre e finchè non si supera il limite massimo di parole 
-    while (chunk != NULL && word_count < MAX_WORDS){
-        wordLen = strlen(chunk);
-        // rimuovo il carattere di fine riga dalla parola (se presente)
-        if(chunk[wordLen - 1] == '\n'){
-            chunk[wordLen - 1] = '\0';
-        }
-
-        // Aggiungo la parola estratta all'array di parole
-        datiInformazioni[word_count] = chunk; // memorizza il puntatore alla parola nell'array
-        word_count++; // incremento il contatore di parole estratte
-
-        // Estraggo la prossima parola
-        chunk = strtok(NULL, " "); // Utilizzo NULL come primo parametro per estrarre le parole successive
-
-        // CASO 1: HO UTILIZZATO IL COMANDO FIND
-        if (strcmp(datiInformazioni[0], "find") == 0)
-            { // se siamo qui datiInformazioni[1] = cognome, datiInformazioni[2] = Num. persone, datiInformazioni[3] = data (GG-MM-AA) e datiInformazioni[4] = ora
-                // analizza la stringa e assegna i valori alle variabili
-                sscanf(datiInformazioni[2], "%d", &numPersone);
-                sscanf(datiInformazioni[3], "%d-%d-%d", &giorno, &mese, &anno);
-                sscanf(datiInformazioni[4], "%d", &ora);
-
-                comando = "find\0";
-                // controllo data inserita sia nel formato giusto
-                if (data_valida(giorno, mese, anno, ora))
-                {
-                    if (data_futura(giorno, mese, anno, ora))
-                    {
-
-                        // invio comando "find" al server
-                        ret = invia(sd, comando);
-                        check_errors(ret, sd);
-
-                        sscanf(datiInformazioni[1], "%s", &cognome);
-
-                        sprintf(buff, "%d-%d-%d-%d %d %s", numPersone, giorno, mese, anno, ora, cognome);
-                        ret = invia(sd, buff);
-                        check_errors(ret, sd);
-
-                        sleep(1); // per gestire il delay
-
-                        printf("I tavoli disponibili che soddisfano la tua richiesta sono:\n");
-                        fflush(stdout);
-                        tavoliDisp = 0;
-                        for (;;)
-                        {
-                            ret = riceviLunghezza(sd, &lmsg);
-                            check_errors(ret, sd);
-                            ret = ricevi(sd, lmsg, buff);
-                            check_errors(ret, sd);
-
-                            if (strncmp(buff, "STOP", strlen("STOP")) == 0) // per fare terminare il loop
-                            {
-                                printf("\n");
-                                fflush(stdout);
-                                if (tavoliDisp == 0)
-                                { // se nessun tavolo è stato proposto, avviso
-                                    printf("Non sono disponibili tavoli che soddisfino i requisiti richiesti. \nTi invitiamo a provare con una data differente o con un numero inferiore di ospiti.\n");
-                                    fflush(stdout);
-                                }
-                                break;
-                            }
-                            tavoliDisp++;
-                            printf("%s\n", buff);
-                        }
-                        fflush(stdout);
-
-                        // TAVOLI DISPONIBILI
-                        ordine = 1; // adesso è possibile selezionare book
-                    }
-                    else
-                    {
-                        printf("La data inserita non risulta essere futura rispetto all'attuale momento corrente.\n");
-                        continue;
-                    }
-                }
-                else
-                {
-                    printf("La data inserita non è valida.\n");
-                    continue;
-                }
-
-                // dopo questo possiamo andare a book. Inserito alla fine, dopo tutte le conferme è valido
-            }
-            else if (strcmp(datiInformazioni[0], "book") == 0 && ordine == 0)
-            {
-                printf("Prima del book eseguire una Find correttamente\n\n");
-                fflush(stdout);
-            }
-            else if (strcmp(datiInformazioni[0], "book") == 0 && ordine == 1)
-            {
-
-                sscanf(datiInformazioni[1], "%d", &quantita);
-
-                if (tavoliDisp < quantita) // se il numeri scelto è > di quanti la find abbia restituito
-                {
-                    printf("Numero non valido, ri eseguire la prenotazione...\n");
-                    // ordine = 0;
-                    fflush(stdout);
-                    continue;
-                }
-                else
-                {
-                    // mando comando "book"
-                    comando = "book\0";
-                    ret = invia(sd, comando);
-                    check_errors(ret, sd);
-
-                    sprintf(buff, "%d %d-%d-%d-%d %d %s", quantita, numPersone, giorno, mese, anno, ora, cognome);
-                    ret = invia(sd, buff);
-                    check_errors(ret, sd);
-
-                    // ricevo se ha confermato prenotazione o no
-                    ret = riceviLunghezza(sd, &lmgs);
-                    check_errors(ret, sd);
-                    ret = ricevi(sd, lmgs, buff);
-                    check_errors(ret, sd);
-
-                    if (strcmp(buff, "NO") == 0)
-                    {
-                        printf("Ripetere prenotazione. \n Il tavolo scelto è stato occupato. \n");
-                    }
-                    else
-                    {
-                        memset(buff, 0, sizeof(buff));
-                        // ricevo se ha confermato prenotazione o no
-                        ret = riceviLunghezza(sd, &lmgs);
-                        check_errors(ret, sd);
-                        ret = ricevi(sd, lmgs, buff);
-                        check_errors(ret, sd);
-                        printf("PRENOTAZIONE EFFETTUATA, codice: %s.\n", buff);
-                    }
-                }
-            }
-            else
-            { // nessun comando inserito
-                printf("ERRORE! Comando inserito non valido. RIPROVARE...\n\n");
-                fflush(stdout);
-                continue;
-            }
-
-    }
-}
 /* ########### FINE FUNZIONI DI UTILITA' ###################### */
 
 int main(int argc, char *argv[]){
@@ -393,22 +231,7 @@ int main(int argc, char *argv[]){
         for(i = 0; i <= fdmax; i++){
             if(FD_ISSET(i, &read_fds)){
                 strcpy(buffer, ""); // pulisco il buffer inserendo il carattere di fine stringa
-                if(i == 0){ // il descrittore pronto è quello dello stdin
-                    scanf("%[^\n]", buffer); // leggo dallo stdin e copio il contenuto in buffer finchè non premo invio
-                    if(strcmp(buffer, "esc\0") == 0){ // se digito esc chiudo la connessione 
-                        printf("Chiusura....\nArrivederci\n");
-
-                        // Invio un messaggio di disconnessione al server
-                        strcpy(buffer, "DISCONNECT");
-                        invia(sockfd, buffer);
-
-                        // Chiudo la connesione
-                        close(sockfd);
-                        return 0;
-                    }
-                    invia_server(sockfd, buffer); // invio al server il comando digitato
-                }
-                else{ // il descrittore pronto è quello di sockfd
+                if(i != 0){ // il descrittore pronto è quello di sockfd
                     ret = riceviLunghezza(sockfd, &lmsg);
                     check_errors(ret, i);
                     ret = ricevi(sockfd, lmsg, buffer);
@@ -423,6 +246,186 @@ int main(int argc, char *argv[]){
                     }
                     printf("%s\n", buffer);
                     fflush(stdout);
+                }
+                else if(i === 0){ // il descrittore pronto è quello dello stdin
+                    scanf("%[^\n]", buffer); // leggo dallo stdin e copio il contenuto in buffer finchè non premo invio
+                    if(strcmp(buffer, "esc\0") == 0){ // se digito esc chiudo la connessione 
+                        printf("Chiusura....\nArrivederci\n");
+
+                        // Invio un messaggio di disconnessione al server
+                        strcpy(buffer, "DISCONNECT");
+                        invia(sockfd, buffer);
+
+                        // Chiudo la connesione
+                        close(sockfd);
+                        return 0;
+                    }
+
+                    // Estrae le parole dalla frase utilizzando la funzione 'strtok'
+                    char *word = strtok(buffer, " "); // Estrae la prima parola utilizzando lo spazio come delimitatore
+                    word_count = 0;
+                    while (word != NULL && word_count < MAX_WORDS)
+                    { // Finchè ci sono parole da estrarre e non si supera il limite massimo
+                        // Rimuove il carattere di fine riga dalla parola se presente
+                        wordLen = strlen(word);
+                        if (word[wordLen - 1] == '\n')
+                        {
+                            word[wordLen - 1] = '\0';
+                        }
+
+                        // Aggiunge la parola all'array di parole
+                        datiInformazioni[word_count] = word; // Memorizza il puntatore alla parola nell'array
+                        word_count++;                        // Incrementa il contatore di parole estratte
+
+                        // Estrae la prossima parola
+                        word = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
+                    }
+
+                    if (strcmp(datiInformazioni[0], "find") == 0)
+                    { // se siamo qui datiInformazioni[1] = cognome, datiInformazioni[2] = Num. persone, datiInformazioni[3] = data e datiInformazioni[4] = ora
+                        // analizza la stringa e assegna i valori alle variabili
+                        sscanf(datiInformazioni[3], "%d-%d-%d", &giorno, &mese, &anno);
+                        sscanf(datiInformazioni[4], "%d", &ora);
+                        sscanf(datiInformazioni[2], "%d", &numPersone);
+
+                        codice = "find\0";
+                        // controllo data inserita
+                        if (data_valida(giorno, mese, anno, ora))
+                        {
+                            if (data_futura(giorno, mese, anno, ora))
+                            {
+
+                                // mando codice "find"
+                                ret = send(sockfd, (void *)codice, codiceLen, 0);
+                                gestione_errore(ret, sockfd);
+
+                                sscanf(datiInformazioni[1], "%s", cognome);
+
+                                sprintf(buffer, "%d-%d-%d-%d %d %s", numPersone, giorno, mese, anno, ora, cognome);
+                                len_HO = strlen(buffer) + 1;
+                                len_NO = htonl(len_HO);
+
+                                // mando lunghezza del messaggio
+                                ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
+                                gestione_errore(ret, sockfd);
+
+                                // mando il vero e proprio MESSAGGIO
+                                ret = send(sockfd, (void *)buffer, len_HO, 0);
+                                gestione_errore(ret, sockfd);
+
+                                sleep(1);
+
+                                printf("I tavoli disponibili che soddisfano la tua richiesta sono:\n");
+                                tavoliDisp = 0;
+                                for (;;)
+                                {
+                                    ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
+                                    gestione_errore(ret, sockfd);
+                                    len_HO = ntohl(len_NO);
+
+                                    ret = recv(sockfd, buffer, len_HO, 0);
+                                    gestione_errore(ret, sockfd);
+
+                                    if (strncmp(buffer, "STOP", strlen("STOP")) == 0) // per fare terminare il loop
+                                    {
+                                        printf("\n");
+                                        fflush(stdout);
+                                        if (tavoliDisp == 0)
+                                        { // se nessun tavolo è stato proposto, avviso
+                                            printf("Non sono disponibili tavoli che soddisfino i requisiti richiesti. \nTi invitiamo a provare con una data differente o con un numero inferiore di ospiti.\n");
+                                            fflush(stdout);
+                                        }
+                                        break;
+                                    }
+                                    tavoliDisp++;
+                                    printf("%s\n", buffer);
+                                }
+                                fflush(stdout);
+
+                                // TAVOLI DISPONIBILI
+                                ordine = 1; // adesso è possibile selezionare book
+                            }
+                            else
+                            {
+                                printf("La data inserita non risulta essere futura rispetto all'attuale momento corrente.\n");
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            printf("La data inserita non è valida.\n");
+                            continue;
+                        }
+
+                        // dopo questo possiamo andare a book. Inserito alla fine, dopo tutte le conferme è valido
+                    }
+                    else if (strcmp(datiInformazioni[0], "book") == 0 && ordine == 0)
+                    {
+                        printf("Prima del book eseguire una Find correttamente\n\n");
+                        fflush(stdout);
+                    }
+                    else if (strcmp(datiInformazioni[0], "book") == 0 && ordine == 1)
+                    {
+
+                        sscanf(datiInformazioni[1], "%d", &quantita);
+
+                        if (tavoliDisp < quantita) // se il numeri scelto è > di quanti la find abbia restituito
+                        {
+                            printf("Numero non valido, ri eseguire la prenotazione...\n");
+                            // ordine = 0;
+                            fflush(stdout);
+                            continue;
+                        }
+                        else
+                        {
+                            // mando codice "book"
+                            codice = "book\0";
+                            ret = send(sockfd, (void *)codice, codiceLen, 0);
+                            gestione_errore(ret, sockfd);
+
+                            sprintf(buffer, "%d %d-%d-%d-%d %d %s", quantita, numPersone, giorno, mese, anno, ora, cognome);
+                            len_HO = strlen(buffer) + 1;
+                            len_NO = htonl(len_HO);
+
+                            ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
+                            gestione_errore(ret, sockfd);
+
+                            // mando tutti i dati per la prenotazione
+                            ret = send(sockfd, (void *)buffer, len_HO, 0);
+                            gestione_errore(ret, sockfd);
+
+                            // ricevo se ha confermato prenotazione o no
+                            ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
+                            gestione_errore(ret, sockfd);
+                            len_HO = ntohl(len_NO);
+
+                            ret = recv(sockfd, buffer, len_HO, 0);
+                            gestione_errore(ret, sockfd);
+
+                            if (strcmp(buffer, "NO") == 0)
+                            {
+                                printf("Ripetere prenotazione. \n Il tavolo scelto è stato occupato. \n");
+                            }
+                            else
+                            {
+                                memset(buffer, 0, sizeof(buffer));
+                                // ricevo se ha confermato prenotazione o no
+                                ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
+                                gestione_errore(ret, sockfd);
+                                len_HO = ntohl(len_NO);
+
+                                ret = recv(sockfd, buffer, len_HO, 0);
+                                gestione_errore(ret, sockfd);
+                                printf("PRENOTAZIONE EFFETTUATA, codice: %s.\n", buffer);
+                            }
+                        }
+                    }
+                    else
+                    { // nessun comando inserito
+                        printf("ERRORE! Comando inserito non valido. RIPROVARE...\n\n");
+                        fflush(stdout);
+                        continue;
+                    }
                 }
             }
         }

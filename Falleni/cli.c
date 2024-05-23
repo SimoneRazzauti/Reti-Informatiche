@@ -9,8 +9,20 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define PORTA 4242 // porta del server in ascolto
-#define BUFFER_SIZE 1024 // dimensione massima del buffer in byte
+
+#define PORT 4242        // porta del server
+#define BUFFER_SIZE 1024 // dimensione massima del buffer
+
+#define MAX_WORDS 10       // Numero massimo di parole che possono essere estratte dalla frase
+#define MAX_WORD_LENGTH 50 // Lunghezza massima di ogni parola
+
+#define GIORNI_IN_UN_MESE 31 // informazioni che mi serviranno nella funziona di verifica Data corretta
+#define GIORNI_FEBBRAIO 28
+#define GIORNI_FEBBRAIO_BISESTILE 29
+#define GIORNI_IN_UN_MESE_CORTO 30
+
+#define validLen 2  // Lunghezza codici fissati tra client - server per send/ recv
+#define codiceLen 5 // lunghezza dei codici da mandare al server
 
 /* ########### FINE FUNZIONI DI UTILITA' ###################### */
 

@@ -140,7 +140,7 @@ int data_futura(int GG, int MM, int AA, int HH){
 /* ########### FINE FUNZIONI DI UTILITA' ###################### */
 
 int main(int argc, char *argv[]){
-    printf("ciao uno");
+
     // Variabili dei socket
     int sockfd, ret, i, lmsg;
     struct  sockaddr_in server_addr, client_addr;
@@ -168,13 +168,13 @@ int main(int argc, char *argv[]){
         fflush(stdout);
         exit(1);
     }
-printf("ciao 2");
+
     // Inizializzazione della struttura dell indirizzo del server
     memset((void*)&server_addr, 0, sizeof(server_addr)); // pulizia
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORTA);
     inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr); // localhost
-printf("ciao 3");
+
     // Connessione tramite la primitiva CONNECT
     ret = connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));
     if(ret < 0){
@@ -183,7 +183,7 @@ printf("ciao 3");
         fflush(stdout);
         exit(1);
     }
-printf("ciao dopo la conenct");
+
     // Invio del codice identificativo al server: client == 'C'
     strcpy(buffer, "C\0");
     ret = invia(sockfd, buffer);

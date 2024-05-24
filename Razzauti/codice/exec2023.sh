@@ -37,4 +37,4 @@
 
 
 # 2.4 esecuzione di un client sulla porta 7000
-	gnome-terminal -x sh -c "./client 7000; exec bash"
+	gnome-terminal -x sh -c "./cli 7000; exec bash"

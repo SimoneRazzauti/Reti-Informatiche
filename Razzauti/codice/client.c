@@ -197,6 +197,7 @@ int main(int argc, char *argv[]){
                     }
                     printf(buffer);
                     fflush(stdout);
+                    //commento
                 }
             }
         }

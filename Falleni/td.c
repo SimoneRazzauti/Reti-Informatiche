@@ -23,7 +23,6 @@
 
 void comandi_table()
 {
-    printf("Benvenuti al Table device! \n");
     printf("Digita un comando: \n\n");
     printf("1) help \t\t --> mostra i dettagli dei comandi \n");
     printf("2) menu \t\t --> mostra il menu dei piatti e \n");
@@ -175,7 +174,6 @@ int main(int argc, char *argv[])
     while (1)
     { // validazione codice per identificare il Table D.
 
-        printf("Avvio del Table Device\n");
         printf("Inserisci Codice: \n");
 
         fgets(buffer, BUFFER_SIZE, stdin);

@@ -25,7 +25,7 @@
 
 void comandi_cliente()
 {
-    printf("\n*********************** BENVENUTO CLIENTE ************************\n");
+    printf("\n*********************** BENVENUTO ************************\n");
     printf("*               Comandi per prenotare!                   *\n");
     printf("*                                                        *\n");
     printf("* find --> ricerca la disponibilità per una prenotazione *\n");
@@ -228,9 +228,9 @@ int main(int argc, char *argv[])
             printf("%s\n", buffer); // Mi serve allora solo stampare il messaggio.
             fflush(stdout);
         }
-        else // pronto il socket di input
+        else
         {
-            
+
             fgets(buffer, BUFFER_SIZE, stdin);
 
             // Estrae le parole dalla frase utilizzando la funzione 'strtok'
@@ -400,7 +400,7 @@ int main(int argc, char *argv[])
                 exit(0);
             }
             else
-            { // nessun comando inserito bla bla 
+            { // nessun comando inserito
                 printf("ERRORE! Comando inserito non valido. RIPROVARE...\n\n");
                 continue;
             }

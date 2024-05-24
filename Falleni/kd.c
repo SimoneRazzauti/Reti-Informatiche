@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
         close(sockfd);
     }
 
-    printf("************** AVVIO KITCHEN DEVICE **************\n");
+    printf("************** BENVENUTO **************\n");
     comandi_table();
     while (1)
     {

@@ -151,6 +151,16 @@ int main(int argc, char *argv[]){
     fd_set read_fds; // set di descrittori in stato pronti
     int fdmax; // descrittore max
 
+    // Varibili per le funzioni find e book
+    char *codice = NULL;           // find o book
+    char cognome[30];
+    int quantita, wordLen, numPersone, tavoliDisp = 0; // tavoliDisp = numero tavoli restituiti dalla Find
+    int ordine = 0;                                    // per controllare che chiami prima la find
+    int giorno, mese, anno, ora;
+
+    char *datiInformazioni[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
+    int word_count = 0;                // Il numero di parole estratte dalla frase
+
     // Creazione del socket tramite funzione SOCKET
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sockfd < 0){
@@ -246,10 +256,9 @@ int main(int argc, char *argv[]){
                     }
                     printf("%s\n", buffer);
                     fflush(stdout);
-                    //commento
                 }
-                else if(i === 0){ // il descrittore pronto è quello dello stdin
-                    scanf("%[^\n]", buffer); // leggo dallo stdin e copio il contenuto in buffer finchè non premo invio
+                else if(i == 0){ // il descrittore pronto è quello dello stdin
+                    fgets(buffer, BUFFER_SIZE, stdin); // leggo dallo stdin e copio il contenuto in buffer finchè non premo invio
                     if(strcmp(buffer, "esc\0") == 0){ // se digito esc chiudo la connessione 
                         printf("Chiusura....\nArrivederci\n");
 
@@ -282,6 +291,7 @@ int main(int argc, char *argv[]){
                         word = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
                     }
 
+                    // CODICE DIGITATO: FIND
                     if (strcmp(datiInformazioni[0], "find") == 0)
                     { // se siamo qui datiInformazioni[1] = cognome, datiInformazioni[2] = Num. persone, datiInformazioni[3] = data e datiInformazioni[4] = ora
                         // analizza la stringa e assegna i valori alle variabili
@@ -297,22 +307,16 @@ int main(int argc, char *argv[]){
                             {
 
                                 // mando codice "find"
-                                ret = send(sockfd, (void *)codice, codiceLen, 0);
-                                gestione_errore(ret, sockfd);
+                                ret = invia(sockfd, codice);
+                                check_errors(ret, sockfd);
 
                                 sscanf(datiInformazioni[1], "%s", cognome);
 
                                 sprintf(buffer, "%d-%d-%d-%d %d %s", numPersone, giorno, mese, anno, ora, cognome);
-                                len_HO = strlen(buffer) + 1;
-                                len_NO = htonl(len_HO);
-
-                                // mando lunghezza del messaggio
-                                ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
-                                gestione_errore(ret, sockfd);
 
                                 // mando il vero e proprio MESSAGGIO
-                                ret = send(sockfd, (void *)buffer, len_HO, 0);
-                                gestione_errore(ret, sockfd);
+                                ret = invia(sockfd, buffer);
+                                check_errors(ret, sockfd);
 
                                 sleep(1);
 
@@ -320,12 +324,11 @@ int main(int argc, char *argv[]){
                                 tavoliDisp = 0;
                                 for (;;)
                                 {
-                                    ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                                    gestione_errore(ret, sockfd);
-                                    len_HO = ntohl(len_NO);
+                                    ret = riceviLunghezza(sockfd, &lmsg);
+                                    check_errors(ret, sockfd);
 
-                                    ret = recv(sockfd, buffer, len_HO, 0);
-                                    gestione_errore(ret, sockfd);
+                                    ret = ricevi(sockfd, lmsg, buffer);
+                                    check_errors(ret, sockfd);
 
                                     if (strncmp(buffer, "STOP", strlen("STOP")) == 0) // per fare terminare il loop
                                     {
@@ -358,7 +361,7 @@ int main(int argc, char *argv[]){
                             continue;
                         }
 
-                        // dopo questo possiamo andare a book. Inserito alla fine, dopo tutte le conferme è valido
+                    // CODICE INSERITO: BOOK
                     }
                     else if (strcmp(datiInformazioni[0], "book") == 0 && ordine == 0)
                     {
@@ -381,27 +384,23 @@ int main(int argc, char *argv[]){
                         {
                             // mando codice "book"
                             codice = "book\0";
-                            ret = send(sockfd, (void *)codice, codiceLen, 0);
-                            gestione_errore(ret, sockfd);
+                            ret = invia(sockfd, codice);
+                            check_errors(ret, sockfd);
 
                             sprintf(buffer, "%d %d-%d-%d-%d %d %s", quantita, numPersone, giorno, mese, anno, ora, cognome);
-                            len_HO = strlen(buffer) + 1;
-                            len_NO = htonl(len_HO);
-
-                            ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
-                            gestione_errore(ret, sockfd);
+                            ret = riceviLunghezza(sockfd, &lmsg);
+                            check_errors(ret, sockfd);
 
                             // mando tutti i dati per la prenotazione
-                            ret = send(sockfd, (void *)buffer, len_HO, 0);
-                            gestione_errore(ret, sockfd);
+                            ret = invia(sockfd, buffer);
+                            check_errors(ret, sockfd);
 
                             // ricevo se ha confermato prenotazione o no
-                            ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                            gestione_errore(ret, sockfd);
-                            len_HO = ntohl(len_NO);
-
-                            ret = recv(sockfd, buffer, len_HO, 0);
-                            gestione_errore(ret, sockfd);
+                            ret = riceviLunghezza(sockfd, &lmsg);
+                            check_errors(ret, sockfd);
+                            
+                            ret = ricevi(sockfd, lmsg, buffer);
+                            check_errors(ret, sockfd);
 
                             if (strcmp(buffer, "NO") == 0)
                             {
@@ -411,13 +410,13 @@ int main(int argc, char *argv[]){
                             {
                                 memset(buffer, 0, sizeof(buffer));
                                 // ricevo se ha confermato prenotazione o no
-                                ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                                gestione_errore(ret, sockfd);
-                                len_HO = ntohl(len_NO);
-
-                                ret = recv(sockfd, buffer, len_HO, 0);
-                                gestione_errore(ret, sockfd);
+                                ret = riceviLunghezza(sockfd, &lmsg);
+                                check_errors(ret, sockfd);
+                                
+                                ret = ricevi(sockfd, lmsg, buffer);
+                                check_errors(ret, sockfd);
                                 printf("PRENOTAZIONE EFFETTUATA, codice: %s.\n", buffer);
+                                fflush(stdout);
                             }
                         }
                     }

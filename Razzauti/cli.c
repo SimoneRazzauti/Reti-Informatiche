@@ -133,7 +133,6 @@ int main(int argc, char *argv[])
     uint32_t len_NO; // lunghezza del messaggio espressa in network order
 
     // CREAZIONE SOCKET
-    memset((void *)&cli_addr, 0, sizeof(cli_addr));
     memset((void *)&serv_addr, 0, sizeof(serv_addr));
 
     // Creazione del socket

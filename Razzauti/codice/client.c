@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <time.h>
 
-#define BENVENUTO_CLIENT "find --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n"
+#define BENVENUTO_CLIENT "BENVENUTO CLIENT!\n COMANDI DIPONIBILI\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n"
 #define BUFFER_SIZE 1024
 
 // Invia al socket in input il messaggio dentro buffer

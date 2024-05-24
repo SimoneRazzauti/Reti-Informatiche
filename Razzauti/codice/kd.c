@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <time.h>
 
-#define BENVENUTO_KD "take --> accetta una comanda\nshow --> mostra le comande accettate (in preparazione)\nready --> imposta lo stato della comanda\n"
+#define BENVENUTO_KD "BENVENUTO KITCHEN DEVICE!\n COMANDI DISPONIBILI\n\ntake --> accetta una comanda\nshow --> mostra le comande accettate (in preparazione)\nready --> imposta lo stato della comanda\n"
 #define BUFFER_SIZE 1024
 
 // Invia al socket in input il messaggio dentro buffer

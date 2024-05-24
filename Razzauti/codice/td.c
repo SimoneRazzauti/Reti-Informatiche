@@ -11,8 +11,8 @@
 #include <unistd.h>
 #include <time.h>
 
-#define BENVENUTO_TD_1 "Benvenuto\nInserisci il codice prenotazione: "
-#define BENVENUTO_TD_2 "***************************** BENVENUTO *****************************\n Digita un comando:\n1) help --> mostra i dettagli dei comandi\n2) menu --> mostra il menu dei piatti\n3) comanda --> invia una comanda\n4) conto --> chiede il conto\n"
+#define BENVENUTO_TD_1 "Benvenuto al TABLE DEVICE\nInserisci il codice prenotazione: "
+#define BENVENUTO_TD_2 "***************************** BENVENUTO AL RISTORANTE *****************************\n Digita un comando:\n1) help --> mostra i dettagli dei comandi\n2) menu --> mostra il menu dei piatti\n3) comanda --> invia una comanda\n4) conto --> chiede il conto\n"
 #define HELP "Comandi:\nmenu -> stampa il menu\ncomanda -> invia una comanda in cucina\n\t\t   NOTA: deve essere nel formato\n \t\t   {<piatto_1-quantità_1>...<piatto_n-quantità_n>}\nconto -> richiesta del conto\n"
 #define BUFFER_SIZE 1024
 

@@ -10,6 +10,7 @@
 #include <time.h>
 
 #define PORT 4242        // porta del server
+#define WELCOME_CLIENT "BENVENUTO CLIENT\nEcco i comandi disponibili\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n"
 #define BUFFER_SIZE 1024 // dimensione massima del buffer
 
 #define MAX_WORDS 10       // Numero massimo di parole che possono essere estratte dalla frase
@@ -22,19 +23,6 @@
 
 #define validLen 2  // Lunghezza codici fissati tra client - server per send/ recv
 #define codiceLen 5 // lunghezza dei codici da mandare al server
-
-void comandi_cliente()
-{
-    printf("\n*********************** BENVENUTO ************************\n");
-    printf("*               Comandi per prenotare!                   *\n");
-    printf("*                                                        *\n");
-    printf("* find --> ricerca la disponibilità per una prenotazione *\n");
-    printf("* book --> invia una prenotazione                        *\n");
-    printf("* esc --> termina il client                              *\n");
-    printf("*                                                        *\n");
-    printf("**********************************************************\n");
-    fflush(stdout);
-}
 
 // Verifica se la data e l'ora passate come parametro sono valide
 int data_valida(int GG, int MM, int AA, int HH)
@@ -204,7 +192,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    comandi_cliente();
+    printf(WELCOME_CLIENT);
+    fflush(stdout);
     while (1)
     {
         memset(buffer, 0, sizeof(buffer)); // In caso contrario, rimarrebbe l'ultima cosa che c'era dentro.

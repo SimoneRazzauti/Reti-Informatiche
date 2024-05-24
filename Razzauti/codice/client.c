@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
-#include "funzioni.c"
 
 #define BENVENUTO_CLIENT "BENVENUTO CLIENT!\n COMANDI DIPONIBILI\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n"
 #define BUFFER_SIZE 1024

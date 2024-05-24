@@ -10,7 +10,7 @@
 #include <time.h>
 
 #define PORT 4242        // porta del server
-#define WELCOME_CLIENT "BENVENUTO CLIENT\nEcco i comandi disponibili\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n"
+#define WELCOME_CLIENT "BENVENUTO CLIENT\nEcco i comandi disponibili...\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n"
 #define BUFFER_SIZE 1024 // dimensione massima del buffer
 
 #define MAX_WORDS 10       // Numero massimo di parole che possono essere estratte dalla frase
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(PORT);
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr);
 
     ret = connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
     if (ret == -1)

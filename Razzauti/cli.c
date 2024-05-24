@@ -144,19 +144,6 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    // Inizializzazione della struttura
-    cli_addr.sin_family = AF_INET;
-    cli_addr.sin_port = porta;
-    cli_addr.sin_addr.s_addr = INADDR_ANY;
-    ret = bind(sockfd, (struct sockaddr *)&cli_addr, sizeof(cli_addr));
-    if (ret == -1)
-    {
-        perror("ERRORE nella bind()");
-        printf("ARRESTO IN CORSO...\n");
-        fflush(stdout);
-        exit(1);
-    }
-
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(4242);
     inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr); // localhost

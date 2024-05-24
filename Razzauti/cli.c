@@ -133,6 +133,7 @@ int main(int argc, char *argv[])
     uint32_t len_NO; // lunghezza del messaggio espressa in network order
 
     // CREAZIONE SOCKET
+    memset((void *)&cli_addr, 0, sizeof(cli_addr));
     memset((void *)&serv_addr, 0, sizeof(serv_addr));
 
     // Creazione del socket
@@ -140,6 +141,19 @@ int main(int argc, char *argv[])
     if (sockfd < 0)
     {
         perror("Errore nella creazione del socket");
+        exit(1);
+    }
+
+    // Inizializzazione della struttura
+    cli_addr.sin_family = AF_INET;
+    cli_addr.sin_port = porta;
+    cli_addr.sin_addr.s_addr = INADDR_ANY;
+    ret = bind(sockfd, (struct sockaddr *)&cli_addr, sizeof(cli_addr));
+    if (ret == -1)
+    {
+        perror("ERRORE nella bind()");
+        printf("ARRESTO IN CORSO...\n");
+        fflush(stdout);
         exit(1);
     }
 

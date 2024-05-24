@@ -40,3 +40,4 @@
 	gnome-terminal -x sh -c "./cli 7000; exec bash"
   
 	gnome-terminal -x sh -c "./cli 7001; exec bash"
+ 

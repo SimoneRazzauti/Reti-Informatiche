@@ -400,7 +400,7 @@ int main(int argc, char *argv[])
                 exit(0);
             }
             else
-            { // nessun comando inserito 
+            { // nessun comando inserito bla bla 
                 printf("ERRORE! Comando inserito non valido. RIPROVARE...\n\n");
                 continue;
             }

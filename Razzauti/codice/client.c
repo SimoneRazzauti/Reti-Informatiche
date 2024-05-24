@@ -15,6 +15,35 @@
 #define BENVENUTO_CLIENT "BENVENUTO CLIENT!\n COMANDI DIPONIBILI\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n"
 #define BUFFER_SIZE 1024
 
+// Invia al socket in input il messaggio dentro buffer
+int invia(int j, char* buffer) {
+	int len = strlen(buffer)+1;
+	int lmsg = htons(len);
+	int ret;
+
+	// Invio la dimensione del messaggio
+	ret = send(j, (void*) &lmsg, sizeof(uint16_t), 0);
+	// Invio il messaggio
+	ret = send(j, (void*) buffer, len, 0);
+
+	// Comunico l'esito
+	return ret;
+}
+
+// Ricevi dal socket in input la lunghezza del messaggio e lo mette dentro lmsg
+int riceviLunghezza(int j, int *lmsg) {
+	int ret;
+	ret = recv(j, (void*)lmsg, sizeof(uint16_t), 0);
+	return ret;
+}
+
+// Riceve dal socket in input il messaggio e lo mette dentro buffer
+int ricevi(int j, int lunghezza, char* buffer) {
+	int ret;
+	ret = recv(j, (void*)buffer, lunghezza, 0);
+	return ret;
+}
+
 int main(int argc, char* argv[]){
 	int ret, sd, i, lmsg;
 

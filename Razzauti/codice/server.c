@@ -27,13 +27,6 @@ int main(int argc, char* argv[]){
 	for(indice = 0; indice < nTavoli; indice++)
 		tavoli_logged[indice] = 0;
 
-	pthread_mutex_init(&tavoli_lock, NULL);
-	pthread_mutex_init(&prenotazioni_lock, NULL);
-	pthread_mutex_init(&comande_lock, NULL);
-	pthread_mutex_init(&listaThread_lock, NULL);
-	pthread_mutex_init(&socket_lock, NULL);
-	pthread_mutex_init(&fd_lock, NULL);
-
 	numeroComanda = 1;
 
 	// Carico dai file "tavoli.txt" e "menu.txt"
@@ -55,7 +48,6 @@ int main(int argc, char* argv[]){
 	/* Creazione indirizzo del server */
 	listener = socket(AF_INET, SOCK_STREAM, 0);
 
-
 	/* Creazione indirizzo di bind */
 	memset(&my_addr, 0, sizeof(my_addr));
 	my_addr.sin_family = AF_INET;
@@ -74,6 +66,8 @@ int main(int argc, char* argv[]){
 	listen(listener, 10);
 
 	/* Reset dei descrittori */
+	fd_set master;
+	fd_set read_fds;
 	FD_ZERO(&master);
 	FD_ZERO(&read_fds);
 
@@ -82,20 +76,16 @@ int main(int argc, char* argv[]){
 	FD_SET(0, &master);
 
 	// Tengo traccia del nuovo fdmax
-	fdmax = listener;
+	int fdmax = listener;
 
 	// Ciclo principale
 	for(;;) {
-		//Imposto il set di socket da monitorare in lettura per la select()
-		pthread_mutex_lock(&fd_lock);
+		// Imposto il set di socket da monitorare in lettura per la select()
 		read_fds = master;
-		pthread_mutex_unlock(&fd_lock);
 
 		// Mi blocco (potenzialmente) in attesa di descrittori pronti
 		struct timeval tv = {0, 0}; // timeout = 0
-		pthread_mutex_lock(&fd_lock);
 		ret = select(fdmax+1, &read_fds, NULL, NULL, &tv); // metto un timeout poiché modifico master
-		pthread_mutex_unlock(&fd_lock);
 		if(ret < 0) {
 			perror("Errore nella select!");
 			exit(-1);
@@ -195,18 +185,9 @@ int main(int argc, char* argv[]){
 									exit(1);
 								}
 								close(j);
-								pthread_mutex_lock(&fd_lock);
 								FD_CLR(j, &master);
-								pthread_mutex_unlock(&fd_lock);
 							}
 							close(listener);
-
-							// Aspetto la fine di TUTTI i thread
-							struct lis_thread *lt = listaThread;
-							while(lt != NULL) {
-								pthread_join(*(lt->t), NULL);
-								lt = lt->prossimo;
-							}
 
 							deallocaStrutture();
 
@@ -233,14 +214,12 @@ int main(int argc, char* argv[]){
 					newfd = accept(listener, (struct sockaddr *)&cl_addr, (socklen_t*)&addrlen);
 
 					// Aggiungo il socket connesso al set dei descrittori monitorati
-					pthread_mutex_lock(&fd_lock);
 					FD_SET(newfd, &master); 
 
 					// Aggiorno l'ID del massimo descrittore
 					if(newfd > fdmax) { 
 						fdmax = newfd;  
 					}
-					pthread_mutex_unlock(&fd_lock);
 				}
 				else { // Terzo caso: richiesta da un socket già connesso
 					// Cerco il socket nelle mie strutture, se non c'è mi sta per forza comunicando cosa è: tramite un char (1 byte);
@@ -249,7 +228,6 @@ int main(int argc, char* argv[]){
 					int tipo = -1; // 0 = client; 1 = table device; 2 = kitchen device.
 					int j;
 					for(j = 0; j <= max(nMaxClient, nMaxTd, nMaxKd); j++) {
-						// Mutua esclusione
 						if (socket_client[j%nMaxClient] == i){
 							tipo = 0;
 							printf("Richiesta da client\n");
@@ -270,10 +248,6 @@ int main(int argc, char* argv[]){
 						}
 					}
 					
-					struct lis_thread *p;
-					struct lis_thread *inserisciThread;
-					int lmsg, posto;
-
 					switch(tipo) {
 						case -1: // Si sta presentando
 							ret = riceviLunghezza(i, &lmsg);
@@ -310,21 +284,22 @@ int main(int argc, char* argv[]){
 							for(posto = 0; posto < nMaxClient; posto++)
 								if(i == socket_client[posto]) break;
 
-							pthread_mutex_lock(&fd_lock);
 							FD_CLR(i, &master);
-							pthread_mutex_unlock(&fd_lock);
+
 							// Creo un nuovo elemento della lista di thread e lo alloco
-							p = (struct lis_thread*)malloc(sizeof(struct lis_thread));
+							struct lis_thread *p = (struct lis_thread*)malloc(sizeof(struct lis_thread));
 							p->t = (pthread_t*)malloc(sizeof(pthread_t));
+
 							// Creo il thread
 							(void) pthread_create(p->t, NULL, gestisciClient, (void*)&socket_client[posto]);
+
 							// Creo un puntatore per inserirlo in lista
-							inserisciThread = listaThread;
+							struct lis_thread *inserisciThread = listaThread;
 							if(inserisciThread == NULL) {
 								inserisciThread = p;
 							}
 							else {
-								while(inserisciThread != NULL && inserisciThread->prossimo != NULL)
+								while(inserisciThread->prossimo != NULL)
 									inserisciThread = inserisciThread->prossimo;
 								// Lo inserisco
 								inserisciThread->prossimo = p;
@@ -337,14 +312,15 @@ int main(int argc, char* argv[]){
 							for(posto = 0; posto < nMaxTd; posto++)
 								if(i == socket_td[posto]) break;
 
-							pthread_mutex_lock(&fd_lock);
 							FD_CLR(i, &master);
-							pthread_mutex_unlock(&fd_lock);
+
 							// Creo un nuovo elemento della lista di thread e lo alloco
 							p = (struct lis_thread*)malloc(sizeof(struct lis_thread));
 							p->t = (pthread_t*)malloc(sizeof(pthread_t));
+
 							// Creo il thread
 							(void) pthread_create(p->t, NULL, gestisciTd, (void*)&socket_td[posto]);
+
 							// Creo un puntatore per inserirlo in lista
 							inserisciThread = listaThread;
 							if(inserisciThread == NULL) {
@@ -365,21 +341,22 @@ int main(int argc, char* argv[]){
 							for(posto = 0; posto < nMaxKd; posto++)
 								if(i == socket_kd[posto]) break;
 
-							pthread_mutex_lock(&fd_lock);
 							FD_CLR(i, &master);
-							pthread_mutex_unlock(&fd_lock);
+
 							// Creo un nuovo elemento della lista di thread e lo alloco
 							p = (struct lis_thread*)malloc(sizeof(struct lis_thread));
 							p->t = (pthread_t*)malloc(sizeof(pthread_t));
+
 							// Creo il thread
 							(void) pthread_create(p->t, NULL, gestisciKd, (void*)&socket_kd[posto]);
+
 							// Creo un puntatore per inserirlo in lista
 							inserisciThread = listaThread;
 							if(inserisciThread == NULL) {
 								inserisciThread = p;
 							}
 							else {
-								while(inserisciThread != NULL && inserisciThread->prossimo != NULL)
+								while(inserisciThread->prossimo != NULL)
 									inserisciThread = inserisciThread->prossimo;
 								// Lo inserisco
 								inserisciThread->prossimo = p;

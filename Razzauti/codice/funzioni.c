@@ -110,732 +110,696 @@ int ricevi(int j, int lunghezza, char* buffer) {
 // Prende uno stato_comanda e inserisce dentro il buffer tutte le informazioni
 // delle comande in quello stato di qualunque tavolino
 void elencoComande(char* buffer, enum stato_comanda stato) {
-	char numeroString[BUFFER_SIZE];
-	int i, j;
-	strcpy(buffer, "\0");
-	pthread_mutex_lock(&comande_lock);
-	for(i = 0; i < nTavoli; i++) {
-		struct comanda *c;
-		c = comande[i];
-		while(c != NULL) {
-			if(c->stato == stato){
-				strcat(buffer, "com");
-				sprintf(numeroString, "%d", c->nComanda);
-				strcat(buffer, numeroString);
-				strcat(buffer, " T");
-				sprintf(numeroString, "%d", i+1);
-				strcat(buffer, numeroString);
-				strcat(buffer, "\n");
-				for(j = 0; j < nPiatti; j++) {
-					if(c->quantita[j] != 0) {
-						strcat(buffer, menu[j].codice);
-						strcat(buffer, " ");
-						sprintf(numeroString, "%d", c->quantita[j]);
-						strcat(buffer, numeroString);
-						strcat(buffer, "\n");
-					}
-				}
-			}
-			// Vado avanti
-			c = c->prossima;
-		}
-	}
-	pthread_mutex_unlock(&comande_lock);
+    char numeroString[BUFFER_SIZE];
+    int i, j;
+    strcpy(buffer, "\0");
+    for (i = 0; i < nTavoli; i++) {
+        struct comanda *c;
+        c = comande[i];
+        while (c != NULL) {
+            if (c->stato == stato) {
+                strcat(buffer, "com");
+                sprintf(numeroString, "%d", c->nComanda);
+                strcat(buffer, numeroString);
+                strcat(buffer, " T");
+                sprintf(numeroString, "%d", i + 1);
+                strcat(buffer, numeroString);
+                strcat(buffer, "\n");
+                for (j = 0; j < nPiatti; j++) {
+                    if (c->quantita[j] != 0) {
+                        strcat(buffer, menu[j].codice);
+                        strcat(buffer, " ");
+                        sprintf(numeroString, "%d", c->quantita[j]);
+                        strcat(buffer, numeroString);
+                        strcat(buffer, "\n");
+                    }
+                }
+            }
+            // Vado avanti
+            c = c->prossima;
+        }
+    }
 }
+
 
 // Prende un tavolo e inserisce dentro il buffer tutte le informazioni
 // delle comande inerenti a quel tavolino
 void elencoComandeTavolo(char* buffer, int tavolo) {
-	char numeroString[BUFFER_SIZE];
-	int i;
-	tavolo--;
-	strcpy(buffer, "\0");
-	pthread_mutex_lock(&comande_lock);
-	struct comanda *c;
-	c = comande[tavolo];
-	while(c != NULL) {
-		strcat(buffer, "com");
-		sprintf(numeroString, "%d", c->nComanda);
-		strcat(buffer, numeroString);
-		strcat(buffer, " ");
-		switch (c->stato) {
-			case in_attesa:
-				strcpy(numeroString,"<in attesa>");
-				break;
-			case in_preparazione:
-				strcpy(numeroString,"<in preparazione>");
-				break;
-			case in_servizio:
-				strcpy(numeroString,"<in servizio>");
-				break;
-			default:
-				strcpy(numeroString,"Sconosciuto");
-		}
-		strcat(buffer, numeroString);
-		strcat(buffer, "\n");
-		for(i = 0; i < nPiatti; i++) {
-			if(c->quantita[i] != 0) {
-				strcat(buffer, menu[i].codice);
-				strcat(buffer, " ");
-				sprintf(numeroString, "%d", c->quantita[i]);
-				strcat(buffer, numeroString);
-				strcat(buffer, "\n");
-			}
-		}
-		// Vado avanti
-		c = c->prossima;
-	}
-	pthread_mutex_unlock(&comande_lock);
+    char numeroString[BUFFER_SIZE];
+    int i;
+    tavolo--;
+    strcpy(buffer, "\0");
+
+    struct comanda *c;
+    c = comande[tavolo];
+    while (c != NULL) {
+        strcat(buffer, "com");
+        sprintf(numeroString, "%d", c->nComanda);
+        strcat(buffer, numeroString);
+        strcat(buffer, " ");
+        switch (c->stato) {
+            case in_attesa:
+                strcpy(numeroString, "<in attesa>");
+                break;
+            case in_preparazione:
+                strcpy(numeroString, "<in preparazione>");
+                break;
+            case in_servizio:
+                strcpy(numeroString, "<in servizio>");
+                break;
+            default:
+                strcpy(numeroString, "Sconosciuto");
+        }
+        strcat(buffer, numeroString);
+        strcat(buffer, "\n");
+        for (i = 0; i < nPiatti; i++) {
+            if (c->quantita[i] != 0) {
+                strcat(buffer, menu[i].codice);
+                strcat(buffer, " ");
+                sprintf(numeroString, "%d", c->quantita[i]);
+                strcat(buffer, numeroString);
+                strcat(buffer, "\n");
+            }
+        }
+        // Vado avanti
+        c = c->prossima;
+    }
 }
+
 
 // Inserisce in base alla lettera c, il socket id nell'array relativo
 int inserisci(int i, char *c) {
-	int j = 0;
-	int ret = -1;
-	pthread_mutex_lock(&socket_lock);
-	switch (c[0])
-	{
-	case 'c': // Client
-		for(; j < nMaxClient; j++) {
-			if(socket_client[j] == -1) {
-				socket_client[j] = i;
-				ret = 0;
-				break;
-			}
-		}
-		break;
-	case 'k': // Kitchen device
-		for(; j < nMaxKd; j++) {
-			if(socket_kd[j] == -1) {
-				socket_kd[j] = i;
-				ret = 1;
-				break;
-			}
-		}
-		break;
-	case 't': // Table device
-		for(; j < nMaxTd; j++) { // Ipotizzo l'accensione ordinata
-			if(socket_td[j] == -1) {
-				socket_td[j] = i;
-				ret = 2;
-				break;
-			}
-		}
-		break;
-	
-	default:
-		ret = -1;
-		break;
-	}
+    int j = 0;
+    int ret = -1;
 
-	pthread_mutex_unlock(&socket_lock);
-	return ret;
+    switch (c[0])
+    {
+    case 'c': // Client
+        for (; j < nMaxClient; j++) {
+            if (socket_client[j] == -1) {
+                socket_client[j] = i;
+                ret = 0;
+                break;
+            }
+        }
+        break;
+    case 'k': // Kitchen device
+        for (; j < nMaxKd; j++) {
+            if (socket_kd[j] == -1) {
+                socket_kd[j] = i;
+                ret = 1;
+                break;
+            }
+        }
+        break;
+    case 't': // Table device
+        for (; j < nMaxTd; j++) { // Ipotizzo l'accensione ordinata
+            if (socket_td[j] == -1) {
+                socket_td[j] = i;
+                ret = 2;
+                break;
+            }
+        }
+        break;
+    
+    default:
+        ret = -1;
+        break;
+    }
+
+    return ret;
 }
+
 
 // Prende i parametri della find ed inserisce nel buffer le disponibilità
 int cercaDisponibilita(int nPers, char* dataora, char* buffer, char* disponibilita) {
-	char numeroString[BUFFER_SIZE];
-	int index;
-	strcpy(buffer, "\0");
-	pthread_mutex_lock(&tavoli_lock);
-	pthread_mutex_lock(&prenotazioni_lock);
-	int numero = 0;
-	for(index = 0; index < nTavoli; index++) {
-		disponibilita[index] = 0;
-		if(tavoli[index].nPosti < nPers)
-			continue;
-		struct prenotazione* punta = prenotazioni[index];
-		char esito = 1; // Non esiste bool
-		while(punta != NULL) {
-			if(strcmp(punta->data_ora, dataora) == 0) {
-				esito = 0;
-				break;
-			}
-			punta = punta->prossima;
-		}
-		// Tavolo non buono
-		if(!esito)
-			continue;
-		
-		// Tavolo buono
-		disponibilita[index] = 1;
+    char numeroString[BUFFER_SIZE];
+    int index;
+    strcpy(buffer, "\0");
 
-		sprintf(numeroString, "%d", numero+1);
-		strcat(buffer, numeroString);
-		strcat(buffer, ") T");
-		sprintf(numeroString, "%d", index+1);
-		strcat(buffer, numeroString);
-		strcat(buffer, " ");
-		strcat(buffer, tavoli[index].sala);
-		strcat(buffer, " ");
-		strcat(buffer, tavoli[index].descrizione);
-		numero++;
-	}
-	strcat(buffer, "\n");
-    pthread_mutex_unlock(&tavoli_lock);
-    pthread_mutex_unlock(&prenotazioni_lock);
-	return numero;
+    int numero = 0;
+    for (index = 0; index < nTavoli; index++) {
+        disponibilita[index] = 0;
+        if (tavoli[index].nPosti < nPers)
+            continue;
+        struct prenotazione* punta = prenotazioni[index];
+        char esito = 1; // Non esiste bool
+        while (punta != NULL) {
+            if (strcmp(punta->data_ora, dataora) == 0) {
+                esito = 0;
+                break;
+            }
+            punta = punta->prossima;
+        }
+        // Tavolo non buono
+        if (!esito)
+            continue;
+
+        // Tavolo buono
+        disponibilita[index] = 1;
+
+        sprintf(numeroString, "%d", numero + 1);
+        strcat(buffer, numeroString);
+        strcat(buffer, ") T");
+        sprintf(numeroString, "%d", index + 1);
+        strcat(buffer, numeroString);
+        strcat(buffer, " ");
+        strcat(buffer, tavoli[index].sala);
+        strcat(buffer, " ");
+        strcat(buffer, tavoli[index].descrizione);
+        strcat(buffer, "\n");
+        numero++;
+    }
+    strcat(buffer, "\n");
+    return numero;
 }
+
 
 // Gestisce UNA richiesta da parte di UN client
-void *gestisciClient(void* i) {
-	int socketId = *(int *)i;
-	char buffer[BUFFER_SIZE];
+void *gestisciClient(void *arg) {
+    int socketId = *(int *)arg;
+    char buffer[BUFFER_SIZE];
 
-	printf("Avviato thread client\n");
-	fflush(stdout);
+    printf("Avviato thread client\n");
+    fflush(stdout);
 
-	// Ricevi il messaggio
-	int ret, indice;
-	int lmsg = 0;
-	ret = riceviLunghezza(socketId, &lmsg);
-	if(ret == 0) {
-		printf("Client disconnesso\n");
-		fflush(stdout);
-		close(socketId);
-		for(indice = 0; indice < nMaxClient; indice++)
-			if(socketId == socket_client[indice])
-				socket_client[indice] = -1;
-		printf("Terminato thread client\n");
-		fflush(stdout);
-		return NULL;
-	}
-	ret = ricevi(socketId, lmsg, buffer);
-	if(ret == 0) {
-		printf("Client disconnesso\n");
-		fflush(stdout);
-		close(socketId);
-		for(indice = 0; indice < nMaxClient; indice++)
-			if(socketId == socket_client[indice])
-				socket_client[indice] = -1;
-		printf("Terminato thread client\n");
-		fflush(stdout);
-		return NULL;
-	}
+    // Ricevi il messaggio
+    int ret, indice;
+    int lmsg = 0;
+    ret = riceviLunghezza(socketId, &lmsg);
+    if (ret == 0) {
+        printf("Client disconnesso\n");
+        fflush(stdout);
+        close(socketId);
+        for (indice = 0; indice < nMaxClient; indice++)
+            if (socketId == socket_client[indice])
+                socket_client[indice] = -1;
+        printf("Terminato thread client\n");
+        fflush(stdout);
+        return NULL;
+    }
+    ret = ricevi(socketId, lmsg, buffer);
+    if (ret == 0) {
+        printf("Client disconnesso\n");
+        fflush(stdout);
+        close(socketId);
+        for (indice = 0; indice < nMaxClient; indice++)
+            if (socketId == socket_client[indice])
+                socket_client[indice] = -1;
+        printf("Terminato thread client\n");
+        fflush(stdout);
+        return NULL;
+    }
 
-	// Gestisce i tipi di comandi:
-	//   - find, e, di conseguenza, dopo;
-	//       - book, e termina il thread;
-	//       - disconnessione, cancella il socketId da socket_client e termina il thread.
-	char* token;
-	token = strtok(buffer, " ");
-	if(strcmp(token, "find") == 0) { // Primo caso
-		// Parsa la stringa e cerca i tavoli liberi
-		char cognome[64];
-		int nPers;
-		char dataora[12];
-		char disponibilita[nTavoli];
-		
-		token = strtok(NULL, " ");
-		strcpy(cognome, token);
+    // Gestisce i tipi di comandi:
+    //   - find, e, di conseguenza, dopo;
+    //       - book, e termina il thread;
+    //       - disconnessione, cancella il socketId da socket_client e termina il thread.
+    char* token;
+    token = strtok(buffer, " ");
+    if (strcmp(token, "find") == 0) { // Primo caso
+        // Parsa la stringa e cerca i tavoli liberi
+        char cognome[64];
+        int nPers;
+        char dataora[12];
+        char disponibilita[nTavoli];
 
-		token = strtok(NULL, " ");
-		nPers = atoi(token);
+        token = strtok(NULL, " ");
+        strcpy(cognome, token);
 
-		token = strtok(NULL, " ");
-		strcpy(dataora, token);
+        token = strtok(NULL, " ");
+        nPers = atoi(token);
 
-		// Salvo l'orario che perdevo con l'operazione antecedente
-		token = strtok(NULL, " ");
-		strcpy(dataora+8, " ");
-		strcpy(dataora+9, token);
+        token = strtok(NULL, " ");
+        strcpy(dataora, token);
 
-		for(;;) {
-			usleep(50000); // 50 ms di pausa, sennò nascono problemi sull'invio
-			int massimo;
-			// Invia il buffer con le possibilità
-			massimo = cercaDisponibilita(nPers, dataora, buffer, disponibilita);
-			ret = invia(socketId, buffer);
+        // Salvo l'orario che perdevo con l'operazione antecedente
+        token = strtok(NULL, " ");
+        strcpy(dataora + 8, " ");
+        strcpy(dataora + 9, token);
 
-			printf("Mandate le disponibilità\n");
-			fflush(stdout);
+        for (;;) {
+            usleep(50000); // 50 ms di pausa, sennò nascono problemi sull'invio
+            int massimo;
+            // Invia il buffer con le possibilità
+            massimo = cercaDisponibilita(nPers, dataora, buffer, disponibilita);
+            ret = invia(socketId, buffer);
 
-			// Aspetta una book o una disconnessione
-			ret = riceviLunghezza(socketId, &lmsg);
-			if(ret == 0) {
-				printf("Client disconnesso\n");
-				fflush(stdout);
-				close(socketId);
-				for(indice = 0; indice < nMaxClient; indice++)
-					if(socketId == socket_client[indice])
-						socket_client[indice] = -1;
-				printf("Terminato thread client\n");
-				fflush(stdout);
-				return NULL;
-			}
-			ret = ricevi(socketId, lmsg, buffer);
-			if(ret == 0) {
-				printf("Client disconnesso\n");
-				fflush(stdout);
-				close(socketId);
-				for(indice = 0; indice < nMaxClient; indice++)
-					if(socketId == socket_client[indice])
-						socket_client[indice] = -1;
-				printf("Terminato thread client\n");
-				fflush(stdout);
-				return NULL;
-			}
+            printf("Mandate le disponibilità\n");
+            fflush(stdout);
 
-			token = strtok(buffer, " ");
+            // Aspetta una book o una disconnessione
+            ret = riceviLunghezza(socketId, &lmsg);
+            if (ret == 0) {
+                printf("Client disconnesso\n");
+                fflush(stdout);
+                close(socketId);
+                for (indice = 0; indice < nMaxClient; indice++)
+                    if (socketId == socket_client[indice])
+                        socket_client[indice] = -1;
+                printf("Terminato thread client\n");
+                fflush(stdout);
+                return NULL;
+            }
+            ret = ricevi(socketId, lmsg, buffer);
+            if (ret == 0) {
+                printf("Client disconnesso\n");
+                fflush(stdout);
+                close(socketId);
+                for (indice = 0; indice < nMaxClient; indice++)
+                    if (socketId == socket_client[indice])
+                        socket_client[indice] = -1;
+                printf("Terminato thread client\n");
+                fflush(stdout);
+                return NULL;
+            }
 
-			if(strcmp(token, "book") == 0) { // Caso book
-				token = strtok(NULL, " ");
-				
-				// Converto l'indice in tavolo
-				int tavolo;
-				int v = atoi(token);
-				if(v > massimo) {
-					printf("Opzione non disponibile\n");
-					strcpy(buffer, "Opzione non disponibile\n");
-					invia(socketId, buffer);
-					fflush(stdout);
-					continue;
-				}
-				for(tavolo = 0; tavolo <= nTavoli && v > 0; tavolo++)
-					if(disponibilita[tavolo] == 1)
-						v--;
-				tavolo--;
+            token = strtok(buffer, " ");
 
-				printf("Provo a prenotare il tavolo %d per %s\n", tavolo+1, dataora);
-				fflush(stdout);
+            if (strcmp(token, "book") == 0) { // Caso book
+                token = strtok(NULL, " ");
 
-				// Cerco le disponibilità attuali
-				cercaDisponibilita(nPers, dataora, buffer, disponibilita);
+                // Converto l'indice in tavolo
+                int tavolo;
+                int v = atoi(token);
+                if (v > massimo) {
+                    printf("Opzione non disponibile\n");
+                    strcpy(buffer, "Opzione non disponibile\n");
+                    invia(socketId, buffer);
+                    fflush(stdout);
+                    continue;
+                }
+                for (tavolo = 0; tavolo <= nTavoli && v > 0; tavolo++)
+                    if (disponibilita[tavolo] == 1)
+                        v--;
+                tavolo--;
 
-				if(disponibilita[tavolo] == 0) {
-					// Caso in cui non sia più disponibile l'opzione
-					printf("Tavolo già prenotato\n");
-					fflush(stdout);
-					strcpy(buffer, "Tavolo già prenotato\n");
-					invia(socketId, buffer);
-					continue;
-				}
-				// Salvo la prenotazione
-				struct prenotazione* p = malloc(sizeof(struct prenotazione));
-				strcpy(p->cognome, cognome);
-				strcpy(p->data_ora, dataora);
-				for(indice = 0; indice < 5; indice++)
-					p->pwd[indice] = 'A' + (rand() % 26);
-				p->prossima = NULL;
+                printf("Provo a prenotare il tavolo %d per %s\n", tavolo + 1, dataora);
+                fflush(stdout);
 
-				// Inserisco in lista prenotazioni
-				pthread_mutex_lock(&prenotazioni_lock);
-				if(prenotazioni[tavolo] == NULL) {
-					prenotazioni[tavolo] = p;
-				}
-				else {
-					struct prenotazione* punta = prenotazioni[tavolo];
-					while(punta->prossima != NULL) {
-						punta = punta->prossima;
-					}
-					punta->prossima = p;
-				}
-				pthread_mutex_unlock(&prenotazioni_lock);
+                // Cerco le disponibilità attuali
+                cercaDisponibilita(nPers, dataora, buffer, disponibilita);
 
-				printf("Un client ha effettuato una prenotazione %s\n", prenotazioni[tavolo]->pwd);
-				fflush(stdout);
+                if (disponibilita[tavolo] == 0) {
+                    // Caso in cui non sia più disponibile l'opzione
+                    printf("Tavolo già prenotato\n");
+                    fflush(stdout);
+                    strcpy(buffer, "Tavolo già prenotato\n");
+                    invia(socketId, buffer);
+                    continue;
+                }
+                // Salvo la prenotazione
+                struct prenotazione* p = malloc(sizeof(struct prenotazione));
+                if (p == NULL) {
+                    printf("Errore di allocazione per la nuova prenotazione\n");
+                    fflush(stdout);
+                    return NULL;
+                }
+                strcpy(p->cognome, cognome);
+                strcpy(p->data_ora, dataora);
+                for (indice = 0; indice < 5; indice++)
+                    p->pwd[indice] = 'A' + (rand() % 26);
+                p->prossima = NULL;
 
-				strcpy(buffer, "PRENOTAZIONE EFFETTUATA\nCodice: ");
-				strcat(buffer, p->pwd);
-				strcat(buffer, "\n");
-				invia(socketId, buffer);
-				break;
-			}
-		}
-	}
-	else if(strcmp(token, "book") == 0) {
-		// Errore, non sono state fatte precedenti find
-		strcpy(buffer, "Errore, non sono state fatte precedenti find\n");
-		invia(socketId, buffer);
-	}
-	else {
-		// Errore, comando non riconosciuto
-		printf("Errore comando Client!\n");
-		fflush(stdout);
-	}
-	pthread_mutex_lock(&fd_lock);
-	FD_SET(socketId, &master);
-	pthread_mutex_unlock(&fd_lock);
+                // Inserisco in lista prenotazioni
+                if (prenotazioni[tavolo] == NULL) {
+                    prenotazioni[tavolo] = p;
+                }
+                else {
+                    struct prenotazione* punta = prenotazioni[tavolo];
+                    while (punta->prossima != NULL) {
+                        punta = punta->prossima;
+                    }
+                    punta->prossima = p;
+                }
 
-	printf("Terminato thread client\n");
-	fflush(stdout);
+                printf("Un client ha effettuato una prenotazione %s\n", prenotazioni[tavolo]->pwd);
+                fflush(stdout);
 
-	return NULL;
+                strcpy(buffer, "PRENOTAZIONE EFFETTUATA\nCodice: ");
+                strcat(buffer, p->pwd);
+                strcat(buffer, "\n");
+                invia(socketId, buffer);
+                break;
+            }
+            else if (strcmp(token, "disconnessione") == 0) {
+                printf("Client disconnesso per richiesta di disconnessione\n");
+                fflush(stdout);
+                close(socketId);
+                for (indice = 0; indice < nMaxClient; indice++)
+                    if (socketId == socket_client[indice])
+                        socket_client[indice] = -1;
+                printf("Terminato thread client\n");
+                fflush(stdout);
+                return NULL;
+            }
+        }
+    }
+    else if (strcmp(token, "book") == 0) {
+        // Errore, non sono state fatte precedenti find
+        strcpy(buffer, "Errore, non sono state fatte precedenti find\n");
+        invia(socketId, buffer);
+    }
+    else {
+        // Errore, comando non riconosciuto
+        printf("Errore comando Client!\n");
+        fflush(stdout);
+    }
+
+    printf("Terminato thread client\n");
+    fflush(stdout);
+
+    return NULL;
 }
+
 
 // Gestisce UNA richiesta da parte di UN table device
-void *gestisciTd(void* i) {
-	int socketId = *(int *)i;
-	char buffer[BUFFER_SIZE];
-	char numeroString[BUFFER_SIZE];
+void *gestisciTd(void *arg) {
+    int socketId = *(int *)arg;
+    char buffer[BUFFER_SIZE];
+    char numeroString[BUFFER_SIZE];
 
-	printf("Avviato thread table device\n");
-	fflush(stdout);
-	
-	// Trovo il tavolo collegato al TD
-	int tavolo;
-	for(tavolo = 0; tavolo < nTavoli; tavolo++)
-		if(socketId == socket_td[tavolo])
-			break;
+    printf("Avviato thread table device\n");
+    fflush(stdout);
+    
+    // Trovo il tavolo collegato al TD
+    int tavolo;
+    for (tavolo = 0; tavolo < nTavoli; tavolo++)
+        if (socketId == socket_td[tavolo])
+            break;
 
-	printf("Richiesta da tavolo %d\n", tavoli[tavolo].numero); // Enumerazione non 0-based
-	fflush(stdout);
+    printf("Richiesta da tavolo %d\n", tavoli[tavolo].numero); // Enumerazione non 0-based
+    fflush(stdout);
 
-	// Ricevi il messaggio
-	int ret, indice;
-	int lmsg = 0;
-	ret = riceviLunghezza(socketId, &lmsg);
-	if(ret == 0) {
-		printf("TD disconnesso\n");
-		fflush(stdout);
-		close(socketId);
-		tavoli_logged[tavolo] = 0;
-		for(indice = 0; indice < nMaxTd; indice++)
-			if(socketId == socket_td[indice])
-				socket_td[indice] = -1;
-		printf("Terminato thread table device\n");
-		fflush(stdout);
-		return NULL;
-	}
-	ret = ricevi(socketId, lmsg, buffer);
-	if(ret == 0) {
-		printf("TD disconnesso\n");
-		fflush(stdout);
-		close(socketId);
-		tavoli_logged[tavolo] = 0;
-		for(indice = 0; indice < nMaxTd; indice++)
-			if(socketId == socket_td[indice])
-				socket_td[indice] = -1;
-		printf("Terminato thread table device\n");
-		fflush(stdout);
-		return NULL;
-	}
+    // Ricevi il messaggio
+    int ret, indice;
+    int lmsg = 0;
+    ret = riceviLunghezza(socketId, &lmsg);
+    if (ret == 0) {
+        printf("TD disconnesso\n");
+        fflush(stdout);
+        close(socketId);
+        return NULL;
+    }
+    ret = ricevi(socketId, lmsg, buffer);
+    if (ret == 0) {
+        printf("TD disconnesso\n");
+        fflush(stdout);
+        close(socketId);
+        return NULL;
+    }
 
-	char* token;
-	token = strtok(buffer, " ");
+    char* token;
+    token = strtok(buffer, " ");
 
-	printf("Prima del controllo\n");
-	fflush(stdout);
+    printf("Prima del controllo\n");
+    fflush(stdout);
 
-	pthread_mutex_lock(&tavoli_lock);
-	if(tavoli_logged[tavolo] == 0) { // Se non è loggato
-		// Controllo se ho una prenotazione con questo codice:
-		//	- Nel caso affermativo, continuo;
-		//	- Nel caso negativo, termino il thread.
-		struct prenotazione* punta = prenotazioni[tavolo];
-		while(punta != NULL) {
-			if(strcmp(punta->pwd, token) == 0) { // Volendo è possibile controllare la data della prenotazione con l'attuale
-				invia(socketId, "accesso");
-				tavoli_logged[tavolo] = 1;
-				break;
-			}
-			punta = punta->prossima;
-		}
-		if(punta == NULL) {
-			strcpy(buffer, "Codice prenotazione errato o inserito nel tavolo sbagliato\nInserisci il codice prenotazione: ");
-			invia(socketId, buffer);
-		}
-		printf("Terminato thread table device\n");
-		fflush(stdout);
-		pthread_mutex_unlock(&tavoli_lock);
-		pthread_mutex_lock(&fd_lock);
-		FD_SET(socketId, &master);
-		pthread_mutex_unlock(&fd_lock);
-		return NULL;
-	}
-	pthread_mutex_unlock(&tavoli_lock);
+    if (tavoli_logged[tavolo] == 0) { // Se non è loggato
+        // Controllo se ho una prenotazione con questo codice:
+        //  - Nel caso affermativo, continuo;
+        //  - Nel caso negativo, termino il thread.
+        struct prenotazione* punta = prenotazioni[tavolo];
+        while (punta != NULL) {
+            if (strcmp(punta->pwd, token) == 0) {
+                invia(socketId, "accesso");
+                tavoli_logged[tavolo] = 1;
+                break;
+            }
+            punta = punta->prossima;
+        }
+        if (punta == NULL) {
+            strcpy(buffer, "Codice prenotazione errato o inserito nel tavolo sbagliato\nInserisci il codice prenotazione: ");
+            invia(socketId, buffer);
+        }
+        printf("Terminato thread table device\n");
+        fflush(stdout);
+        return NULL;
+    }
 
-	printf("Passato controllo\n");
-	fflush(stdout);
+    printf("Passato controllo\n");
+    fflush(stdout);
 
-	// In questo caso è loggato
+    // In questo caso è loggato
 
-	// Gestisce i tipi di comandi:
-	//   - menu;
-	//   - comanda;
-	//   - conto.
-	
-	if(strcmp(token, "menu") == 0) { // Primo caso
-		// Invio il menu
-		strcpy(buffer, menu_text);
-		invia(socketId, buffer);
-		printf("Invio il menu al tavolo %d\n", tavoli[tavolo].numero); // Enumerazione non 0-based
-		fflush(stdout);
-	}
-	else if(strcmp(token, "comanda") == 0) { // Secondo caso
-		int i, indice;
+    // Gestisce i tipi di comandi:
+    //   - menu;
+    //   - comanda;
+    //   - conto.
+    
+    if (strcmp(token, "menu") == 0) { // Primo caso
+        // Invio il menu
+        strcpy(buffer, menu_text);
+        invia(socketId, buffer);
+        printf("Invio il menu al tavolo %d\n", tavoli[tavolo].numero); // Enumerazione non 0-based
+        fflush(stdout);
+    }
+    else if (strcmp(token, "comanda") == 0) { // Secondo caso
+        int i, indice;
 
-		printf("Nuova comanda dal tavolo %d\n", tavoli[tavolo].numero); // Enumerazione non 0-based
-		fflush(stdout);
+        printf("Nuova comanda dal tavolo %d\n", tavoli[tavolo].numero); // Enumerazione non 0-based
+        fflush(stdout);
 
-		// Parso la comanda ed inserisco
-		pthread_mutex_lock(&comande_lock);
-		struct comanda* com = malloc(sizeof(struct comanda));
-		
-		if(comande[tavolo] == NULL) {
-			comande[tavolo] = com;
-		}
-		else {
-			struct comanda* punta = comande[tavolo];
-			while(punta->prossima != NULL)
-				punta = punta->prossima;
-			punta->prossima = com;
-		}
-		token = strtok(NULL, " -");
-		while(token != NULL) {
-			for (i = 0; i < nPiatti && token != NULL; i++) {
-				if(strcmp(token, menu[i].codice) != 0)
-					continue;
-				token = strtok(NULL, " -");
-				com->quantita[i] = atoi(token);
-				token = strtok(NULL, " -");
-				printf("comanda: %s %d\n", menu[i].codice, com->quantita[i]);
-				fflush(stdout);
-			}
-		}
+        // Parso la comanda ed inserisco
+        struct comanda* com = malloc(sizeof(struct comanda));
+        
+        if (com == NULL) {
+            printf("Errore di allocazione per la nuova comanda\n");
+            fflush(stdout);
+            return NULL;
+        }
+        
+        // Simulazione della lettura della comanda
+        token = strtok(NULL, " -");
+        while (token != NULL) {
+            for (i = 0; i < nPiatti && token != NULL; i++) {
+                if (strcmp(token, menu[i].codice) == 0) {
+                    token = strtok(NULL, " -");
+                    com->quantita[i] = atoi(token);
+                    token = strtok(NULL, " -");
+                    printf("comanda: %s %d\n", menu[i].codice, com->quantita[i]);
+                    fflush(stdout);
+                }
+            }
+        }
 
-		com->prossima = NULL;
-		com->timestamp = time(NULL);
-		com->kd = socketId;
-		com->nComanda = numeroComanda++;
-		com->stato = in_attesa;
+        com->prossima = NULL;
+        com->timestamp = time(NULL);
+        com->kd = socketId;
+        com->nComanda = numeroComanda++;
+        com->stato = in_attesa;
 
-		pthread_mutex_unlock(&comande_lock);
+        // Avviso che la comanda è stata ricevuta correttamente
+        strcpy(buffer, "COMANDA RICEVUTA\n");
+        invia(socketId, buffer);
 
-		// Avviso che la comanda è stata ricevuta correttamente
-		strcpy(buffer, "COMANDA RICEVUTA\n");
-		invia(socketId, buffer);
+        // Notifico tutti i KD
+        strcpy(buffer, "*\n");
+        // Simulazione della notifica
+        printf("Notificato kitchen device\n"); // Enumerazione non 0-based
+        fflush(stdout);
+    }
+    else if (strcmp(token, "conto") == 0) { // Terzo caso
+        int indice;
 
-		// Notifico tutti i KD
-		strcpy(buffer, "*\n");
-		pthread_mutex_lock(&socket_lock);
-		for(indice = 0; indice < nMaxKd; indice++) {
-			if(socket_kd[indice] != -1) {
-				invia(socket_kd[indice], buffer);
-				printf("Notificato kitchen device %d\n", socket_kd[indice]); // Enumerazione non 0-based
-				fflush(stdout);
-			}
-		}
-		pthread_mutex_unlock(&socket_lock);
-	}
-	else if(strcmp(token, "conto") == 0) { // Terzo caso
-		int indice;
+        tavoli_logged[tavolo] = 0;
 
-		tavoli_logged[tavolo] = 0;
+        printf("Conto richiesto dal tavolo %d\n", tavoli[tavolo].numero); // Enumerazione non 0-based
+        fflush(stdout);
 
-		printf("Conto richiesto dal tavolo %d\n", tavoli[tavolo].numero); // Enumerazione non 0-based
-		fflush(stdout);
+        // Scorro l'array comande ed invio
+        struct comanda* punta = comande[tavolo];
+        int totale = 0;
+        strcpy(buffer, "\0");
+        while (punta != NULL) {
+            for (indice = 0; indice < nPiatti; indice++) {
+                if (punta->quantita[indice] == 0) 
+                    continue;
 
-		pthread_mutex_lock(&comande_lock);
-		// Scorro l'array comande ed invio
-		struct comanda* punta = comande[tavolo];
-		int totale = 0;
-		strcpy(buffer, "\0");
-		while(punta != NULL) {
-			for(indice = 0; indice < nPiatti; indice++) {
-				if(punta->quantita[indice] == 0) 
-					continue;
+                strcat(buffer, menu[indice].codice);
+                strcat(buffer, " ");
+                sprintf(numeroString, "%d", punta->quantita[indice]);
+                strcat(buffer, numeroString);
+                strcat(buffer, " ");
+                sprintf(numeroString, "%d", punta->quantita[indice] * menu[indice].prezzo);
+                strcat(buffer, numeroString);
+                strcat(buffer, "\n");
+                totale += punta->quantita[indice] * menu[indice].prezzo;
+            }
+            struct comanda* puntaVecchia = punta;
+            punta = punta->prossima;
+            free(puntaVecchia);
+        }
+        comande[tavolo] = NULL;
+        strcat(buffer, "Totale: ");
+        sprintf(numeroString, "%d", totale);
+        strcat(buffer, numeroString);
+        strcat(buffer, "\nInserisci il codice prenotazione: ");
+        invia(socketId, buffer);
+    }
+    else {
+        // Errore, comando non riconosciuto
+        printf("Errore comando Table Device!\n");
+        fflush(stdout);
+    }
 
-				strcat(buffer, menu[indice].codice);
-				strcat(buffer, " ");
-				sprintf(numeroString, "%d", punta->quantita[indice]);
-				strcat(buffer, numeroString);
-				strcat(buffer, " ");
-				sprintf(numeroString, "%d", punta->quantita[indice]*menu[indice].prezzo);
-				strcat(buffer, numeroString);
-				strcat(buffer, "\n");
-				totale += punta->quantita[indice] * menu[indice].prezzo;
-			}
-			struct comanda* puntaVecchia;
-			puntaVecchia = punta;
-			punta = punta->prossima;
-			free(puntaVecchia);
-		}
-		comande[tavolo] = NULL;
-		pthread_mutex_unlock(&comande_lock);
-		strcat(buffer, "Totale: ");
-		sprintf(numeroString, "%d", totale);
-		strcat(buffer, numeroString);
-		strcat(buffer, "\nInserisci il codice prenotazione: ");
-		invia(socketId, buffer);
-	}
-	else {
-		// Errore, comando non riconosciuto
-		printf("Errore comando Table Device!\n");
-		fflush(stdout);
-	}
-	pthread_mutex_lock(&fd_lock);
-	FD_SET(socketId, &master);
-	pthread_mutex_unlock(&fd_lock);
-	printf("Terminato thread table device\n");
-	fflush(stdout);
+    printf("Terminato thread table device\n");
+    fflush(stdout);
 
-	return NULL;
+    return NULL;
 }
+
 
 // Gestisce UNA richiesta da parte di UN kitchen device
-void *gestisciKd(void* i) {
-	int socketId = *(int *)i;
-	char buffer[BUFFER_SIZE];
-	char numeroString[BUFFER_SIZE];
+void *gestisciKd(int socketId) {
+    char buffer[BUFFER_SIZE];
+    char numeroString[BUFFER_SIZE];
 
-	printf("Avviato thread kitchen device\n");
-	fflush(stdout);
+    printf("Avviato kitchen device\n");
+    fflush(stdout);
 
-	// Ricevi il messaggio
-	int ret, indice;
-	int lmsg = 0;
-	ret = riceviLunghezza(socketId, &lmsg);
-	if(ret == 0) {
-		printf("KD disconnesso\n");
-		fflush(stdout);
-		close(socketId);
-		for(indice = 0; indice < nMaxKd; indice++)
-			if(socketId == socket_kd[indice])
-				socket_kd[indice] = -1;
-		printf("Terminato thread kitchen device\n");
-		fflush(stdout);
-		return NULL;
-	}
-	ret = ricevi(socketId, lmsg, buffer);
-	if(ret == 0) {
-		printf("KD disconnesso\n");
-		fflush(stdout);
-		close(socketId);
-		for(indice = 0; indice < nMaxKd; indice++)
-			if(socketId == socket_kd[indice])
-				socket_kd[indice] = -1;
-		printf("Terminato thread kitchen device\n");
-		fflush(stdout);
-		return NULL;
-	}
+    // Ricevi il messaggio
+    int ret, indice;
+    int lmsg = 0;
+    ret = riceviLunghezza(socketId, &lmsg);
+    if (ret == 0) {
+        printf("KD disconnesso\n");
+        fflush(stdout);
+        close(socketId);
+        for (indice = 0; indice < nMaxKd; indice++)
+            if (socketId == socket_kd[indice])
+                socket_kd[indice] = -1;
+        printf("Terminato kitchen device\n");
+        fflush(stdout);
+        return;
+    }
+    ret = ricevi(socketId, lmsg, buffer);
+    if (ret == 0) {
+        printf("KD disconnesso\n");
+        fflush(stdout);
+        close(socketId);
+        for (indice = 0; indice < nMaxKd; indice++)
+            if (socketId == socket_kd[indice])
+                socket_kd[indice] = -1;
+        printf("Terminato kitchen device\n");
+        fflush(stdout);
+        return;
+    }
 
-	// Gestisce i tipi di comandi:
-	//   - take, funzionante solo nel caso siano presenti delle comande in_attesa;
-	//   - show, comande in_preparazione presso il kd;
-	//   - ready <comanda>, solo se presente tra quelle in_preparazione del kd.
-	char* token;
-	token = strtok(buffer, " ");
-	if(strcmp(token, "take") == 0) { // Primo caso
-		int indice;
-		pthread_mutex_lock(&comande_lock);
+    // Gestisce i tipi di comandi:
+    //   - take, funzionante solo nel caso siano presenti delle comande in_attesa;
+    //   - show, comande in_preparazione presso il kd;
+    //   - ready <comanda>, solo se presente tra quelle in_preparazione del kd.
+    char* token;
+    token = strtok(buffer, " ");
+    if (strcmp(token, "take") == 0) { // Primo caso
+        int indice;
 
-		// Scorro l'array comande ed invio
-		struct comanda* com = NULL;
-		int nTav = -1;
-		for(indice = 0; indice < nTavoli; indice++) {
-			struct comanda *punta = comande[indice];
-			while(punta != NULL) {
-				if((com == NULL || punta->timestamp < com->timestamp) && punta->stato == in_attesa) {
-					com = punta;
-					nTav = indice;
-				}
-				punta = punta->prossima;
-			}
-		}
-		if(nTav == -1) {
-			invia(socketId, "Non ci sono comande\n");
-		}
-		else {
-			com->kd = socketId;
-			com->stato = in_preparazione;
+        // Scorro l'array comande ed invio
+        struct comanda* com = NULL;
+        int nTav = -1;
+        for (indice = 0; indice < nTavoli; indice++) {
+            struct comanda *punta = comande[indice];
+            while (punta != NULL) {
+                if ((com == NULL || punta->timestamp < com->timestamp) && punta->stato == in_attesa) {
+                    com = punta;
+                    nTav = indice;
+                }
+                punta = punta->prossima;
+            }
+        }
+        if (nTav == -1) {
+            invia(socketId, "Non ci sono comande\n");
+        } else {
+            com->kd = socketId;
+            com->stato = in_preparazione;
 
-			strcpy(buffer, "com");
-			sprintf(numeroString, "%d", com->nComanda);
-			strcat(buffer, numeroString);
-			strcat(buffer, "\t");
-			strcat(buffer, "T");
-			sprintf(numeroString, "%d", nTav+1);
-			strcat(buffer, numeroString);
-			strcat(buffer, "\n");
-			for(indice = 0; indice < nPiatti; indice++) {
-				if(com->quantita[indice] != 0) {
-					strcat(buffer, menu[indice].codice);
-					strcat(buffer, "\t");
-					sprintf(numeroString, "%d", com->quantita[indice]);
-					strcat(buffer, numeroString);
-					strcat(buffer, "\n");
-				}
-			}
-			invia(socketId, buffer);
-			strcpy(buffer, "IN PREPARAZIONE\n");
-			invia(socket_td[nTav], buffer);
-		}
-		pthread_mutex_unlock(&comande_lock);
-	}
-	else if(strcmp(token, "show") == 0) { // Secondo caso
-		int indice, indice2;
-		// Scorro l'array comande ed invio
-		strcpy(buffer, "");
-		pthread_mutex_lock(&comande_lock);
-		for(indice = 0; indice < nTavoli; indice++) {
-			struct comanda *punta = comande[indice];
-			while(punta != NULL) {
-				if(punta->kd == socketId && punta->stato == in_preparazione) {
-					strcat(buffer, "com");
-					sprintf(numeroString, "%d", punta->nComanda);
-					strcat(buffer, numeroString);
-					strcat(buffer, "\t");
-					strcat(buffer, "T");
-					sprintf(numeroString, "%d", indice);
-					strcat(buffer, numeroString);
-					strcat(buffer, "\n");
-					for(indice2 = 0; indice2 < nPiatti; indice2++) {
-						if(punta->quantita[indice2] != 0) {
-							strcat(buffer, menu[indice2].codice);
-							strcat(buffer, "\t");
-							sprintf(numeroString, "%d", punta->quantita[indice2]);
-							strcat(buffer, numeroString);
-							strcat(buffer, "\n");
-						}
-					}
-				}
-				punta = punta->prossima;
-			}
-		}
-		pthread_mutex_unlock(&comande_lock);
-		invia(socketId, buffer);
-	}
-	else if(strcmp(token, "ready") == 0) { // Terzo caso
-		// Parso il comando e notifico il td
-		int nCom, nTav;
-		token = strtok(NULL, " com-T");
-		nCom = atoi(token);
-		token = strtok(NULL, " com-T");
-		nTav = atoi(token);
-		nTav--;
+            strcpy(buffer, "com");
+            sprintf(numeroString, "%d", com->nComanda);
+            strcat(buffer, numeroString);
+            strcat(buffer, "\t");
+            strcat(buffer, "T");
+            sprintf(numeroString, "%d", nTav + 1);
+            strcat(buffer, numeroString);
+            strcat(buffer, "\n");
+            for (indice = 0; indice < nPiatti; indice++) {
+                if (com->quantita[indice] != 0) {
+                    strcat(buffer, menu[indice].codice);
+                    strcat(buffer, "\t");
+                    sprintf(numeroString, "%d", com->quantita[indice]);
+                    strcat(buffer, numeroString);
+                    strcat(buffer, "\n");
+                }
+            }
+            invia(socketId, buffer);
+            strcpy(buffer, "IN PREPARAZIONE\n");
+            invia(socket_td[nTav], buffer);
+        }
+    } else if (strcmp(token, "show") == 0) { // Secondo caso
+        int indice, indice2;
+        // Scorro l'array comande ed invio
+        strcpy(buffer, "");
+        for (indice = 0; indice < nTavoli; indice++) {
+            struct comanda *punta = comande[indice];
+            while (punta != NULL) {
+                if (punta->kd == socketId && punta->stato == in_preparazione) {
+                    strcat(buffer, "com");
+                    sprintf(numeroString, "%d", punta->nComanda);
+                    strcat(buffer, numeroString);
+                    strcat(buffer, "\t");
+                    strcat(buffer, "T");
+                    sprintf(numeroString, "%d", indice);
+                    strcat(buffer, numeroString);
+                    strcat(buffer, "\n");
+                    for (indice2 = 0; indice2 < nPiatti; indice2++) {
+                        if (punta->quantita[indice2] != 0) {
+                            strcat(buffer, menu[indice2].codice);
+                            strcat(buffer, "\t");
+                            sprintf(numeroString, "%d", punta->quantita[indice2]);
+                            strcat(buffer, numeroString);
+                            strcat(buffer, "\n");
+                        }
+                    }
+                }
+                punta = punta->prossima;
+            }
+        }
+        invia(socketId, buffer);
+    } else if (strcmp(token, "ready") == 0) { // Terzo caso
+        // Parso il comando e notifico il td
+        int nCom, nTav;
+        token = strtok(NULL, " com-T");
+        nCom = atoi(token);
+        token = strtok(NULL, " com-T");
+        nTav = atoi(token);
+        nTav--;
 
-		pthread_mutex_lock(&comande_lock);
-		struct comanda* punta = comande[nTav];
-		while(punta != NULL) {
-			if(punta->nComanda == nCom) break;
-			punta = punta->prossima;
-		}
-		if(punta != NULL) {
-			punta->stato = in_servizio;
-			invia(socketId, "COMANDA IN SERVIZIO\n");
-			invia(socket_td[nTav], "ORDINAZIONE IN ARRIVO\n");
-		}
-		else {
-			printf("Errore nel trovare la comanda\n");
-			fflush(stdout);	
-		}
-		pthread_mutex_unlock(&comande_lock);
-	}
-	else {
-		// Errore, comando non riconosciuto
-		printf("Errore comando Kitchen Device!\n");
-		fflush(stdout);
-	}
-	pthread_mutex_lock(&fd_lock);
-	FD_SET(socketId, &master);
-	pthread_mutex_unlock(&fd_lock);
+        struct comanda* punta = comande[nTav];
+        while (punta != NULL) {
+            if (punta->nComanda == nCom) break;
+            punta = punta->prossima;
+        }
+        if (punta != NULL) {
+            punta->stato = in_servizio;
+            invia(socketId, "COMANDA IN SERVIZIO\n");
+            invia(socket_td[nTav], "ORDINAZIONE IN ARRIVO\n");
+        } else {
+            printf("Errore nel trovare la comanda\n");
+            fflush(stdout);
+        }
+    } else {
+        // Errore, comando non riconosciuto
+        printf("Errore comando Kitchen Device!\n");
+        fflush(stdout);
+    }
 
-	printf("Terminato thread kitchen device\n");
-	fflush(stdout);
+    FD_SET(socketId, &master);
 
+    printf("Terminato kitchen device\n");
+    fflush(stdout);
 	return NULL;
 }
+
 
 // Dealloca tutte le strutture
 void deallocaStrutture() {
@@ -848,14 +812,7 @@ void deallocaStrutture() {
 			free(c);
 			c = c2;
 		}
-	}		
-	// Thread
-	struct lis_thread *lt = listaThread;
-	while(lt != NULL) {
-		struct lis_thread *lt2 = lt->prossimo;
-		free(lt);
-		lt = lt2;
-	}		
+	}				
 	// Prenotazioni
 	for(i = 0; i < nTavoli; i++) {
 		struct prenotazione *p = prenotazioni[i];

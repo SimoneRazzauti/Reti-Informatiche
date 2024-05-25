@@ -30,10 +30,10 @@
 
 struct tavolo
 {
-	int numero;	// Univoco nel ristorante
-	int nPosti;
-	char sala[32];
-	char descrizione[64];
+    int numero;     // Univoco nel ristorante
+    int nPosti;
+    char sala[32];
+    char descrizione[64];
 };
 
 /*       Gestione delle prenotazioni 
@@ -46,15 +46,15 @@ struct tavolo
 
 struct prenotazione
 {
-	char cognome[64];
-	char data_ora[12];	// Non della richiesta, ma della prenotazione
-	char pwd[5];
-	struct prenotazione *prossima;
-	/* 
-	Il tavolo non è necessario poiché corrisponde
-	all'indice in cui viene salvato all'interno
-	dell'array "prenotazioni".
-	*/
+    char cognome[64];
+    char data_ora[12];    // Non della richiesta, ma della prenotazione
+    char pwd[5];
+    struct prenotazione *prossima;
+    /* 
+    Il tavolo non è necessario poiché corrisponde
+    all'indice in cui viene salvato all'interno
+    dell'array "prenotazioni".
+    */
 };
 
 /*           Gestione dei piatti 
@@ -66,13 +66,13 @@ struct prenotazione
 
 struct piatto
 {
-	char codice[2];
-	int prezzo;
-	/* 
-	Il tavolo non è necessario poiché corrisponde
-	all'indice in cui viene salvato all'interno
-	dell'array "comande".
-	*/
+    char codice[2];
+    int prezzo;
+    /* 
+    Il tavolo non è necessario poiché corrisponde
+    all'indice in cui viene salvato all'interno
+    dell'array "comande".
+    */
 };
 
 /*         Gestione delle comande 
@@ -84,31 +84,31 @@ struct piatto
    --------------------------------------- 
 */
 
-enum stato_comanda{in_attesa, in_preparazione, in_servizio};
+enum stato_comanda { in_attesa, in_preparazione, in_servizio };
 
 struct comanda
 {
-	int nComanda;
-	int quantita[nPiatti];
-	/* 
-	Quantità dell'i-esimo piatto corrispondete
-	nell'array dei piatti.
-	*/
-	time_t timestamp;	// utilizzato per trovare la meno recente
-	enum stato_comanda stato;
-	int kd; // SocketId del kd da cui è stato prelevato
-	/* 
-	Il tavolo non è necessario poiché corrisponde
-	all'indice in cui viene salvato all'interno
-	dell'array "comande".
-	*/
-	struct comanda *prossima;
+    int nComanda;
+    int quantita[nPiatti];
+    /* 
+    Quantità dell'i-esimo piatto corrispondete
+    nell'array dei piatti.
+    */
+    time_t timestamp;    // utilizzato per trovare la meno recente
+    enum stato_comanda stato;
+    int kd; // SocketId del kd da cui è stato prelevato
+    /* 
+    Il tavolo non è necessario poiché corrisponde
+    all'indice in cui viene salvato all'interno
+    dell'array "comande".
+    */
+    struct comanda *prossima;
 };
 
 /*           Gestione dei Thread 
    ---------------------------------------
    Ogni volta che un socket registrato
-   viene comunica al server, quest'ultimo
+   viene comunicato al server, quest'ultimo
    risponde mediante un thread, che viene
    inserito in una lista per controllare
    la terminazione una volta decisa la
@@ -116,32 +116,17 @@ struct comanda
    --------------------------------------- 
 */
 
-struct lis_thread
-{
-	pthread_t* t;
-	struct lis_thread* prossimo;
-};
-
 /* --------- Strutture globali ---------*/
 // Array per i Socket
 int socket_client[nMaxClient];
 int socket_td[nMaxTd]; // associati all'indice del tavolo
 int socket_kd[nMaxKd];
-pthread_mutex_t socket_lock;
 
-// Strutture e relativi MutEx
-struct tavolo tavoli[nTavoli];
-pthread_mutex_t tavoli_lock;
-int tavoli_logged[nTavoli]; // Serve a capire se è stato fatto un accesso
-struct prenotazione* prenotazioni[nTavoli];
-pthread_mutex_t prenotazioni_lock;
-struct comanda* comande[nTavoli];
-pthread_mutex_t comande_lock;
-struct lis_thread* listaThread;
-pthread_mutex_t listaThread_lock;
+// Strutture per gestione dei thread
+struct lis_thread *listaThread;
 
 // Altro
-char menu_text[nPiatti*dimEntryMeny];
+char menu_text[nPiatti * dimEntryMeny];
 struct piatto menu[nPiatti];
 int numeroComanda; // UUID comanda
 /* ------------------------------------ */
@@ -155,6 +140,4 @@ fd_set read_fds;
 
 // Descrittore max
 int fdmax;
-
-pthread_mutex_t fd_lock;
 /* ------------------------------------ */

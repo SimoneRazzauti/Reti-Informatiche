@@ -598,7 +598,6 @@ void *gestisciTd(void *arg) {
         fflush(stdout);
     }
     else if (strcmp(token, "conto") == 0) { // Terzo caso
-        int indice;
 
         tavoli_logged[tavolo] = 0;
 

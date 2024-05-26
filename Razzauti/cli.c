@@ -134,7 +134,8 @@ int main(int argc, char *argv[]){
             fflush(stdout);
         }        
         // CASO 2: PRONTO SOCKET stdin
-        else{ 
+        else{
+            // salvo nel buffer il contenuto digitato da stdin 
             fgets(buffer, BUFFER_SIZE, stdin);
 
             // Estrae le parole dalla frase utilizzando la funzione 'strtok'
@@ -289,7 +290,7 @@ int main(int argc, char *argv[]){
                 }
                 else if (strcmp(datiInformazioni[0], "esc") == 0)
                 {
-                    printf("Uscita in corso...\n\n");
+                    printf("Uscita in corso...\nArrivederci :)\n\n");
                     fflush(stdout);
                     close(sockfd);
                     exit(0);

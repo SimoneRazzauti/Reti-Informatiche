@@ -28,13 +28,13 @@ int main(int argc, char *argv[]){
     // variabili di utilità
     char id[] = "C\0"; // codice per riconoscere il Client
     char *codice = NULL;           // find o book
-    char cognome[30];
-    int quantita, wordLen, numPersone, tavoliDisp = 0; // tavoliDisp = numero tavoli restituiti dalla Find
-    int ordine = 0;                                    // per controllare che chiami prima la find
+    char cognome[25];
+    int quantita, chunk_len, nPersone, tavoliDisp = 0; // tavoliDisp = numero tavoli restituiti dalla Find
+    int priorita = 0; // server a controllare che prima si faccia la find e dopo book
     int giorno, mese, anno, ora;
 
-    char *datiInformazioni[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
-    int word_count = 0;                // Il numero di parole estratte dalla frase
+    char *datiInformazioni[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole estratte dal buffer
+    int chunk_count = 0; // numero di parole estratte dal buffer
 
     // set di descrittori da monitorare
     fd_set master; 
@@ -140,19 +140,19 @@ int main(int argc, char *argv[]){
 
             // Estrae le parole dalla frase utilizzando 'strtok' e lo spazio come delimitatore a blocchi di chunks
             char *chunk = strtok(buffer, " ");
-            word_count = 0;
+            chunk_count = 0;
 
             // Finchè ci sono parole da estrarre e non si supera il limite massimo
-            while (chunk != NULL && word_count < MAX_WORDS){ 
+            while (chunk != NULL && chunk_count < MAX_WORDS){ 
                 // Rimuove il carattere di fine riga dalla parola se presente
-                wordLen = strlen(chunk);
-                if (chunk[wordLen - 1] == '\n'){
-                    chunk[wordLen - 1] = '\0';
+                chunk_len = strlen(chunk);
+                if (chunk[chunk_len - 1] == '\n'){
+                    chunk[chunk_len - 1] = '\0';
                 }
 
                 // Aggiunge la parola all'array di parole
-                datiInformazioni[word_count] = chunk; // Memorizza il puntatore alla parola nell'array
-                word_count++;                        // Incrementa il contatore di parole estratte
+                datiInformazioni[chunk_count] = chunk; // Memorizza il puntatore alla parola nell'array
+                chunk_count++;                        // Incrementa il contatore di parole estratte
 
                 // Estrae la prossima parola
                 chunk = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]){
                 // analizza la stringa e assegna i valori alle variabili
                 sscanf(datiInformazioni[3], "%d-%d-%d", &giorno, &mese, &anno);
                 sscanf(datiInformazioni[4], "%d", &ora);
-                sscanf(datiInformazioni[2], "%d", &numPersone);
+                sscanf(datiInformazioni[2], "%d", &nPersone);
 
                 codice = "find\0";
                 // controllo data inserita
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]){
 
                     sscanf(datiInformazioni[1], "%s", cognome);
 
-                    sprintf(buffer, "%d-%d-%d-%d %d %s", numPersone, giorno, mese, anno, ora, cognome);
+                    sprintf(buffer, "%d-%d-%d-%d %d %s", nPersone, giorno, mese, anno, ora, cognome);
                     len_HO = strlen(buffer) + 1;
                     len_NO = htonl(len_HO);
 
@@ -219,7 +219,7 @@ int main(int argc, char *argv[]){
                     fflush(stdout);
 
                     // TAVOLI DISPONIBILI
-                    ordine = 1; // adesso è possibile selezionare book
+                    priorita = 1; // adesso è possibile selezionare book
                     }
                     else{
                         printf("Hai inserito una data non valida oppure non è una data futura, riprova.\n");
@@ -228,12 +228,12 @@ int main(int argc, char *argv[]){
 
                     // dopo questo possiamo andare a book. Inserito alla fine, dopo tutte le conferme è valido
                 }
-                else if (strcmp(datiInformazioni[0], "book") == 0 && ordine == 0)
+                else if (strcmp(datiInformazioni[0], "book") == 0 && priorita == 0)
                 {
                     printf("Prima del book eseguire una Find correttamente\n\n");
                     fflush(stdout);
                 }
-                else if (strcmp(datiInformazioni[0], "book") == 0 && ordine == 1)
+                else if (strcmp(datiInformazioni[0], "book") == 0 && priorita == 1)
                 {
 
                     sscanf(datiInformazioni[1], "%d", &quantita);
@@ -241,7 +241,7 @@ int main(int argc, char *argv[]){
                     if (tavoliDisp < quantita) // se il numeri scelto è > di quanti la find abbia restituito
                     {
                         printf("Numero non valido, ri eseguire la prenotazione...\n");
-                        // ordine = 0;
+                        // priorita = 0;
                         fflush(stdout);
                         continue;
                     }
@@ -252,7 +252,7 @@ int main(int argc, char *argv[]){
                         ret = send(sockfd, (void *)codice, codiceLen, 0);
                         check_errori(ret, sockfd);
 
-                        sprintf(buffer, "%d %d-%d-%d-%d %d %s", quantita, numPersone, giorno, mese, anno, ora, cognome);
+                        sprintf(buffer, "%d %d-%d-%d-%d %d %s", quantita, nPersone, giorno, mese, anno, ora, cognome);
                         len_HO = strlen(buffer) + 1;
                         len_NO = htonl(len_HO);
 

@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 
     struct sockaddr_in server_addr, cli_addr;
 
-    int wordLen, prezzo, a, k, j, quanti_piatti = 0;
+    int chunk_len, prezzo, a, k, j, quanti_piatti = 0;
     int quante_comande = 0;
     char buffer[BUFFER_SIZE];
     char id[] = "T\0";
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 
     int richiesto = 0;                 // controlo se e' stato richiesto il menu per il controllo del Conto
     char *datiInformazioni[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
-    uint16_t word_count = 0;           // Il numero di parole estratte dalla frase
+    uint16_t chunk_count = 0;           // Il numero di parole estratte dalla frase
 
     uint32_t len_HO; // lunghezza del messaggio espressa in host order
     uint32_t len_NO; // lunghezza del messaggio espressa in network order
@@ -248,19 +248,19 @@ int main(int argc, char *argv[])
 
             // Estrai le parole dalla frase utilizzando la funzione 'strtok'
             word = strtok(buffer, " "); // Estrai la prima parola utilizzando lo spazio come delimitatore
-            word_count = 0;
-            while (word != NULL && word_count < MAX_WORDS)
+            chunk_count = 0;
+            while (word != NULL && chunk_count < MAX_WORDS)
             { // Finche' ci sono parole da estrarre e non si supera il limite massimo
                 // Rimuovi il carattere di fine riga dalla parola se presente
-                wordLen = strlen(word);
-                if (word[wordLen - 1] == '\n')
+                chunk_len = strlen(word);
+                if (word[chunk_len - 1] == '\n')
                 {
-                    word[wordLen - 1] = '\0';
+                    word[chunk_len - 1] = '\0';
                 }
 
                 // Aggiungi la parola all'array di parole
-                datiInformazioni[word_count] = word; // Memorizza il puntatore alla parola nell'array
-                word_count++;                        // Incrementa il contatore di parole estratte
+                datiInformazioni[chunk_count] = word; // Memorizza il puntatore alla parola nell'array
+                chunk_count++;                        // Incrementa il contatore di parole estratte
 
                 // Estrai la prossima parola
                 word = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
@@ -323,7 +323,7 @@ int main(int argc, char *argv[])
             }
             else if ((strcmp(datiInformazioni[0], "comanda") == 0) && richiesto == 1)
             {
-                for (j = 1; j < word_count; j++)
+                for (j = 1; j < chunk_count; j++)
                 { // Controllo se i piatti scelti vanno bene
                     if (controllo_menu(datiInformazioni[j], quanti_piatti) == 0)
                     {
@@ -343,7 +343,7 @@ int main(int argc, char *argv[])
                     ret = send(sockfd, (void *)codice, codiceLen, 0);
                     check_errori(ret, sockfd);
 
-                    ret = send(sockfd, &word_count, sizeof(uint16_t), 0);
+                    ret = send(sockfd, &chunk_count, sizeof(uint16_t), 0);
                     check_errori(ret, sockfd);
 
                     ret = send(sockfd, &quante_comande, sizeof(uint16_t), 0);
@@ -369,7 +369,7 @@ int main(int argc, char *argv[])
                         continue;
                     }
                     k = 0;
-                    for (j = 1; j < word_count; j++)
+                    for (j = 1; j < chunk_count; j++)
                     {
                         len_HO = strlen(datiInformazioni[j]) + 1;
                         len_NO = htonl(len_HO);
@@ -387,7 +387,7 @@ int main(int argc, char *argv[])
                         k++;
                     }
 
-                    coda_comande[quante_comande].num_comande = word_count - 1;
+                    coda_comande[quante_comande].num_comande = chunk_count - 1;
 
                     quante_comande++;
 

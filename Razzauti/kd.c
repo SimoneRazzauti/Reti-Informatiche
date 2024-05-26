@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     fd_set read_fds;
 
     int fdmax;
-    int sockfd, ret, wordLen, j; // variabili per i socket + variabili utili
+    int sockfd, ret, chunk_len, j; // variabili per i socket + variabili utili
 
     in_port_t porta = htons(atoi(argv[1]));
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     char buffer[BUFFER_SIZE];
 
     char *datiInformazioni[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
-    int word_count = 0;                // Il numero di parole estratte dalla frase
+    int chunk_count = 0;                // Il numero di parole estratte dalla frase
 
     uint32_t len_HO; // lunghezza del messaggio espressa in host order
     uint32_t len_NO; // lunghezza del messaggio espressa in network order
@@ -172,19 +172,19 @@ int main(int argc, char *argv[])
 
             // Estrai le parole dalla frase utilizzando la funzione 'strtok'
             word = strtok(buffer, " "); // Estrai la prima parola utilizzando lo spazio come delimitatore
-            word_count = 0;
-            while (word != NULL && word_count < MAX_WORDS)
+            chunk_count = 0;
+            while (word != NULL && chunk_count < MAX_WORDS)
             { // Finche' ci sono parole da estrarre e non si supera il limite massimo
                 // Rimuovi il carattere di fine riga dalla parola se presente
-                wordLen = strlen(word);
-                if (word[wordLen - 1] == '\n') // Inserisco il fine stringa
+                chunk_len = strlen(word);
+                if (word[chunk_len - 1] == '\n') // Inserisco il fine stringa
                 {
-                    word[wordLen - 1] = '\0';
+                    word[chunk_len - 1] = '\0';
                 }
 
                 // Aggiungi la parola all'array di parole
-                datiInformazioni[word_count] = word;
-                word_count++; // Incrementa il contatore di parole estratte
+                datiInformazioni[chunk_count] = word;
+                chunk_count++; // Incrementa il contatore di parole estratte
 
                 // Estrai la prossima parola
                 word = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive

@@ -594,11 +594,11 @@ int main(int argc, char *argv[])
     n_clients = 0;
     n_kitchen = 0;
 
-    int giorno, mese, anno, ora, numPersone;
+    int giorno, mese, anno, ora, nPersone;
     char data[20];
     char nomeFile[50] = "prenotazioni/"; // stringa per il nome del file
     FILE *fp;
-    char cognome[30];
+    char cognome[25];
 
     uint32_t len_HO; // lunghezza del messaggio espressa in host order
     uint32_t len_NO; // lunghezza del messaggio espressa in network order
@@ -906,7 +906,7 @@ int main(int argc, char *argv[])
                         // ricevo
 
                         printf("\nUn cliente sta cercando di prenotare...\n");
-                        sscanf(buffer, "%d-%d-%d-%d %d %s", &numPersone, &giorno, &mese, &anno, &ora, cognome);
+                        sscanf(buffer, "%d-%d-%d-%d %d %s", &nPersone, &giorno, &mese, &anno, &ora, cognome);
                         sprintf(data, "%d-%d-%d", giorno, mese, anno);
                         strcpy(nomeFile, "prenotazioni/");
                         char dataV[15];
@@ -922,7 +922,7 @@ int main(int argc, char *argv[])
                             fclose(fp);
 
                             indicetavolo = 0;
-                            controlla_tavoli_liberi(data, ora, numPersone, nomeFile, i); // metto i tavoli disonibili in un array
+                            controlla_tavoli_liberi(data, ora, nPersone, nomeFile, i); // metto i tavoli disonibili in un array
 
                             c = 1;
                             for (a = 0; a < indicetavolo; a++)
@@ -954,7 +954,7 @@ int main(int argc, char *argv[])
                             // genero il file con tutti i tavoli
                             // passo tutti i tavoli perche' non c'erano prenotazioni
                             indicetavolo = 0;
-                            imposta_tavoli(numPersone, "tavoli/lista.txt", i); // metto i tavoli disonibili in un array
+                            imposta_tavoli(nPersone, "tavoli/lista.txt", i); // metto i tavoli disonibili in un array
 
                             c = 1;
                             stop = "STOP\0";
@@ -1001,7 +1001,7 @@ int main(int argc, char *argv[])
                         ret = recv(i, buffer, len_HO, 0);
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                        sscanf(buffer, "%d %d-%d-%d-%d %d %s", &tavoloScelto, &numPersone, &giorno, &mese, &anno, &ora, cognome);
+                        sscanf(buffer, "%d %d-%d-%d-%d %d %s", &tavoloScelto, &nPersone, &giorno, &mese, &anno, &ora, cognome);
                         sprintf(data, "%d-%d-%d", giorno, mese, anno);
 
                         strcpy(nomeFile, "prenotazioni/");
@@ -1119,7 +1119,7 @@ int main(int argc, char *argv[])
                     {
 
                         if (recv(i, &n_comande, sizeof(uint16_t), 0) < 0)
-                        { // quante comande ho ricevuto nell'ordine
+                        { // quante comande ho ricevuto nell'priorita
                             perror("recv failed");
                             exit(EXIT_FAILURE);
                         }
@@ -1223,7 +1223,7 @@ int main(int argc, char *argv[])
                         for (j = 0; j < quante_comande; j++)
                         {
                             if (coda_comande[j].stato == 'a')
-                            { // le comande sono in ordine, la prima che trova in stato Attesa, la restituisce.
+                            { // le comande sono in priorita, la prima che trova in stato Attesa, la restituisce.
 
                                 len_HO = strlen(coda_comande[j].tav_num) + 1;
                                 len_NO = htonl(len_HO);

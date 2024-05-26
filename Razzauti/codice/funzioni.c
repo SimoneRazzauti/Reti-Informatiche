@@ -553,7 +553,7 @@ void *gestisciTd(void *arg) {
         fflush(stdout);
     }
     else if (strcmp(token, "comanda") == 0) { // Secondo caso
-        int i, indice;
+        int i;
 
         printf("Nuova comanda dal tavolo %d\n", tavoli[tavolo].numero); // Enumerazione non 0-based
         fflush(stdout);
@@ -693,7 +693,6 @@ void *gestisciKd(void* i) {
 	token = strtok(buffer, " ");
 	if(strcmp(token, "take") == 0) { // Primo caso
 		int indice;
-		pthread_mutex_lock(&comande_lock);
 
 		// Scorro l'array comande ed invio
 		struct comanda* com = NULL;

@@ -122,8 +122,11 @@ int socket_client[nMaxClient];
 int socket_td[nMaxTd]; // associati all'indice del tavolo
 int socket_kd[nMaxKd];
 
-// Strutture per gestione dei thread
-struct lis_thread *listaThread;
+// Strutture e relativi MutEx
+struct tavolo tavoli[nTavoli];
+int tavoli_logged[nTavoli]; // Serve a capire se è stato fatto un accesso
+struct prenotazione* prenotazioni[nTavoli];
+struct comanda* comande[nTavoli];
 
 // Altro
 char menu_text[nPiatti * dimEntryMeny];

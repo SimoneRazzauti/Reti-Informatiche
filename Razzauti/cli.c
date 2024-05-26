@@ -162,7 +162,7 @@ int main(int argc, char *argv[]){
 
             // Se la prima parola è find ho digitato il comando find 
             if (strcmp(info[0], "find") == 0){ 
-            // info[1] = cognome, info[2] = Num. persone, info[3] = data e info[4] = ora
+                // info[1] = cognome, info[2] = Num. persone, info[3] = data e info[4] = ora
 
                 // inizializzo le variabili
                 sscanf(info[2], "%d", &nPersone);
@@ -170,11 +170,11 @@ int main(int argc, char *argv[]){
                 sscanf(info[4], "%d", &ora);
 
                 codice = "find\0";
+
                 // controllo data inserita
                 if (check_data(giorno, mese, anno, ora)){
                     
-
-                    // mando codice "find"
+                    // invio codice "find" al server
                     ret = send(sockfd, (void *)codice, codiceLen, 0);
                     check_errori(ret, sockfd);
 
@@ -184,38 +184,40 @@ int main(int argc, char *argv[]){
                     len_HO = strlen(buffer) + 1;
                     len_NO = htonl(len_HO);
 
-                    // mando lunghezza del messaggio
+                    // invio lunghezza del messaggio
                     ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
                     check_errori(ret, sockfd);
 
-                    // mando il vero e proprio MESSAGGIO
+                    // invio il messaggio
                     ret = send(sockfd, (void *)buffer, len_HO, 0);
                     check_errori(ret, sockfd);
 
+                    // delay per il trasferimento
                     sleep(1);
 
                     printf("I tavoli disponibili che soddisfano la tua richiesta sono:\n");
                     tavoliDisp = 0;
-                    for (;;)
-                    {
+                    for (;;){
+                        // ricevo la lunghezza del messaggio
                         ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
                         check_errori(ret, sockfd);
                         len_HO = ntohl(len_NO);
 
+                        // ricevo il messaggio
                         ret = recv(sockfd, buffer, len_HO, 0);
                         check_errori(ret, sockfd);
 
-                        if (strncmp(buffer, "STOP", strlen("STOP")) == 0) // per fare terminare il loop
-                        {
+                        if (strncmp(buffer, "STOP", strlen("STOP")) == 0) { 
+                            // per fermare il loop
                             printf("\n");
                             fflush(stdout);
-                            if (tavoliDisp == 0)
-                            { // se nessun tavolo è stato proposto, avviso
-                                printf("Non sono disponibili tavoli che soddisfino i requisiti richiesti. \nTi invitiamo a provare con una data differente o con un numero inferiore di ospiti.\n");
+                            if (tavoliDisp == 0){ // se nessun tavolo è stato proposto, avviso
+                                printf("Non ci sono tavoli disponibili. \nPer favore, prova ad inserire una data diversa o un numero inferiore di commensali.\n");
                                 fflush(stdout);
                             }
                             break;
                         }
+                        // stampo i tavoli che il server mi fornisce
                         tavoliDisp++;
                         printf("%s\n", buffer);
                     }
@@ -223,49 +225,63 @@ int main(int argc, char *argv[]){
 
                     // TAVOLI DISPONIBILI
                     priorita = 1; // adesso è possibile selezionare book
-                    }
-                    else{
-                        printf("Hai inserito una data non valida oppure non è una data futura, riprova.\n");
-                        continue;
-                    }
-
-                    // dopo questo possiamo andare a book. Inserito alla fine, dopo tutte le conferme è valido
                 }
-                else if (strcmp(info[0], "book") == 0 && priorita == 0)
+                else{
+                    printf("Hai inserito una data non valida oppure non è una data futura, riprova.\n");
+                    continue;
+                }
+            }
+            
+            // Se la prima parola estratta dal buffer è book gestisco il comando book
+            else if (strcmp(info[0], "book") == 0 && priorita == 0){
+                printf("Non puoi prenotare un tavolo prima di effettuare una prenotazione. Riprova con una find <cognome> <n_persone> <data> <ora>\n\n");
+                fflush(stdout);
+            }
+            // book corretta, gestisco...
+            else if (strcmp(info[0], "book") == 0 && priorita == 1){
+                // la seconda parola estratta deve essere un decimale e si riferisce al tavolo nella lista dei tavoli proposti dal server
+                sscanf(info[1], "%d", &quantita);
+
+                if (tavoliDisp < quantita) // se il numeri scelto è > di quanti la find abbia restituito
                 {
-                    printf("Prima del book eseguire una Find correttamente\n\n");
+                    printf("Numero non valido, ri eseguire la prenotazione...\n");
+                    // priorita = 0;
                     fflush(stdout);
+                    continue;
                 }
-                else if (strcmp(info[0], "book") == 0 && priorita == 1)
+                else
                 {
+                    // invio codice "book"
+                    codice = "book\0";
+                    ret = send(sockfd, (void *)codice, codiceLen, 0);
+                    check_errori(ret, sockfd);
 
-                    sscanf(info[1], "%d", &quantita);
+                    sprintf(buffer, "%d %d-%d-%d-%d %d %s", quantita, nPersone, giorno, mese, anno, ora, cognome);
+                    len_HO = strlen(buffer) + 1;
+                    len_NO = htonl(len_HO);
 
-                    if (tavoliDisp < quantita) // se il numeri scelto è > di quanti la find abbia restituito
+                    ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
+                    check_errori(ret, sockfd);
+
+                    // invio tutti i dati per la prenotazione
+                    ret = send(sockfd, (void *)buffer, len_HO, 0);
+                    check_errori(ret, sockfd);
+
+                    // ricevo se ha confermato prenotazione o no
+                    ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
+                    check_errori(ret, sockfd);
+                    len_HO = ntohl(len_NO);
+
+                    ret = recv(sockfd, buffer, len_HO, 0);
+                    check_errori(ret, sockfd);
+
+                    if (strcmp(buffer, "NO") == 0)
                     {
-                        printf("Numero non valido, ri eseguire la prenotazione...\n");
-                        // priorita = 0;
-                        fflush(stdout);
-                        continue;
+                        printf("Ripetere prenotazione. \n Il tavolo scelto è stato occupato. \n");
                     }
                     else
                     {
-                        // mando codice "book"
-                        codice = "book\0";
-                        ret = send(sockfd, (void *)codice, codiceLen, 0);
-                        check_errori(ret, sockfd);
-
-                        sprintf(buffer, "%d %d-%d-%d-%d %d %s", quantita, nPersone, giorno, mese, anno, ora, cognome);
-                        len_HO = strlen(buffer) + 1;
-                        len_NO = htonl(len_HO);
-
-                        ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
-                        check_errori(ret, sockfd);
-
-                        // mando tutti i dati per la prenotazione
-                        ret = send(sockfd, (void *)buffer, len_HO, 0);
-                        check_errori(ret, sockfd);
-
+                        memset(buffer, 0, sizeof(buffer));
                         // ricevo se ha confermato prenotazione o no
                         ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
                         check_errori(ret, sockfd);
@@ -273,38 +289,23 @@ int main(int argc, char *argv[]){
 
                         ret = recv(sockfd, buffer, len_HO, 0);
                         check_errori(ret, sockfd);
-
-                        if (strcmp(buffer, "NO") == 0)
-                        {
-                            printf("Ripetere prenotazione. \n Il tavolo scelto è stato occupato. \n");
-                        }
-                        else
-                        {
-                            memset(buffer, 0, sizeof(buffer));
-                            // ricevo se ha confermato prenotazione o no
-                            ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                            check_errori(ret, sockfd);
-                            len_HO = ntohl(len_NO);
-
-                            ret = recv(sockfd, buffer, len_HO, 0);
-                            check_errori(ret, sockfd);
-                            printf("PRENOTAZIONE EFFETTUATA, codice: %s.\n", buffer);
-                        }
+                        printf("PRENOTAZIONE EFFETTUATA, codice: %s.\n", buffer);
                     }
                 }
-                else if (strcmp(info[0], "esc") == 0)
-                {
-                    printf("Uscita in corso...\nArrivederci :)\n\n");
-                    fflush(stdout);
-                    // TO DO: si potrebbe inviare un messaggio al server per dire che il client si è disconnesso
-                    close(sockfd);
-                    exit(0);
-                }
-                else
-                { // nessun comando inserito
-                    printf("ERRORE! Comando inserito non valido. RIPROVARE...\n\n");
-                    continue;
-                }
+            }
+            else if (strcmp(info[0], "esc") == 0)
+            {
+                printf("Uscita in corso...\nArrivederci :)\n\n");
+                fflush(stdout);
+                // TO DO: si potrebbe inviare un messaggio al server per dire che il client si è disconnesso
+                close(sockfd);
+                exit(0);
+            }
+            else
+            { // nessun comando inserito
+                printf("ERRORE! Comando inserito non valido. RIPROVARE...\n\n");
+                continue;
+            }
         }
     }
 

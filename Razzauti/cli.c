@@ -110,7 +110,7 @@ int main(int argc, char *argv[]){
 		}
 
         // SCORRO TUTTI I DESCRITTORI 
-        for(i = 0, i <= fdmax, i++){
+        for(i = 0; i <= fdmax; i++){
             if (FD_ISSET(i, &read_fds)){
                 memset(buffer, 0, sizeof(buffer)); // ripulsco il buffer di comunicazione
                 if(i == sockfd){ // CASO 1: PRONTO SOCKET DI COMUNICAZIONE

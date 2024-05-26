@@ -23,7 +23,9 @@
 int main(int argc, char *argv[]){
     int sockfd, ret; // variabili per i socket
     char buffer[BUFFER_SIZE];
-    struct sockaddr_in server_addr;
+    struct sockaddr_in server_addr, cli_addr;
+    in_port_t porta = htons(atoi(argv[1])); // utilizzo della funzione atoi per convertire la stringa rappresentante il numero di porta inserito dall'utente da terminale in un intero
+
 
     // variabili di utilità
     char *id; // codice per riconoscere il Client
@@ -47,7 +49,7 @@ int main(int argc, char *argv[]){
 
     uint32_t len_HO; // lunghezza del messaggio espressa in host order
     uint32_t len_NO; // lunghezza del messaggio espressa in network order
-
+ 
     // CREAZIONE del socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0){
@@ -61,6 +63,20 @@ int main(int argc, char *argv[]){
     server_addr.sin_port = htons(4242);
 	inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
 
+memset((void *)&cli_addr, 0, sizeof(cli_addr));
+// Inizializzazione della struttura
+    cli_addr.sin_family = AF_INET;
+    cli_addr.sin_port = porta;
+    cli_addr.sin_addr.s_addr = INADDR_ANY;
+    ret = bind(sockfd, (struct sockaddr *)&cli_addr, sizeof(cli_addr));
+    if (ret == -1)
+    {
+        perror("ERRORE nella bind()");
+        printf("ARRESTO IN CORSO...\n");
+        fflush(stdout);
+        exit(1);
+    }
+    
     // CONNESSIONE
     ret = connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
     if (ret < 0){

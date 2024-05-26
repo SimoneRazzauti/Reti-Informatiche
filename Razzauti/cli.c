@@ -12,23 +12,21 @@
 #include "funzioni.c" // funzioni varie
 
 #define BUFFER_SIZE 1024 // dimensione max del buffer
-#define BENVENUTO_CLIENT "BENVENUTO CLIENTE\nComandi disponibili...\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n" // messaggio di benvenuto 
+#define WELCOME_CLIENT "BENVENUTO CLIENTE\nComandi disponibili...\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n" // messaggio di benvenuto 
 
 #define MAX_WORDS 10       // Numero massimo di parole che possono essere estratte dalla frase
 #define MAX_WORD_LENGTH 50 // Lunghezza massima di ogni parola
 
-#define validLen 2  // Lunghezza codici fissati tra client - server per send/ recv
+#define LEN_ID 2  // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)
 #define codiceLen 5 // lunghezza dei codici da mandare al server
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
     int sockfd, ret; // variabili per i socket
     char buffer[BUFFER_SIZE];
-    struct sockaddr_in serv_addr, cli_addr;
-    in_port_t porta = htons(atoi(argv[1])); // utilizzo della funzione atoi per convertire la stringa rappresentante il numero di porta inserito dall'utente da terminale in un intero
+    struct sockaddr_in server_addr;
 
     // variabili di utilità
-    char identificativo[] = "C\0"; // codice per riconoscere il Client
+    char *id; // codice per riconoscere il Client
     char *codice = NULL;           // find o book
     char cognome[30];
     int quantita, wordLen, numPersone, tavoliDisp = 0; // tavoliDisp = numero tavoli restituiti dalla Find
@@ -50,67 +48,57 @@ int main(int argc, char *argv[])
     uint32_t len_HO; // lunghezza del messaggio espressa in host order
     uint32_t len_NO; // lunghezza del messaggio espressa in network order
 
-    // CREAZIONE SOCKET
-    memset((void *)&cli_addr, 0, sizeof(cli_addr));
-    memset((void *)&serv_addr, 0, sizeof(serv_addr));
-
-    // Creazione del socket
+    // CREAZIONE del socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
-    {
-        perror("Errore nella creazione del socket");
+    if (sockfd < 0){
+        perror("Errore: impossibile creare un nuovo socket\n");
         exit(1);
     }
 
-    // Inizializzazione della struttura
-    cli_addr.sin_family = AF_INET;
-    cli_addr.sin_port = porta;
-    cli_addr.sin_addr.s_addr = INADDR_ANY;
-    ret = bind(sockfd, (struct sockaddr *)&cli_addr, sizeof(cli_addr));
-    if (ret == -1)
-    {
-        perror("ERRORE nella bind()");
+    // CREAZIONE indirizzo del server
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(4242);
+	inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
+
+    // CONNESSIONE
+    ret = connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    if (ret < 0){
+        perror("Errore: errore nella connessione\n");
         printf("ARRESTO IN CORSO...\n");
         fflush(stdout);
         exit(1);
     }
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(4242);
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-
-    ret = connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
-    if (ret == -1)
-    {
-        perror("ERRORE nella connect()");
-        printf("ARRESTO IN CORSO...\n");
-        fflush(stdout);
-        exit(1);
-    }
-
-    // CREAZIONE SET E ALTRE INIZIALIZZAZIONI
+    // Resetto i descrittori di socket
     FD_ZERO(&master);
     FD_ZERO(&read_fds);
-    FD_SET(0, &master);
+
+    // Aggiungo il socket di ascolto 'listener' e 'stdin' (0) ai socket monitorati
     FD_SET(sockfd, &master);
+    FD_SET(0, &master);
 
+    // Aggiorno il nuovo fdmax
     fdmax = sockfd;
-    // invio codice identificativo Client
-    ret = send(sockfd, (void *)identificativo, validLen, 0);
+
+    // Invio codice id client = 'C' al server
+    strcpy(id, "C\0");
+    ret = send(sockfd, (void *)id, LEN_ID, 0);
     check_errori(ret, sockfd);
 
-    ret = recv(sockfd, (void *)buffer, validLen, 0);
+    ret = recv(sockfd, (void *)buffer, LEN_ID, 0);
     check_errori(ret, sockfd);
-    if (buffer[0] != 'S')
-    {
-        perror("Troppi Client connessi. RIPROVARE.\n\n");
+    if (buffer[0] != ''){
+        perror("Ci sono troppi Client connessi, per favore RIPROVARE.\n\n");
         fflush(stdout);
         close(sockfd);
         exit(1);
     }
 
-    printf(BENVENUTO_CLIENT);
+    printf(WELCOME_CLIENT);
     fflush(stdout);
+
+    // CICLO PRINCIPALE
     while (1)
     {
         memset(buffer, 0, sizeof(buffer)); // In caso contrario, rimarrebbe l'ultima cosa che c'era dentro.

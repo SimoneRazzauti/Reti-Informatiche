@@ -18,7 +18,7 @@
 #define MAX_KITCHENDEVICES 10
 #define MAX_COMANDE_IN_ATTESA 10
 
-#define validLen 2
+#define LEN_ID 2
 #define codiceLen 5
 
 #define DESCRIZIONE 100
@@ -226,7 +226,7 @@ int prenotazione_tavolo(char *percorsoFile, int GG, int MM, int AA, int HH, char
         exit(1);
     }
 
-    char codiceID[50]; // codice che servira' nel Table Device. Codice identificativo
+    char codiceID[50]; // codice che servira' nel Table Device. Codice id
     sprintf(codiceID, "%s-%d-%d-%d-%d", tav, GG, MM, AA, HH);
 
     time(&rawtime);
@@ -574,14 +574,14 @@ int main(int argc, char *argv[])
     int sockfd, fdmax, n_table, n_clients, n_kitchen, ch, check, c, com, newsockfd;
     int i, j, ret, a;
     int n, tavoloScelto;
-    struct sockaddr_in serv_addr, cli_addr;
+    struct sockaddr_in server_addr, cli_addr;
     char codPrenotazione[25], TavConto[5];  // TavConto = Tavolo che ha richiesto il Conto.
     in_port_t porta = htons(atoi(argv[1])); // utilizzo della funzione atoi per convertire la stringa rappresentante il numero di porta inserito dall'utente da terminale in un intero
     char buffer[BUFFER_SIZE];
     char comando[BUFFER_SIZE];
     fd_set master;
     fd_set read_fds;
-    char *identificativo = "S\0";
+    char *id = "S\0";
     char *negazione = "N\0";
     char arraycopia[DESCRIZIONE];
     uint16_t n_comande = 0;
@@ -619,13 +619,13 @@ int main(int argc, char *argv[])
     memset(comande_servite, 0, sizeof(comande_servite));
 
     // Inizializzazione della struttura dell'indirizzo del server
-    memset(&serv_addr, 0, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = porta;
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = porta;
 
     // Binding del socket all'indirizzo del server
-    if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
         perror("Errore nel binding del socket");
         exit(1);
@@ -806,7 +806,7 @@ int main(int argc, char *argv[])
                         perror("Errore nell'accettazione della connessione");
                         exit(1);
                     }
-                    n = recv(newsockfd, (void *)buffer, validLen, 0);
+                    n = recv(newsockfd, (void *)buffer, LEN_ID, 0);
                     errori_ritorno(n, newsockfd, fdmax, n_table, n_kitchen, n_clients, &master);
 
                     switch (buffer[0])
@@ -823,7 +823,7 @@ int main(int argc, char *argv[])
                         }
                         else
                         {
-                            if (send(newsockfd, (void *)identificativo, validLen, 0) == -1)
+                            if (send(newsockfd, (void *)id, LEN_ID, 0) == -1)
                             {
                                 perror("Errore nella connessione al server");
                                 exit(1);
@@ -844,7 +844,7 @@ int main(int argc, char *argv[])
                         }
                         else
                         {
-                            if (send(newsockfd, (void *)identificativo, validLen, 0) == -1)
+                            if (send(newsockfd, (void *)id, LEN_ID, 0) == -1)
                             {
                                 perror("Errore nella connessione al server");
                                 exit(1);
@@ -865,7 +865,7 @@ int main(int argc, char *argv[])
                         }
                         else
                         {
-                            if (send(newsockfd, (void *)identificativo, validLen, 0) == -1)
+                            if (send(newsockfd, (void *)id, LEN_ID, 0) == -1)
                             {
                                 perror("Errore nella connessione al server");
                                 exit(1);
@@ -1067,7 +1067,7 @@ int main(int argc, char *argv[])
                             { // tavolo da 10-99
                                 sscanf(buffer, "%3s", copia);
                             }
-                            if (send(i, (void *)identificativo, validLen, 0) < 0)
+                            if (send(i, (void *)id, LEN_ID, 0) < 0)
                             {
                                 perror("Errore nella ricezione del messaggio\n");
                                 exit(1);
@@ -1075,7 +1075,7 @@ int main(int argc, char *argv[])
                         }
                         else
                         {
-                            if (send(i, (void *)negazione, validLen, 0) < 0)
+                            if (send(i, (void *)negazione, LEN_ID, 0) < 0)
                             {
                                 perror("Errore nella ricezione del messaggio\n");
                                 exit(1);
@@ -1137,7 +1137,7 @@ int main(int argc, char *argv[])
 
                         if (quante_comande >= MAX_COMANDE_IN_ATTESA)
                         {
-                            if (send(i, (void *)negazione, validLen, 0) == -1)
+                            if (send(i, (void *)negazione, LEN_ID, 0) == -1)
                             {
                                 perror("Errore nella spedizione al server");
                                 exit(1);
@@ -1145,7 +1145,7 @@ int main(int argc, char *argv[])
                         }
                         else
                         {
-                            if (send(i, (void *)identificativo, validLen, 0) == -1)
+                            if (send(i, (void *)id, LEN_ID, 0) == -1)
                             {
                                 perror("Errore nella spedizione al server");
                                 exit(1);
@@ -1204,7 +1204,7 @@ int main(int argc, char *argv[])
                         {
                             if (strcmp(coda_comande[j].tav_num, TavConto) == 0 && (coda_comande[j].stato == 'p' || coda_comande[j].stato == 'a')) // c'è sempre qualche ordinazione
                             {                                                                                                                     // Se ci sono sempre comande in Preparazione o in Attesa non può confermare il conto. (Il conto viene calcolato poi direttamente dal T.D. per alleggerire il carico del server)
-                                ret = send(i, (void *)negazione, validLen, 0);
+                                ret = send(i, (void *)negazione, LEN_ID, 0);
                                 errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                                 check = 1;
                                 break;
@@ -1213,7 +1213,7 @@ int main(int argc, char *argv[])
 
                         if (check == 0)
                         {
-                            ret = send(i, (void *)identificativo, validLen, 0);
+                            ret = send(i, (void *)id, LEN_ID, 0);
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                     }
@@ -1393,12 +1393,12 @@ int main(int argc, char *argv[])
                         if (check == 1)
                         {
                             printf("Comanda in servizio! \n\n");
-                            ret = send(i, (void *)identificativo, validLen, 0);
+                            ret = send(i, (void *)id, LEN_ID, 0);
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                         else if (check == 0)
                         {
-                            ret = send(i, (void *)negazione, validLen, 0);
+                            ret = send(i, (void *)negazione, LEN_ID, 0);
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                     }

@@ -18,7 +18,7 @@
 
 #define DESCRIZIONE 100
 
-#define validLen 2
+#define LEN_ID 2
 #define codiceLen 5
 
 void comandi_table()
@@ -93,12 +93,12 @@ int main(int argc, char *argv[])
 
     in_port_t porta = htons(atoi(argv[1])); // utilizzo della funzione atoi per convertire la stringa rappresentante il numero di porta inserito dall'utente da terminale in un intero
 
-    struct sockaddr_in serv_addr, cli_addr;
+    struct sockaddr_in server_addr, cli_addr;
 
     int wordLen, prezzo, a, k, j, quanti_piatti = 0;
     int quante_comande = 0;
     char buffer[BUFFER_SIZE];
-    char identificativo[] = "T\0";
+    char id[] = "T\0";
     char *codice = NULL;
 
     char tavoloMemorizzato[5];
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 
     // CREAZIONE SOCKET
     memset((void *)&cli_addr, 0, sizeof(cli_addr));
-    memset((void *)&serv_addr, 0, sizeof(serv_addr));
+    memset((void *)&server_addr, 0, sizeof(server_addr));
     // Creazione del socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
@@ -139,11 +139,11 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = INADDR_ANY;
 
-    ret = connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+    ret = connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
     if (ret == -1)
     {
         perror("ERRORE nella connect()");
@@ -159,11 +159,11 @@ int main(int argc, char *argv[])
     FD_SET(sockfd, &master);
 
     fdmax = sockfd;
-    // invio codice identificativo
-    ret = send(sockfd, (void *)identificativo, validLen, 0);
+    // invio codice id
+    ret = send(sockfd, (void *)id, LEN_ID, 0);
     check_errori(ret, sockfd);
 
-    ret = recv(sockfd, (void *)buffer, validLen, 0);
+    ret = recv(sockfd, (void *)buffer, LEN_ID, 0);
     check_errori(ret, sockfd);
     if (buffer[0] != 'S')
     {
@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
         { // tavolo da 10-99
             sscanf(buffer, "%3s", tavoloMemorizzato);
         }
-        ret = recv(sockfd, (void *)buffer, validLen, 0);
+        ret = recv(sockfd, (void *)buffer, LEN_ID, 0);
         check_errori(ret, sockfd);
 
         if (buffer[0] == 'S')
@@ -359,7 +359,7 @@ int main(int argc, char *argv[])
                     check_errori(ret, sockfd);
 
                     // quante comande ho avuto
-                    ret = recv(sockfd, buffer, validLen, 0);
+                    ret = recv(sockfd, buffer, LEN_ID, 0);
                     check_errori(ret, sockfd);
 
                     if (buffer[0] == 'N')
@@ -410,7 +410,7 @@ int main(int argc, char *argv[])
                 ret = send(sockfd, (void *)tavoloMemorizzato, len_HO, 0);
                 check_errori(ret, sockfd);
 
-                ret = recv(sockfd, buffer, validLen, 0);
+                ret = recv(sockfd, buffer, LEN_ID, 0);
                 check_errori(ret, sockfd);
 
                 if (buffer[0] == 'S')

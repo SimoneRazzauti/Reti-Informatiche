@@ -70,14 +70,14 @@ int check_data(int GG, int MM, int AA, int HH){
 // Gestione errori e gestione in caso di chiusura del socket remoto, termino.
 void check_errori(int ret, int socket){
     if (ret == -1){
-        perror("ERRORE nella comunicazione con il server\n");
+        perror("Errore: errore di comunicazione col server\n");
         printf("ARRESTO IN CORSO...\n\n");
         fflush(stdout);
         close(socket);
         exit(1);
     }
     else if (ret == 0){
-        printf("AVVISO: il server ha chiuso il socket remoto.\nARRESTO IN CORSO...\n");
+        printf("AVVISO: il server ha chiuso la connessione.\nARRESTO IN CORSO...\n");
         fflush(stdout);
         close(socket);
         exit(1);

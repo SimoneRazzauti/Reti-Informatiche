@@ -16,7 +16,7 @@
 #define MAX_PIATTI 10
 #define MAX_COMANDE_IN_ATTESA 10
 #define DESCRIZIONE 100
-#define validLen 2
+#define LEN_ID 2
 #define codiceLen 5
 
 struct comanda
@@ -65,11 +65,11 @@ int main(int argc, char *argv[])
 
     in_port_t porta = htons(atoi(argv[1]));
 
-    struct sockaddr_in serv_addr, cli_addr;
+    struct sockaddr_in server_addr, cli_addr;
 
     int quante_comande = 0;
 
-    char identificativo[] = "K\0";
+    char id[] = "K\0";
     char *codice = NULL;
     char *word;
     char buffer[BUFFER_SIZE];
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 
     // CREAZIONE SOCKET
     memset((void *)&cli_addr, 0, sizeof(cli_addr));
-    memset((void *)&serv_addr, 0, sizeof(serv_addr));
+    memset((void *)&server_addr, 0, sizeof(server_addr));
     // Creazione del socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
@@ -103,11 +103,11 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT);
+    server_addr.sin_addr.s_addr = INADDR_ANY;
 
-    ret = connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+    ret = connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
     if (ret == -1)
     {
         perror("ERRORE nella connect()");
@@ -123,11 +123,11 @@ int main(int argc, char *argv[])
     FD_SET(sockfd, &master);
 
     fdmax = sockfd;
-    // invio codice identificativo
-    ret = send(sockfd, (void *)identificativo, validLen, 0);
+    // invio codice id
+    ret = send(sockfd, (void *)id, LEN_ID, 0);
     check_errori(ret, sockfd);
 
-    ret = recv(sockfd, (void *)buffer, validLen, 0);
+    ret = recv(sockfd, (void *)buffer, LEN_ID, 0);
     check_errori(ret, sockfd);
     if (buffer[0] != 'S')
     {
@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
                 ret = send(sockfd, datiInformazioni[1], len_HO, 0); // mando il messaggio
                 check_errori(ret, sockfd);
 
-                ret = recv(sockfd, (void *)buffer, validLen, 0);
+                ret = recv(sockfd, (void *)buffer, LEN_ID, 0);
                 check_errori(ret, sockfd);
                 if (buffer[0] == 'S')
                 {

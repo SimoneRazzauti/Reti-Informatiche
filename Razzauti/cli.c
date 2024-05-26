@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
 
     // variabili di utilità
     char id[] = "C\0"; // codice per riconoscere il Client
-    char *codice = NULL;           // find o book
+    char *codice = NULL; // find o book
     char cognome[25];
     int quantita, chunk_len, nPersone, tavoliDisp = 0; // tavoliDisp = numero tavoli restituiti dalla Find
     int priorita = 0; // server a controllare che prima si faccia la find e dopo book
@@ -293,6 +293,7 @@ int main(int argc, char *argv[]){
                 {
                     printf("Uscita in corso...\nArrivederci :)\n\n");
                     fflush(stdout);
+                    // TO DO: si potrebbe inviare un messaggio al server per dire che il client si è disconnesso
                     close(sockfd);
                     exit(0);
                 }
@@ -307,3 +308,5 @@ int main(int argc, char *argv[]){
     close(sockfd);
     return 0;
 }
+
+// TO DO: mutua esclusione sul client

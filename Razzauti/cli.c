@@ -21,7 +21,7 @@
 #define codiceLen 5 // lunghezza dei codici da mandare al server
 
 int main(int argc, char *argv[]){
-    int sockfd, ret, i; // variabili per i socket
+    int sockfd, ret; // variabili per i socket
     char buffer[BUFFER_SIZE];
     struct sockaddr_in server_addr;
 
@@ -102,6 +102,7 @@ int main(int argc, char *argv[]){
 
     // CICLO PRINCIPALE
     while (1){
+        memset(buffer, 0, sizeof(buffer)); // ripulsco il buffer di comunicazione
         read_fds = master; // copia del set da monitorare
         ret = select(fdmax + 1, &read_fds, NULL, NULL, NULL);
 		if(ret < 0) {
@@ -109,34 +110,31 @@ int main(int argc, char *argv[]){
 			exit(1);
 		}
 
-        // SCORRO TUTTI I DESCRITTORI 
-        for(i = 0; i <= fdmax; i++){
-            if (FD_ISSET(i, &read_fds)){
-                memset(buffer, 0, sizeof(buffer)); // ripulsco il buffer di comunicazione
-                if(i == sockfd){ // CASO 1: PRONTO SOCKET DI COMUNICAZIONE
-                
-                    // ricevo la lunghezza del messaggio
-                    ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                    check_errori(ret, sockfd);
-                    len_HO = ntohl(len_NO);
+        // CASO 1: PRONTO SOCKET DI COMUNICAZIONE
+        if (FD_ISSET(sockfd, &read_fds)){
 
-                    // ricevo il messaggio 
-                    ret = recv(sockfd, buffer, len_HO, 0);
-                    check_errori(ret, sockfd);
+            // ricevo la lunghezza del messaggio
+            ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
+            check_errori(ret, sockfd);
+            len_HO = ntohl(len_NO);
 
-                    if (strncmp(buffer, "STOP", strlen("STOP")) == 0){ // strncmp compara le prime n lettere con n passato come terzo parametro
-                        // se il server ha detto "stop", avviso e termino.
-                        printf("AVVISO: il server si è arrestato tramite comando STOP.\n\n");
-                        fflush(stdout);
-                        close(sockfd);
-                        exit(0);
-                    }                       // altrimenti, il server sta inviando un messaggio da stampare
-                    printf("%s\n", buffer); // Mi serve allora solo stampare il messaggio.
-                    fflush(stdout);
-                }
-            }
-            else if(i == 0){ // CASO 2: PRONTO SOCKET stdin
+            // ricevo il messaggio 
+            ret = recv(sockfd, buffer, len_HO, 0);
+            check_errori(ret, sockfd);
 
+            // se il server ha detto "stop", avviso e termino.
+            if (strncmp(buffer, "STOP", strlen("STOP")) == 0){ // strncmp compara le prime n lettere con n passato come terzo parametro
+                printf("AVVISO: il server si è arrestato tramite comando STOP.\n\n");
+                fflush(stdout);
+                close(sockfd);
+                exit(0);
+            }              
+            // altrimenti, il server sta inviando un messaggio da stampare
+            printf("%s\n", buffer); // stampo il messaggio
+            fflush(stdout);
+        }        
+        // CASO 2: PRONTO SOCKET stdin
+        else{ 
                 fgets(buffer, BUFFER_SIZE, stdin);
 
                 // Estrae le parole dalla frase utilizzando la funzione 'strtok'
@@ -301,7 +299,6 @@ int main(int argc, char *argv[]){
                     printf("ERRORE! Comando inserito non valido. RIPROVARE...\n\n");
                     continue;
                 }
-            }
         }
     }
 

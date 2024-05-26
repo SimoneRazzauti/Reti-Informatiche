@@ -410,7 +410,7 @@ void stampa_stat_all()
 }
 
 // gestisce la recv/send ed errori.
-void errori_ritorno(int ret, int i, int max_fd, int n_table, int n_kitchen, int n_clients, fd_set *master)
+void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n_clients, fd_set *master)
 {
 
     char comando[BUFFER_SIZE];
@@ -432,7 +432,7 @@ void errori_ritorno(int ret, int i, int max_fd, int n_table, int n_kitchen, int 
     }
     else if (ret == 0) // da capire chi ha chiuso e abbassare il numero
     {
-        if (max_fd != 0)
+        if (fdmax != 0)
         {
             for (j = 0; j < n_clients; j++)
             {
@@ -571,7 +571,7 @@ void errori_ritorno(int ret, int i, int max_fd, int n_table, int n_kitchen, int 
 
 int main(int argc, char *argv[])
 {
-    int sockfd, max_fd, n_table, n_clients, n_kitchen, ch, check, c, com, newsockfd;
+    int sockfd, fdmax, n_table, n_clients, n_kitchen, ch, check, c, com, newsockfd;
     int i, j, ret, a;
     int n, tavoloScelto;
     struct sockaddr_in serv_addr, cli_addr;
@@ -644,7 +644,7 @@ int main(int argc, char *argv[])
 
     FD_SET(sockfd, &master);
     FD_SET(0, &master);
-    max_fd = sockfd;
+    fdmax = sockfd;
 
     comandi_disponibili();
     while (1)
@@ -653,14 +653,14 @@ int main(int argc, char *argv[])
         memset(comando, 0, sizeof(comando)); // metto a 0 comando, senno' se si preme semplicemente invio senza scrivere nulla, rimane l'ultima cosa ci era finita dentro
 
         read_fds = master;
-        ret = select(max_fd + 1, &read_fds, NULL, NULL, NULL);
+        ret = select(fdmax + 1, &read_fds, NULL, NULL, NULL);
         if (ret < 0)
         {
             perror("ERRORE SELECT:");
             exit(1);
         }
 
-        for (i = 0; i <= max_fd; i++)
+        for (i = 0; i <= fdmax; i++)
         {
             if (FD_ISSET(i, &read_fds))
             {
@@ -807,7 +807,7 @@ int main(int argc, char *argv[])
                         exit(1);
                     }
                     n = recv(newsockfd, (void *)buffer, validLen, 0);
-                    errori_ritorno(n, newsockfd, max_fd, n_table, n_kitchen, n_clients, &master);
+                    errori_ritorno(n, newsockfd, fdmax, n_table, n_kitchen, n_clients, &master);
 
                     switch (buffer[0])
                     {
@@ -879,9 +879,9 @@ int main(int argc, char *argv[])
                     }
 
                     FD_SET(newsockfd, &master); // se sono qui, identificazione e' andata bene. Allora adesso metto sockfd nel set.
-                    if (newsockfd > max_fd)
+                    if (newsockfd > fdmax)
                     {
-                        max_fd = newsockfd;
+                        fdmax = newsockfd;
                     }
                 }
 
@@ -889,19 +889,19 @@ int main(int argc, char *argv[])
                 {
                     memset(buffer, 0, sizeof(buffer));
                     n = recv(i, buffer, codiceLen, 0); // riceve il codice
-                    errori_ritorno(n, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                    errori_ritorno(n, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                     if (strncmp(buffer, "find", strlen("find")) == 0)
                     {
 
                         // ricevo lunghezza messaggio
                         ret = recv(i, &len_NO, sizeof(uint32_t), 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         len_HO = ntohl(len_NO);
 
                         // ricevo "num.Persone-GG-MM-AA ora cognome"
                         ret = recv(i, buffer, len_HO, 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                         // ricevo
 
@@ -934,10 +934,10 @@ int main(int argc, char *argv[])
                                 len_HO = strlen(buffer) + 1;
                                 len_NO = htonl(len_HO);
                                 ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                                errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                                errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                                 ret = send(i, buffer, len_HO, 0); // mando il messaggio
 
-                                errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                                errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                                 c++;
                             }
 
@@ -945,9 +945,9 @@ int main(int argc, char *argv[])
                             len_HO = strlen(stop);
                             len_NO = htonl(len_HO);
                             ret = send(i, &len_NO, sizeof(uint32_t), 0);
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                             ret = send(i, stop, len_HO, 0);
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                         else
                         {
@@ -984,9 +984,9 @@ int main(int argc, char *argv[])
                             len_HO = strlen(stop);
                             len_NO = htonl(len_HO);
                             ret = send(i, &len_NO, sizeof(uint32_t), 0);
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                             ret = send(i, stop, len_HO, 0);
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                     }
                     else if (strncmp(buffer, "book", strlen("book")) == 0)
@@ -994,12 +994,12 @@ int main(int argc, char *argv[])
                         tavoloScelto = 0;
                         // ricevo lunghezza messaggio
                         ret = recv(i, &len_NO, sizeof(uint32_t), 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         len_HO = ntohl(len_NO);
 
                         // ricevo "num.Persone-GG-MM-AA ora cognome"
                         ret = recv(i, buffer, len_HO, 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                         sscanf(buffer, "%d %d-%d-%d-%d %d %s", &tavoloScelto, &numPersone, &giorno, &mese, &anno, &ora, cognome);
                         sprintf(data, "%d-%d-%d", giorno, mese, anno);
@@ -1021,16 +1021,16 @@ int main(int argc, char *argv[])
                             len_HO = strlen(conferma);
                             len_NO = htonl(len_HO);
                             ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                             ret = send(i, conferma, len_HO, 0); // mando il messaggio
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                             len_HO = strlen(codPrenotazione);
                             len_NO = htonl(len_HO);
                             ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                             ret = send(i, codPrenotazione, len_HO, 0); // mando il messaggio
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                         else
                         { // occupato nel frattempo
@@ -1039,20 +1039,20 @@ int main(int argc, char *argv[])
                             len_HO = strlen(conferma);
                             len_NO = htonl(len_HO);
                             ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                             ret = send(i, conferma, len_HO, 0); // mando il messaggio
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                     }
                     else if (strncmp(buffer, "code", strlen("code")) == 0)
                     {
                         ret = recv(i, &len_NO, sizeof(uint32_t), 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         len_HO = ntohl(len_NO);
 
                         // ricevo CODICE TX-GG-MM-AA
                         ret = recv(i, buffer, len_HO, 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                         if (controlla_prenotazione(buffer))
                         {
@@ -1100,9 +1100,9 @@ int main(int argc, char *argv[])
                             len_HO = strlen(arraycopia) + 1;
                             len_NO = htonl(len_HO);
                             ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                             ret = send(i, arraycopia, len_HO, 0); // mando il messaggio
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
 
                         fclose(fp); // chiude il file
@@ -1111,9 +1111,9 @@ int main(int argc, char *argv[])
                         len_HO = strlen(stop);
                         len_NO = htonl(len_HO);
                         ret = send(i, &len_NO, sizeof(uint32_t), 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         ret = send(i, stop, len_HO, 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                     }
                     else if (strncmp(buffer, "comm", strlen("comm")) == 0)
                     {
@@ -1130,10 +1130,10 @@ int main(int argc, char *argv[])
                         }
 
                         ret = recv(i, &len_NO, sizeof(uint32_t), 0); // ricevo il TXX e lo salvo in "copia"
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         len_HO = ntohl(len_NO);
                         ret = recv(i, copia, len_HO, 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                         if (quante_comande >= MAX_COMANDE_IN_ATTESA)
                         {
@@ -1155,10 +1155,10 @@ int main(int argc, char *argv[])
                         for (j = 0; j < n_comande - 1; j++)
                         {
                             ret = recv(i, &len_NO, sizeof(uint32_t), 0);
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                             len_HO = ntohl(len_NO);
                             ret = recv(i, buffer, len_HO, 0);
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                             sscanf(buffer, "%2s-%d", coda_comande[quante_comande].desc[j], &coda_comande[quante_comande].quantita[j]);
                         }
                         strcpy(coda_comande[quante_comande].tav_num, copia);
@@ -1170,7 +1170,7 @@ int main(int argc, char *argv[])
 
                         quante_comande++;
                         strcpy(comando, "** Nuova comanda **"); // Mando l'avviso a tutti i K.D. connessi
-                        for (j = 0; j <= max_fd; j++)
+                        for (j = 0; j <= fdmax; j++)
                         { // escludo lo 0
                             if (array_kds[j] != -1)
                             {
@@ -1194,10 +1194,10 @@ int main(int argc, char *argv[])
                     else if (strncmp(buffer, "cont", strlen("cont")) == 0)
                     {
                         ret = recv(i, &len_NO, sizeof(uint32_t), 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         len_HO = ntohl(len_NO);
                         ret = recv(i, TavConto, len_HO, 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                         check = 0;
                         for (j = 0; j < quante_comande; j++)
@@ -1205,7 +1205,7 @@ int main(int argc, char *argv[])
                             if (strcmp(coda_comande[j].tav_num, TavConto) == 0 && (coda_comande[j].stato == 'p' || coda_comande[j].stato == 'a')) // c'è sempre qualche ordinazione
                             {                                                                                                                     // Se ci sono sempre comande in Preparazione o in Attesa non può confermare il conto. (Il conto viene calcolato poi direttamente dal T.D. per alleggerire il carico del server)
                                 ret = send(i, (void *)negazione, validLen, 0);
-                                errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                                errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                                 check = 1;
                                 break;
                             }
@@ -1214,7 +1214,7 @@ int main(int argc, char *argv[])
                         if (check == 0)
                         {
                             ret = send(i, (void *)identificativo, validLen, 0);
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                     }
                     else if (strncmp(buffer, "take", strlen("take")) == 0)
@@ -1228,13 +1228,13 @@ int main(int argc, char *argv[])
                                 len_HO = strlen(coda_comande[j].tav_num) + 1;
                                 len_NO = htonl(len_HO);
                                 ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                                errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                                errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                                 ret = send(i, coda_comande[j].tav_num, len_HO, 0); // mando codice tavolo
-                                errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                                errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                                 ret = send(i, &coda_comande[j].id, sizeof(uint16_t), 0); // mando il messaggio
-                                errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                                errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                                 for (a = 0; a < coda_comande[j].num_comande; a++) // Mando tutte le comande
                                 {
@@ -1243,9 +1243,9 @@ int main(int argc, char *argv[])
                                     len_HO = strlen(comando) + 1;
                                     len_NO = htonl(len_HO);
                                     ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                                    errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                                    errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                                     ret = send(i, comando, len_HO, 0); // mando il messaggio
-                                    errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                                    errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                                 }
                                 coda_comande[j].stato = 'p';      // Adesso sarà in Preparazione
                                 coda_comande[j].kd_assegnato = i; // Socket del K.D. che ha preso la comanda
@@ -1274,9 +1274,9 @@ int main(int argc, char *argv[])
                         len_HO = strlen(stop);
                         len_NO = htonl(len_HO);
                         ret = send(i, &len_NO, sizeof(uint32_t), 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         ret = send(i, stop, len_HO, 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                     }
                     else if (strncmp(buffer, "show", strlen("show")) == 0)
                     {
@@ -1288,9 +1288,9 @@ int main(int argc, char *argv[])
                                 len_HO = strlen(comando) + 1;
                                 len_NO = htonl(len_HO);
                                 ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                                errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                                errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                                 ret = send(i, comando, len_HO, 0); // mando il messaggio
-                                errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                                errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                                 for (a = 0; a < coda_comande[j].num_comande; a++)
                                 {
@@ -1299,9 +1299,9 @@ int main(int argc, char *argv[])
                                     len_HO = strlen(comando) + 1;
                                     len_NO = htonl(len_HO);
                                     ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                                    errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                                    errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                                     ret = send(i, comando, len_HO, 0); // mando il messaggio
-                                    errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                                    errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                                 }
                             }
                         }
@@ -1310,19 +1310,19 @@ int main(int argc, char *argv[])
                         len_HO = strlen(stop);
                         len_NO = htonl(len_HO);
                         ret = send(i, &len_NO, sizeof(uint32_t), 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         ret = send(i, stop, len_HO, 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                     }
                     else if (strncmp(buffer, "read", strlen("read")) == 0)
                     {
                         check = 0;
 
                         ret = recv(i, &len_NO, sizeof(uint32_t), 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         len_HO = ntohl(len_NO);
                         ret = recv(i, buffer, len_HO, 0);
-                        errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                        errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                         sscanf(buffer, "com%d-%s", &com, TavConto);
                         com--;
@@ -1394,12 +1394,12 @@ int main(int argc, char *argv[])
                         {
                             printf("Comanda in servizio! \n\n");
                             ret = send(i, (void *)identificativo, validLen, 0);
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                         else if (check == 0)
                         {
                             ret = send(i, (void *)negazione, validLen, 0);
-                            errori_ritorno(ret, i, max_fd, n_table, n_kitchen, n_clients, &master);
+                            errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                     }
                 }

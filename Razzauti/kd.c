@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     fd_set master; // variabili per set
     fd_set read_fds;
 
-    int max_fd;
+    int fdmax;
     int sockfd, ret, wordLen, j; // variabili per i socket + variabili utili
 
     in_port_t porta = htons(atoi(argv[1]));
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
     FD_SET(0, &master);
     FD_SET(sockfd, &master);
 
-    max_fd = sockfd;
+    fdmax = sockfd;
     // invio codice identificativo
     ret = send(sockfd, (void *)identificativo, validLen, 0);
     check_errori(ret, sockfd);
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     {
         memset(buffer, 0, sizeof(buffer));
         read_fds = master;
-        select(max_fd + 1, &read_fds, NULL, NULL, NULL);
+        select(fdmax + 1, &read_fds, NULL, NULL, NULL);
         if (FD_ISSET(sockfd, &read_fds))
         { // PRONTO SOCKET DI COMUNICAZIONE
             ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);

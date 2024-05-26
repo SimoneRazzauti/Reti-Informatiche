@@ -9,10 +9,10 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "funzioni.c"	// funzioni varie
+#include "funzioni.c" // funzioni varie
 
-#define BUFFER_SIZE 1024 // dimensione massima del buffer
-#define BENVENUTO_CLIENT "BENVENUTO CLIENTE\nComandi disponibili...\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n"
+#define BUFFER_SIZE 1024 // dimensione max del buffer
+#define BENVENUTO_CLIENT "BENVENUTO CLIENTE\nComandi disponibili...\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n" // messaggio di benvenuto 
 
 #define MAX_WORDS 10       // Numero massimo di parole che possono essere estratte dalla frase
 #define MAX_WORD_LENGTH 50 // Lunghezza massima di ogni parola
@@ -22,7 +22,7 @@
 
 int main(int argc, char *argv[])
 {
-    int sockfd, ret, max_fd; // variabili per i socket
+    int sockfd, ret; // variabili per i socket
     char buffer[BUFFER_SIZE];
     struct sockaddr_in serv_addr, cli_addr;
     in_port_t porta = htons(atoi(argv[1])); // utilizzo della funzione atoi per convertire la stringa rappresentante il numero di porta inserito dall'utente da terminale in un intero
@@ -38,8 +38,14 @@ int main(int argc, char *argv[])
     char *datiInformazioni[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
     int word_count = 0;                // Il numero di parole estratte dalla frase
 
-    fd_set master; // variabili per set
+    // set di descrittori da monitorare
+    fd_set master; 
+
+    // sed di descrittori pronti
     fd_set read_fds;
+
+    // Descrittore max
+	int fdmax;
 
     uint32_t len_HO; // lunghezza del messaggio espressa in host order
     uint32_t len_NO; // lunghezza del messaggio espressa in network order
@@ -88,7 +94,7 @@ int main(int argc, char *argv[])
     FD_SET(0, &master);
     FD_SET(sockfd, &master);
 
-    max_fd = sockfd;
+    fdmax = sockfd;
     // invio codice identificativo Client
     ret = send(sockfd, (void *)identificativo, validLen, 0);
     check_errori(ret, sockfd);
@@ -109,7 +115,7 @@ int main(int argc, char *argv[])
     {
         memset(buffer, 0, sizeof(buffer)); // In caso contrario, rimarrebbe l'ultima cosa che c'era dentro.
         read_fds = master;
-        select(max_fd + 1, &read_fds, NULL, NULL, NULL);
+        select(fdmax + 1, &read_fds, NULL, NULL, NULL);
 
         if (FD_ISSET(sockfd, &read_fds))
         { // PRONTO SOCKET DI COMUNICAZIONE

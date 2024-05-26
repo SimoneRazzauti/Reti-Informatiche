@@ -86,7 +86,7 @@ int controllo_menu(char datiInformazioni[10], int quanti_piatti)
 
 int main(int argc, char *argv[])
 {
-    int sockfd, ret, max_fd; // variabili per i socket
+    int sockfd, ret, fdmax; // variabili per i socket
 
     fd_set master; // variabili per set
     fd_set read_fds;
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
     FD_SET(0, &master);
     FD_SET(sockfd, &master);
 
-    max_fd = sockfd;
+    fdmax = sockfd;
     // invio codice identificativo
     ret = send(sockfd, (void *)identificativo, validLen, 0);
     check_errori(ret, sockfd);
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
     {
         memset(buffer, 0, sizeof(buffer)); // In caso contrario, rimarrebbe l'ultima cosa che c'era dentro.
         read_fds = master;
-        select(max_fd + 1, &read_fds, NULL, NULL, NULL);
+        select(fdmax + 1, &read_fds, NULL, NULL, NULL);
 
         if (FD_ISSET(sockfd, &read_fds))
         { // PRONTO SOCKET DI COMUNICAZIONE

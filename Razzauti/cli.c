@@ -281,7 +281,7 @@ int main(int argc, char *argv[]){
                         printf("Ripetere prenotazione. \n Il tavolo che hai scelto è stato occupato. \n");
                     }
 
-                    // **** prenotazione avvenuta con successo
+                    // **** prenotazione effettuata con successo
                     else{
                         memset(buffer, 0, sizeof(buffer));
                         ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
@@ -290,7 +290,7 @@ int main(int argc, char *argv[]){
 
                         ret = recv(sockfd, buffer, len_HO, 0);
                         check_errori(ret, sockfd);
-                        printf("Prenotazione avvenuta con successo, codice: %s.\n", buffer);
+                        printf("Prenotazione effettuata con successo, codice: %s.\n", buffer);
                     }
                 }
             }

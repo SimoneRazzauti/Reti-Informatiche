@@ -27,14 +27,14 @@ int main(int argc, char *argv[]){
 
     // variabili di utilità
     char id[] = "C\0"; // codice per riconoscere il Client
-    char *codice = NULL; // find o book
     char cognome[25];
+    int giorno, mese, anno, ora;
     int quantita, chunk_len, nPersone, tavoliDisp = 0; // tavoliDisp = numero tavoli restituiti dalla Find
     int priorita = 0; // server a controllare che prima si faccia la find e dopo book
-    int giorno, mese, anno, ora;
 
-    char *datiInformazioni[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole estratte dal buffer
     int chunk_count = 0; // numero di parole estratte dal buffer
+    char *info[MAX_WORDS]; // array di puntatori in cui vengono memorizzate le parole estratte dal buffer con la strtok
+    char *codice = NULL; // find o book
 
     // set di descrittori da monitorare
     fd_set master; 
@@ -151,20 +151,23 @@ int main(int argc, char *argv[]){
                 }
 
                 // Aggiunge la parola all'array di parole
-                datiInformazioni[chunk_count] = chunk; // Memorizza il puntatore alla parola nell'array
+                info[chunk_count] = chunk; // Memorizza il puntatore alla parola nell'array
                 chunk_count++;                        // Incrementa il contatore di parole estratte
 
                 // Estrae la prossima parola
                 chunk = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
             }
 
-            // Adesso tutte le parole estratte da input sono salvate a 
-            if (strcmp(datiInformazioni[0], "find") == 0)
-            { // se siamo qui datiInformazioni[1] = cognome, datiInformazioni[2] = Num. persone, datiInformazioni[3] = data e datiInformazioni[4] = ora
-                // analizza la stringa e assegna i valori alle variabili
-                sscanf(datiInformazioni[3], "%d-%d-%d", &giorno, &mese, &anno);
-                sscanf(datiInformazioni[4], "%d", &ora);
-                sscanf(datiInformazioni[2], "%d", &nPersone);
+            // ******* Adesso tutte le parole estratte da input sono salvate nell'array info
+
+            // Se la prima parola è find ho digitato il comando find 
+            if (strcmp(info[0], "find") == 0){ 
+            // info[1] = cognome, info[2] = Num. persone, info[3] = data e info[4] = ora
+
+                // inizializzo le variabili
+                sscanf(info[2], "%d", &nPersone);
+                sscanf(info[3], "%d-%d-%d", &giorno, &mese, &anno);
+                sscanf(info[4], "%d", &ora);
 
                 codice = "find\0";
                 // controllo data inserita
@@ -175,7 +178,7 @@ int main(int argc, char *argv[]){
                     ret = send(sockfd, (void *)codice, codiceLen, 0);
                     check_errori(ret, sockfd);
 
-                    sscanf(datiInformazioni[1], "%s", cognome);
+                    sscanf(info[1], "%s", cognome);
 
                     sprintf(buffer, "%d-%d-%d-%d %d %s", nPersone, giorno, mese, anno, ora, cognome);
                     len_HO = strlen(buffer) + 1;
@@ -228,15 +231,15 @@ int main(int argc, char *argv[]){
 
                     // dopo questo possiamo andare a book. Inserito alla fine, dopo tutte le conferme è valido
                 }
-                else if (strcmp(datiInformazioni[0], "book") == 0 && priorita == 0)
+                else if (strcmp(info[0], "book") == 0 && priorita == 0)
                 {
                     printf("Prima del book eseguire una Find correttamente\n\n");
                     fflush(stdout);
                 }
-                else if (strcmp(datiInformazioni[0], "book") == 0 && priorita == 1)
+                else if (strcmp(info[0], "book") == 0 && priorita == 1)
                 {
 
-                    sscanf(datiInformazioni[1], "%d", &quantita);
+                    sscanf(info[1], "%d", &quantita);
 
                     if (tavoliDisp < quantita) // se il numeri scelto è > di quanti la find abbia restituito
                     {
@@ -289,7 +292,7 @@ int main(int argc, char *argv[]){
                         }
                     }
                 }
-                else if (strcmp(datiInformazioni[0], "esc") == 0)
+                else if (strcmp(info[0], "esc") == 0)
                 {
                     printf("Uscita in corso...\nArrivederci :)\n\n");
                     fflush(stdout);

@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     char *word;
     char buffer[BUFFER_SIZE];
 
-    char *datiInformazioni[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
+    char *info[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
     int chunk_count = 0;                // Il numero di parole estratte dalla frase
 
     uint32_t len_HO; // lunghezza del messaggio espressa in host order
@@ -183,14 +183,14 @@ int main(int argc, char *argv[])
                 }
 
                 // Aggiungi la parola all'array di parole
-                datiInformazioni[chunk_count] = word;
+                info[chunk_count] = word;
                 chunk_count++; // Incrementa il contatore di parole estratte
 
                 // Estrai la prossima parola
                 word = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
             }
 
-            if (strcmp(datiInformazioni[0], "take") == 0)
+            if (strcmp(info[0], "take") == 0)
             {
                 // mando codice "take"
                 codice = "take\0";
@@ -242,7 +242,7 @@ int main(int argc, char *argv[])
                 }
                 quante_comande++;
             }
-            else if (strcmp(datiInformazioni[0], "show") == 0)
+            else if (strcmp(info[0], "show") == 0)
             {
                 codice = "show\0";
                 // mando codice "show"
@@ -269,19 +269,19 @@ int main(int argc, char *argv[])
                     fflush(stdout);
                 }
             }
-            else if (strcmp(datiInformazioni[0], "ready") == 0)
+            else if (strcmp(info[0], "ready") == 0)
             {
                 // mando codice "ready"
                 codice = "read\0"; // mando codice "read"
                 ret = send(sockfd, (void *)codice, codiceLen, 0);
                 check_errori(ret, sockfd);
 
-                len_HO = strlen(datiInformazioni[1]) + 1;
+                len_HO = strlen(info[1]) + 1;
                 len_NO = htonl(len_HO);
                 ret = send(sockfd, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                 check_errori(ret, sockfd);
 
-                ret = send(sockfd, datiInformazioni[1], len_HO, 0); // mando il messaggio
+                ret = send(sockfd, info[1], len_HO, 0); // mando il messaggio
                 check_errori(ret, sockfd);
 
                 ret = recv(sockfd, (void *)buffer, LEN_ID, 0);

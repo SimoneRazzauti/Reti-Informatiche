@@ -68,11 +68,11 @@ struct comanda
 struct comanda coda_comande[MAX_COMANDE_IN_ATTESA]; // coda di comande in attesa
 
 // Controlla se i piatti selezionati sono nel Menu
-int controllo_menu(char datiInformazioni[10], int quanti_piatti)
+int controllo_menu(char info[10], int quanti_piatti)
 {
     int x = 0;
     char piattoN[2];
-    sscanf(datiInformazioni, "%2s-%*d", piattoN); // mi salvo il piatto per controllare che sia nel Menu
+    sscanf(info, "%2s-%*d", piattoN); // mi salvo il piatto per controllare che sia nel Menu
 
     for (x = 0; x <= quanti_piatti; x++)
     {
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
     int errore = 0; // controllo se il piatto scelto è nel menu
 
     int richiesto = 0;                 // controlo se e' stato richiesto il menu per il controllo del Conto
-    char *datiInformazioni[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
+    char *info[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
     uint16_t chunk_count = 0;           // Il numero di parole estratte dalla frase
 
     uint32_t len_HO; // lunghezza del messaggio espressa in host order
@@ -259,18 +259,18 @@ int main(int argc, char *argv[])
                 }
 
                 // Aggiungi la parola all'array di parole
-                datiInformazioni[chunk_count] = word; // Memorizza il puntatore alla parola nell'array
+                info[chunk_count] = word; // Memorizza il puntatore alla parola nell'array
                 chunk_count++;                        // Incrementa il contatore di parole estratte
 
                 // Estrai la prossima parola
                 word = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
             }
 
-            if (strcmp(datiInformazioni[0], "help") == 0)
+            if (strcmp(info[0], "help") == 0)
             {
                 comandi_table();
             }
-            else if (strcmp(datiInformazioni[0], "menu") == 0)
+            else if (strcmp(info[0], "menu") == 0)
             {
                 codice = "menu\0";
                 if (menuPresente == 0)
@@ -321,11 +321,11 @@ int main(int argc, char *argv[])
                 printf("AVVISO: Controlla il Menu' prima di fare una comanda o chiedere il conto.\n\n");
                 fflush(stdout);
             }
-            else if ((strcmp(datiInformazioni[0], "comanda") == 0) && richiesto == 1)
+            else if ((strcmp(info[0], "comanda") == 0) && richiesto == 1)
             {
                 for (j = 1; j < chunk_count; j++)
                 { // Controllo se i piatti scelti vanno bene
-                    if (controllo_menu(datiInformazioni[j], quanti_piatti) == 0)
+                    if (controllo_menu(info[j], quanti_piatti) == 0)
                     {
                         errore = 1;
                         break;
@@ -371,17 +371,17 @@ int main(int argc, char *argv[])
                     k = 0;
                     for (j = 1; j < chunk_count; j++)
                     {
-                        len_HO = strlen(datiInformazioni[j]) + 1;
+                        len_HO = strlen(info[j]) + 1;
                         len_NO = htonl(len_HO);
                         // mando lunghezza del codice
                         ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
                         check_errori(ret, sockfd);
 
                         // mando MESSAGGIO comande PIATTO-QUANTITA
-                        ret = send(sockfd, (void *)datiInformazioni[j], len_HO, 0);
+                        ret = send(sockfd, (void *)info[j], len_HO, 0);
                         check_errori(ret, sockfd);
 
-                        sscanf(datiInformazioni[j], "%2s-%d", coda_comande[quante_comande].desc[k],
+                        sscanf(info[j], "%2s-%d", coda_comande[quante_comande].desc[k],
                                &coda_comande[quante_comande].quantita[k]); // mi salvo le comande
 
                         k++;
@@ -394,7 +394,7 @@ int main(int argc, char *argv[])
                     printf("AVVISO: COMANDA SPEDITA! \n\n");
                 }
             }
-            else if ((strcmp(datiInformazioni[0], "conto") == 0) && richiesto == 1)
+            else if ((strcmp(info[0], "conto") == 0) && richiesto == 1)
             {
 
                 codice = "cont\0"; // mando codice "cont"
@@ -449,7 +449,7 @@ int main(int argc, char *argv[])
                 close(sockfd);
                 exit(0);
             }
-            else if (strcmp(datiInformazioni[0], "esc") == 0)
+            else if (strcmp(info[0], "esc") == 0)
             {
                 printf("Uscita in corso...\n\n");
                 fflush(stdout);

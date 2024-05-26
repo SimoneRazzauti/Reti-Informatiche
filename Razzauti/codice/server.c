@@ -17,13 +17,10 @@ int main(int argc, char* argv[]){
 		socket_td[indice] = -1;
 	for(indice = 0; indice < nMaxKd; indice++)
 		socket_kd[indice] = -1;
-	
 	for(indice = 0; indice < nTavoli; indice++)
 		prenotazioni[indice] = NULL;
 	for(indice = 0; indice < nTavoli; indice++)
 		comande[indice] = NULL;
-	listaThread = NULL;
-	
 	for(indice = 0; indice < nTavoli; indice++)
 		tavoli_logged[indice] = 0;
 
@@ -284,87 +281,17 @@ int main(int argc, char* argv[]){
 						case 0: // Client che vuole utilizzare servizi
 							for(posto = 0; posto < nMaxClient; posto++)
 								if(i == socket_client[posto]) break;
-
 							FD_CLR(i, &master);
-
-							// Creo un nuovo elemento della lista di thread e lo alloco
-							struct lis_thread *p = (struct lis_thread*)malloc(sizeof(struct lis_thread));
-							p->t = (pthread_t*)malloc(sizeof(pthread_t));
-
-							// Creo il thread
-							(void) pthread_create(p->t, NULL, gestisciClient, (void*)&socket_client[posto]);
-
-							// Creo un puntatore per inserirlo in lista
-							struct lis_thread *inserisciThread = listaThread;
-							if(inserisciThread == NULL) {
-								inserisciThread = p;
-							}
-							else {
-								while(inserisciThread->prossimo != NULL)
-									inserisciThread = inserisciThread->prossimo;
-								// Lo inserisco
-								inserisciThread->prossimo = p;
-							}
-							printf("Creo thread per un client\n");
-							fflush(stdout);
-
 							break;
 						case 1: // Table device che vuole utilizzare servizi
 							for(posto = 0; posto < nMaxTd; posto++)
 								if(i == socket_td[posto]) break;
-
-							FD_CLR(i, &master);
-
-							// Creo un nuovo elemento della lista di thread e lo alloco
-							p = (struct lis_thread*)malloc(sizeof(struct lis_thread));
-							p->t = (pthread_t*)malloc(sizeof(pthread_t));
-
-							// Creo il thread
-							(void) pthread_create(p->t, NULL, gestisciTd, (void*)&socket_td[posto]);
-
-							// Creo un puntatore per inserirlo in lista
-							inserisciThread = listaThread;
-							if(inserisciThread == NULL) {
-								inserisciThread = p;
-							}
-							else {
-								while(inserisciThread->prossimo != NULL)
-									inserisciThread = inserisciThread->prossimo;
-								// Lo inserisco
-								inserisciThread->prossimo = p;
-							}
-
-							printf("Creo thread per un table device\n");
-							fflush(stdout);
-							
+									FD_CLR(i, &master);
 							break;
 						case 2: // Kitchen device che vuole utilizzare servizi
 							for(posto = 0; posto < nMaxKd; posto++)
 								if(i == socket_kd[posto]) break;
-
 							FD_CLR(i, &master);
-
-							// Creo un nuovo elemento della lista di thread e lo alloco
-							p = (struct lis_thread*)malloc(sizeof(struct lis_thread));
-							p->t = (pthread_t*)malloc(sizeof(pthread_t));
-
-							// Creo il thread
-							(void) pthread_create(p->t, NULL, gestisciKd, (void*)&socket_kd[posto]);
-
-							// Creo un puntatore per inserirlo in lista
-							inserisciThread = listaThread;
-							if(inserisciThread == NULL) {
-								inserisciThread = p;
-							}
-							else {
-								while(inserisciThread->prossimo != NULL)
-									inserisciThread = inserisciThread->prossimo;
-								// Lo inserisco
-								inserisciThread->prossimo = p;
-							}
-							printf("Creo thread per un kitchen device\n");
-							fflush(stdout);
-
 							break;
 						default:
 							perror("Errore nell'identificare il socket\n");

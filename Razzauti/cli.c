@@ -102,7 +102,7 @@ int main(int argc, char *argv[]){
 
     // CICLO PRINCIPALE
     while (1){
-        memset(buffer, 0, sizeof(buffer)); // ripulsco il buffer di comunicazione
+        memset(buffer, 0, BUFFER_SIZE); // ripulsco il buffer di comunicazione
         read_fds = master; // copia del set da monitorare
         ret = select(fdmax + 1, &read_fds, NULL, NULL, NULL);
 		if(ret < 0) {
@@ -268,6 +268,7 @@ int main(int argc, char *argv[]){
                     check_errori(ret, sockfd);
 
                     // ricevo se ha confermato prenotazione o no
+                    memset(buffer, 0, BUFFER_SIZE); // pulisco il buffer
                     ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
                     check_errori(ret, sockfd);
                     len_HO = ntohl(len_NO);
@@ -283,7 +284,7 @@ int main(int argc, char *argv[]){
 
                     // **** prenotazione effettuata con successo
                     else{
-                        memset(buffer, 0, sizeof(buffer));
+                        memset(buffer, 0, BUFFER_SIZE);
                         ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
                         check_errori(ret, sockfd);
                         len_HO = ntohl(len_NO);

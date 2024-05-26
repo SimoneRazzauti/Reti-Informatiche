@@ -135,89 +135,89 @@ int main(int argc, char *argv[]){
         }        
         // CASO 2: PRONTO SOCKET stdin
         else{ 
-                fgets(buffer, BUFFER_SIZE, stdin);
+            fgets(buffer, BUFFER_SIZE, stdin);
 
-                // Estrae le parole dalla frase utilizzando la funzione 'strtok'
-                char *word = strtok(buffer, " "); // Estrae la prima parola utilizzando lo spazio come delimitatore
-                word_count = 0;
-                while (word != NULL && word_count < MAX_WORDS)
-                { // Finchè ci sono parole da estrarre e non si supera il limite massimo
-                    // Rimuove il carattere di fine riga dalla parola se presente
-                    wordLen = strlen(word);
-                    if (word[wordLen - 1] == '\n')
-                    {
-                        word[wordLen - 1] = '\0';
-                    }
-
-                    // Aggiunge la parola all'array di parole
-                    datiInformazioni[word_count] = word; // Memorizza il puntatore alla parola nell'array
-                    word_count++;                        // Incrementa il contatore di parole estratte
-
-                    // Estrae la prossima parola
-                    word = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
+            // Estrae le parole dalla frase utilizzando la funzione 'strtok'
+            char *word = strtok(buffer, " "); // Estrae la prima parola utilizzando lo spazio come delimitatore
+            word_count = 0;
+            while (word != NULL && word_count < MAX_WORDS)
+            { // Finchè ci sono parole da estrarre e non si supera il limite massimo
+                // Rimuove il carattere di fine riga dalla parola se presente
+                wordLen = strlen(word);
+                if (word[wordLen - 1] == '\n')
+                {
+                    word[wordLen - 1] = '\0';
                 }
 
-                if (strcmp(datiInformazioni[0], "find") == 0)
-                { // se siamo qui datiInformazioni[1] = cognome, datiInformazioni[2] = Num. persone, datiInformazioni[3] = data e datiInformazioni[4] = ora
-                    // analizza la stringa e assegna i valori alle variabili
-                    sscanf(datiInformazioni[3], "%d-%d-%d", &giorno, &mese, &anno);
-                    sscanf(datiInformazioni[4], "%d", &ora);
-                    sscanf(datiInformazioni[2], "%d", &numPersone);
+                // Aggiunge la parola all'array di parole
+                datiInformazioni[word_count] = word; // Memorizza il puntatore alla parola nell'array
+                word_count++;                        // Incrementa il contatore di parole estratte
 
-                    codice = "find\0";
-                    // controllo data inserita
-                    if (check_data(giorno, mese, anno, ora)){
+                // Estrae la prossima parola
+                word = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
+            }
+
+            if (strcmp(datiInformazioni[0], "find") == 0)
+            { // se siamo qui datiInformazioni[1] = cognome, datiInformazioni[2] = Num. persone, datiInformazioni[3] = data e datiInformazioni[4] = ora
+                // analizza la stringa e assegna i valori alle variabili
+                sscanf(datiInformazioni[3], "%d-%d-%d", &giorno, &mese, &anno);
+                sscanf(datiInformazioni[4], "%d", &ora);
+                sscanf(datiInformazioni[2], "%d", &numPersone);
+
+                codice = "find\0";
+                // controllo data inserita
+                if (check_data(giorno, mese, anno, ora)){
                     
 
-                            // mando codice "find"
-                            ret = send(sockfd, (void *)codice, codiceLen, 0);
-                            check_errori(ret, sockfd);
+                    // mando codice "find"
+                    ret = send(sockfd, (void *)codice, codiceLen, 0);
+                    check_errori(ret, sockfd);
 
-                            sscanf(datiInformazioni[1], "%s", cognome);
+                    sscanf(datiInformazioni[1], "%s", cognome);
 
-                            sprintf(buffer, "%d-%d-%d-%d %d %s", numPersone, giorno, mese, anno, ora, cognome);
-                            len_HO = strlen(buffer) + 1;
-                            len_NO = htonl(len_HO);
+                    sprintf(buffer, "%d-%d-%d-%d %d %s", numPersone, giorno, mese, anno, ora, cognome);
+                    len_HO = strlen(buffer) + 1;
+                    len_NO = htonl(len_HO);
 
-                            // mando lunghezza del messaggio
-                            ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
-                            check_errori(ret, sockfd);
+                    // mando lunghezza del messaggio
+                    ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
+                    check_errori(ret, sockfd);
 
-                            // mando il vero e proprio MESSAGGIO
-                            ret = send(sockfd, (void *)buffer, len_HO, 0);
-                            check_errori(ret, sockfd);
+                    // mando il vero e proprio MESSAGGIO
+                    ret = send(sockfd, (void *)buffer, len_HO, 0);
+                    check_errori(ret, sockfd);
 
-                            sleep(1);
+                    sleep(1);
 
-                            printf("I tavoli disponibili che soddisfano la tua richiesta sono:\n");
-                            tavoliDisp = 0;
-                            for (;;)
-                            {
-                                ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                                check_errori(ret, sockfd);
-                                len_HO = ntohl(len_NO);
+                    printf("I tavoli disponibili che soddisfano la tua richiesta sono:\n");
+                    tavoliDisp = 0;
+                    for (;;)
+                    {
+                        ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
+                        check_errori(ret, sockfd);
+                        len_HO = ntohl(len_NO);
 
-                                ret = recv(sockfd, buffer, len_HO, 0);
-                                check_errori(ret, sockfd);
+                        ret = recv(sockfd, buffer, len_HO, 0);
+                        check_errori(ret, sockfd);
 
-                                if (strncmp(buffer, "STOP", strlen("STOP")) == 0) // per fare terminare il loop
-                                {
-                                    printf("\n");
-                                    fflush(stdout);
-                                    if (tavoliDisp == 0)
-                                    { // se nessun tavolo è stato proposto, avviso
-                                        printf("Non sono disponibili tavoli che soddisfino i requisiti richiesti. \nTi invitiamo a provare con una data differente o con un numero inferiore di ospiti.\n");
-                                        fflush(stdout);
-                                    }
-                                    break;
-                                }
-                                tavoliDisp++;
-                                printf("%s\n", buffer);
-                            }
+                        if (strncmp(buffer, "STOP", strlen("STOP")) == 0) // per fare terminare il loop
+                        {
+                            printf("\n");
                             fflush(stdout);
+                            if (tavoliDisp == 0)
+                            { // se nessun tavolo è stato proposto, avviso
+                                printf("Non sono disponibili tavoli che soddisfino i requisiti richiesti. \nTi invitiamo a provare con una data differente o con un numero inferiore di ospiti.\n");
+                                fflush(stdout);
+                            }
+                            break;
+                        }
+                        tavoliDisp++;
+                        printf("%s\n", buffer);
+                    }
+                    fflush(stdout);
 
-                            // TAVOLI DISPONIBILI
-                            ordine = 1; // adesso è possibile selezionare book
+                    // TAVOLI DISPONIBILI
+                    ordine = 1; // adesso è possibile selezionare book
                     }
                     else{
                         printf("Hai inserito una data non valida oppure non è una data futura, riprova.\n");

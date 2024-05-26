@@ -242,7 +242,7 @@ int main(int argc, char *argv[])
 
                 codice = "find\0";
                 // controllo data inserita
-                if (data_valida(giorno, mese, anno, ora)){
+                if (check_data(giorno, mese, anno, ora)){
                   
 
                         // mando codice "find"

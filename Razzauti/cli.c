@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "funzioni.h"	// Firme delle funzioni
+#include "funzioni.c"	// Firme delle funzioni
 
 #define BUFFER_SIZE 1024 // dimensione massima del buffer
 #define BENVENUTO_CLIENT "BENVENUTO CLIENTE\nComandi disponibili...\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n"

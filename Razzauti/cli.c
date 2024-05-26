@@ -234,7 +234,7 @@ int main(int argc, char *argv[]){
             
             // Se la prima parola estratta dal buffer è book gestisco il comando book
             else if (strcmp(info[0], "book") == 0 && priorita == 0){
-                printf("Non puoi prenotare un tavolo prima di effettuare una prenotazione. Riprova con una find <cognome> <n_persone> <data> <ora>\n\n");
+                printf("Non puoi prenotare un tavolo prima di effettuare una prenotazione. Riprova con una find.\n\n");
                 fflush(stdout);
             }
             // book corretta, gestisco...

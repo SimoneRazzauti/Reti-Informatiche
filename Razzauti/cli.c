@@ -245,7 +245,7 @@ int main(int argc, char *argv[]){
                 if (tavoliDisp < quantita) // se il numeri scelto è > di quanti la find abbia restituito
                 {
                     printf("Numero non valido, ri eseguire la prenotazione...\n");
-                    // priorita = 0;
+                     priorita = 0;
                     fflush(stdout);
                     continue;
                 }

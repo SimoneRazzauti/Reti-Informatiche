@@ -304,7 +304,7 @@ int main(int argc, char *argv[]){
             }
             else
             { // nessun comando inserito
-                printf("ERRORE! Comando inserito non valido. RIPROVARE...\n\n");
+                printf("Errore: Comando non consentito, RIPROVA...\n\n");
                 continue;
             }
         }

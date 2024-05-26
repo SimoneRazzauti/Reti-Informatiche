@@ -9,85 +9,76 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define PORT 4242        // porta del server
 #define BUFFER_SIZE 1024 // dimensione massima del buffer
 #define BENVENUTO_CLIENT "BENVENUTO CLIENTE\nComandi disponibili...\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n"
 
 #define MAX_WORDS 10       // Numero massimo di parole che possono essere estratte dalla frase
 #define MAX_WORD_LENGTH 50 // Lunghezza massima di ogni parola
 
-#define GIORNI_IN_UN_MESE 31 // informazioni che mi serviranno nella funziona di verifica Data corretta
-#define GIORNI_FEBBRAIO 28
-#define GIORNI_FEBBRAIO_BISESTILE 29
-#define GIORNI_IN_UN_MESE_CORTO 30
-
 #define validLen 2  // Lunghezza codici fissati tra client - server per send/ recv
 #define codiceLen 5 // lunghezza dei codici da mandare al server
 
-// Verifica se la data e l'ora passate come parametro sono valide
-int data_valida(int GG, int MM, int AA, int HH)
+int check_data(int GG, int MM, int AA, int HH)
 {
-    int is_valid = 0;
+    // Ottengo il tempo corrente
+    time_t current_time = time(NULL);
+
+    // Controllo che il mese sia valido (deve essere compreso tra 1 e 12)
     if (MM < 1 || MM > 12)
     {
-        return 0; // mese non valido
+        return 0; // Ritorna 0 se il mese non è valido
     }
-    // Verifica se l'anno è bisestile
-    if (AA % 4 == 0 && (AA % 100 != 0 || AA % 400 == 0))
+
+    // Verifico se l'anno è bisestile
+    int giorni_in_febbraio = (AA % 4 == 0 && (AA % 100 != 0 || AA % 400 == 0)) ? 29 : 28;
+
+    // Controllo che il giorno sia valido in base al mese e all'anno
+    switch (MM)
     {
-        switch (MM)
-        { // verifica mesi
         case 2:
-            is_valid = (GG >= 1 && GG <= GIORNI_FEBBRAIO_BISESTILE); // verifica il mese di febbraio bisestile
+            if (GG < 1 || GG > giorni_in_febbraio)
+            {
+                return 0; // Ritorna 0 se il giorno non è valido per febbraio
+            }
             break;
         case 4:
         case 6:
         case 9:
         case 11:
-            is_valid = (GG >= 1 && GG <= GIORNI_IN_UN_MESE_CORTO); // verifica i mesi con 30 giorni
+            if (GG < 1 || GG > 30)
+            {
+                return 0; // Ritorna 0 se il giorno non è valido per aprile, giugno, settembre o novembre
+            }
             break;
         default:
-            is_valid = (GG >= 1 && GG <= GIORNI_IN_UN_MESE); // verifica i mesi con 31 giorni
+            if (GG < 1 || GG > 31)
+            {
+                return 0; // Ritorna 0 se il giorno non è valido per gli altri mesi
+            }
             break;
-        }
     }
-    else
-    { // anno non bisestile
-        switch (MM)
-        { // verifica mesi
-        case 2:
-            is_valid = (GG >= 1 && GG <= GIORNI_FEBBRAIO); // verifica il mese di febbraio non bisestile
-            break;
-        case 4:
-        case 6:
-        case 9:
-        case 11:
-            is_valid = (GG >= 1 && GG <= GIORNI_IN_UN_MESE_CORTO); // verifica i mesi con 30 giorni
-            break;
-        default:
-            is_valid = (GG >= 1 && GG <= GIORNI_IN_UN_MESE); // verifica i mesi con 31 giorni
-            break;
-        }
+
+    // Verifico l'ora (deve essere compresa tra 10 e 23)
+    if (HH < 10 || HH > 23)
+    {
+        return 0; // Ritorna 0 se l'ora non è valida
     }
-    return is_valid && HH >= 10 && HH <= 23; // verifica ora. Orario valido dalle 10 alle 23.
-}
-int data_futura(int GG, int MM, int AA, int HH)
-{
-    // Inizializzo a zero una variabile time_t per contenere il tempo corrente
+
+    // Inizializzo una variabile time_t per contenere il tempo della data inserita
     time_t input_time = 0;
-    // Ottengo la struttura tm corrispondente al tempo corrente
-    struct tm *input_timeinfo = localtime(&input_time);
-    // Imposto i campi della struttura tm con i valori passati come parametro
-    input_timeinfo->tm_mday = GG;
-    input_timeinfo->tm_mon = MM - 1;
-    // Converto l'anno in formato a quattro cifre, se necessario
-    input_timeinfo->tm_year = (AA < 100 ? AA + 2000 - 1900 : AA - 1900);
-    input_timeinfo->tm_hour = HH;
+    // Ottengo la struttura tm corrispondente alla data inserita
+    struct tm input_timeinfo = { 0 };
+    input_timeinfo.tm_mday = GG;                    // Giorno del mese (1-31)
+    input_timeinfo.tm_mon = MM - 1;                 // Mese dell'anno (0-11)
+    input_timeinfo.tm_year = (AA < 100 ? AA + 2000 - 1900 : AA - 1900); // Anno (numero di anni trascorsi dal 1900)
+    input_timeinfo.tm_hour = HH;                    // Ora del giorno (0-23)
+
     // Converto la struttura tm in un tempo in formato time_t
-    input_time = mktime(input_timeinfo);
+    input_time = mktime(&input_timeinfo);
+
     // Confronto il tempo corrente con il tempo della data passata come parametro
-    // e restituisco 1 se la data è futura, 0 altrimenti
-    return (input_time >= time(NULL));
+    // e restituisco 1 se la data è futura, altrimenti 0
+    return (input_time >= current_time);
 }
 
 void gestione_errore(int ret, int socket)
@@ -159,7 +150,7 @@ int main(int argc, char *argv[])
     }
 
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
+    serv_addr.sin_port = htons(4242);
     serv_addr.sin_addr.s_addr = INADDR_ANY;
 
     ret = connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
@@ -251,10 +242,8 @@ int main(int argc, char *argv[])
 
                 codice = "find\0";
                 // controllo data inserita
-                if (data_valida(giorno, mese, anno, ora))
-                {
-                    if (data_futura(giorno, mese, anno, ora))
-                    {
+                if (data_valida(giorno, mese, anno, ora)){
+                  
 
                         // mando codice "find"
                         ret = send(sockfd, (void *)codice, codiceLen, 0);
@@ -305,16 +294,9 @@ int main(int argc, char *argv[])
 
                         // TAVOLI DISPONIBILI
                         ordine = 1; // adesso è possibile selezionare book
-                    }
-                    else
-                    {
-                        printf("La data inserita non risulta essere futura rispetto all'attuale momento corrente.\n");
-                        continue;
-                    }
                 }
-                else
-                {
-                    printf("La data inserita non è valida.\n");
+                else{
+                    printf("Hai inserito una data non valida oppure non è una data futura, riprova.\n");
                     continue;
                 }
 

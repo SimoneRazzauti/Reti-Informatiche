@@ -65,7 +65,6 @@ void caricaMenu() {
 int comandeInSospeso() {
 	int i, ret = 0;
 	fflush(stdout);
-	pthread_mutex_lock(&comande_lock);
 	for (i = 0; i < nTavoli; i++) {
 		struct comanda *c = comande[i];
 		while(c != NULL) {
@@ -74,7 +73,6 @@ int comandeInSospeso() {
 			c = c->prossima;
 		}
 	}
-	pthread_mutex_unlock(&comande_lock);
 	return ret;
 }
 
@@ -651,155 +649,160 @@ void *gestisciTd(void *arg) {
 
 
 // Gestisce UNA richiesta da parte di UN kitchen device
-void *gestisciKd(int socketId) {
-    char buffer[BUFFER_SIZE];
-    char numeroString[BUFFER_SIZE];
+void *gestisciKd(void* i) {
+	int socketId = *(int *)i;
+	char buffer[BUFFER_SIZE];
+	char numeroString[BUFFER_SIZE];
 
-    printf("Avviato kitchen device\n");
-    fflush(stdout);
+	printf("Avviato thread kitchen device\n");
+	fflush(stdout);
 
-    // Ricevi il messaggio
-    int ret, indice;
-    int lmsg = 0;
-    ret = riceviLunghezza(socketId, &lmsg);
-    if (ret == 0) {
-        printf("KD disconnesso\n");
-        fflush(stdout);
-        close(socketId);
-        for (indice = 0; indice < nMaxKd; indice++)
-            if (socketId == socket_kd[indice])
-                socket_kd[indice] = -1;
-        printf("Terminato kitchen device\n");
-        fflush(stdout);
-        return;
-    }
-    ret = ricevi(socketId, lmsg, buffer);
-    if (ret == 0) {
-        printf("KD disconnesso\n");
-        fflush(stdout);
-        close(socketId);
-        for (indice = 0; indice < nMaxKd; indice++)
-            if (socketId == socket_kd[indice])
-                socket_kd[indice] = -1;
-        printf("Terminato kitchen device\n");
-        fflush(stdout);
-        return;
-    }
+	// Ricevi il messaggio
+	int ret, indice;
+	int lmsg = 0;
+	ret = riceviLunghezza(socketId, &lmsg);
+	if(ret == 0) {
+		printf("KD disconnesso\n");
+		fflush(stdout);
+		close(socketId);
+		for(indice = 0; indice < nMaxKd; indice++)
+			if(socketId == socket_kd[indice])
+				socket_kd[indice] = -1;
+		printf("Terminato thread kitchen device\n");
+		fflush(stdout);
+		return NULL;
+	}
+	ret = ricevi(socketId, lmsg, buffer);
+	if(ret == 0) {
+		printf("KD disconnesso\n");
+		fflush(stdout);
+		close(socketId);
+		for(indice = 0; indice < nMaxKd; indice++)
+			if(socketId == socket_kd[indice])
+				socket_kd[indice] = -1;
+		printf("Terminato thread kitchen device\n");
+		fflush(stdout);
+		return NULL;
+	}
 
-    // Gestisce i tipi di comandi:
-    //   - take, funzionante solo nel caso siano presenti delle comande in_attesa;
-    //   - show, comande in_preparazione presso il kd;
-    //   - ready <comanda>, solo se presente tra quelle in_preparazione del kd.
-    char* token;
-    token = strtok(buffer, " ");
-    if (strcmp(token, "take") == 0) { // Primo caso
-        int indice;
+	// Gestisce i tipi di comandi:
+	//   - take, funzionante solo nel caso siano presenti delle comande in_attesa;
+	//   - show, comande in_preparazione presso il kd;
+	//   - ready <comanda>, solo se presente tra quelle in_preparazione del kd.
+	char* token;
+	token = strtok(buffer, " ");
+	if(strcmp(token, "take") == 0) { // Primo caso
+		int indice;
+		pthread_mutex_lock(&comande_lock);
 
-        // Scorro l'array comande ed invio
-        struct comanda* com = NULL;
-        int nTav = -1;
-        for (indice = 0; indice < nTavoli; indice++) {
-            struct comanda *punta = comande[indice];
-            while (punta != NULL) {
-                if ((com == NULL || punta->timestamp < com->timestamp) && punta->stato == in_attesa) {
-                    com = punta;
-                    nTav = indice;
-                }
-                punta = punta->prossima;
-            }
-        }
-        if (nTav == -1) {
-            invia(socketId, "Non ci sono comande\n");
-        } else {
-            com->kd = socketId;
-            com->stato = in_preparazione;
+		// Scorro l'array comande ed invio
+		struct comanda* com = NULL;
+		int nTav = -1;
+		for(indice = 0; indice < nTavoli; indice++) {
+			struct comanda *punta = comande[indice];
+			while(punta != NULL) {
+				if((com == NULL || punta->timestamp < com->timestamp) && punta->stato == in_attesa) {
+					com = punta;
+					nTav = indice;
+				}
+				punta = punta->prossima;
+			}
+		}
+		if(nTav == -1) {
+			invia(socketId, "Non ci sono comande\n");
+		}
+		else {
+			com->kd = socketId;
+			com->stato = in_preparazione;
 
-            strcpy(buffer, "com");
-            sprintf(numeroString, "%d", com->nComanda);
-            strcat(buffer, numeroString);
-            strcat(buffer, "\t");
-            strcat(buffer, "T");
-            sprintf(numeroString, "%d", nTav + 1);
-            strcat(buffer, numeroString);
-            strcat(buffer, "\n");
-            for (indice = 0; indice < nPiatti; indice++) {
-                if (com->quantita[indice] != 0) {
-                    strcat(buffer, menu[indice].codice);
-                    strcat(buffer, "\t");
-                    sprintf(numeroString, "%d", com->quantita[indice]);
-                    strcat(buffer, numeroString);
-                    strcat(buffer, "\n");
-                }
-            }
-            invia(socketId, buffer);
-            strcpy(buffer, "IN PREPARAZIONE\n");
-            invia(socket_td[nTav], buffer);
-        }
-    } else if (strcmp(token, "show") == 0) { // Secondo caso
-        int indice, indice2;
-        // Scorro l'array comande ed invio
-        strcpy(buffer, "");
-        for (indice = 0; indice < nTavoli; indice++) {
-            struct comanda *punta = comande[indice];
-            while (punta != NULL) {
-                if (punta->kd == socketId && punta->stato == in_preparazione) {
-                    strcat(buffer, "com");
-                    sprintf(numeroString, "%d", punta->nComanda);
-                    strcat(buffer, numeroString);
-                    strcat(buffer, "\t");
-                    strcat(buffer, "T");
-                    sprintf(numeroString, "%d", indice);
-                    strcat(buffer, numeroString);
-                    strcat(buffer, "\n");
-                    for (indice2 = 0; indice2 < nPiatti; indice2++) {
-                        if (punta->quantita[indice2] != 0) {
-                            strcat(buffer, menu[indice2].codice);
-                            strcat(buffer, "\t");
-                            sprintf(numeroString, "%d", punta->quantita[indice2]);
-                            strcat(buffer, numeroString);
-                            strcat(buffer, "\n");
-                        }
-                    }
-                }
-                punta = punta->prossima;
-            }
-        }
-        invia(socketId, buffer);
-    } else if (strcmp(token, "ready") == 0) { // Terzo caso
-        // Parso il comando e notifico il td
-        int nCom, nTav;
-        token = strtok(NULL, " com-T");
-        nCom = atoi(token);
-        token = strtok(NULL, " com-T");
-        nTav = atoi(token);
-        nTav--;
+			strcpy(buffer, "com");
+			sprintf(numeroString, "%d", com->nComanda);
+			strcat(buffer, numeroString);
+			strcat(buffer, "\t");
+			strcat(buffer, "T");
+			sprintf(numeroString, "%d", nTav+1);
+			strcat(buffer, numeroString);
+			strcat(buffer, "\n");
+			for(indice = 0; indice < nPiatti; indice++) {
+				if(com->quantita[indice] != 0) {
+					strcat(buffer, menu[indice].codice);
+					strcat(buffer, "\t");
+					sprintf(numeroString, "%d", com->quantita[indice]);
+					strcat(buffer, numeroString);
+					strcat(buffer, "\n");
+				}
+			}
+			invia(socketId, buffer);
+			strcpy(buffer, "IN PREPARAZIONE\n");
+			invia(socket_td[nTav], buffer);
+		}
+	}
+	else if(strcmp(token, "show") == 0) { // Secondo caso
+		int indice, indice2;
+		// Scorro l'array comande ed invio
+		strcpy(buffer, "");
+		for(indice = 0; indice < nTavoli; indice++) {
+			struct comanda *punta = comande[indice];
+			while(punta != NULL) {
+				if(punta->kd == socketId && punta->stato == in_preparazione) {
+					strcat(buffer, "com");
+					sprintf(numeroString, "%d", punta->nComanda);
+					strcat(buffer, numeroString);
+					strcat(buffer, "\t");
+					strcat(buffer, "T");
+					sprintf(numeroString, "%d", indice);
+					strcat(buffer, numeroString);
+					strcat(buffer, "\n");
+					for(indice2 = 0; indice2 < nPiatti; indice2++) {
+						if(punta->quantita[indice2] != 0) {
+							strcat(buffer, menu[indice2].codice);
+							strcat(buffer, "\t");
+							sprintf(numeroString, "%d", punta->quantita[indice2]);
+							strcat(buffer, numeroString);
+							strcat(buffer, "\n");
+						}
+					}
+				}
+				punta = punta->prossima;
+			}
+		}
+		invia(socketId, buffer);
+	}
+	else if(strcmp(token, "ready") == 0) { // Terzo caso
+		// Parso il comando e notifico il td
+		int nCom, nTav;
+		token = strtok(NULL, " com-T");
+		nCom = atoi(token);
+		token = strtok(NULL, " com-T");
+		nTav = atoi(token);
+		nTav--;
 
-        struct comanda* punta = comande[nTav];
-        while (punta != NULL) {
-            if (punta->nComanda == nCom) break;
-            punta = punta->prossima;
-        }
-        if (punta != NULL) {
-            punta->stato = in_servizio;
-            invia(socketId, "COMANDA IN SERVIZIO\n");
-            invia(socket_td[nTav], "ORDINAZIONE IN ARRIVO\n");
-        } else {
-            printf("Errore nel trovare la comanda\n");
-            fflush(stdout);
-        }
-    } else {
-        // Errore, comando non riconosciuto
-        printf("Errore comando Kitchen Device!\n");
-        fflush(stdout);
-    }
+		struct comanda* punta = comande[nTav];
+		while(punta != NULL) {
+			if(punta->nComanda == nCom) break;
+			punta = punta->prossima;
+		}
+		if(punta != NULL) {
+			punta->stato = in_servizio;
+			invia(socketId, "COMANDA IN SERVIZIO\n");
+			invia(socket_td[nTav], "ORDINAZIONE IN ARRIVO\n");
+		}
+		else {
+			printf("Errore nel trovare la comanda\n");
+			fflush(stdout);	
+		}
+	}
+	else {
+		// Errore, comando non riconosciuto
+		printf("Errore comando Kitchen Device!\n");
+		fflush(stdout);
+	}
+	FD_SET(socketId, &master);
+	printf("Terminato thread kitchen device\n");
+	fflush(stdout);
 
-    FD_SET(socketId, &master);
-
-    printf("Terminato kitchen device\n");
-    fflush(stdout);
 	return NULL;
 }
-
 
 // Dealloca tutte le strutture
 void deallocaStrutture() {

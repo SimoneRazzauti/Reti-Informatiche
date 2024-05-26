@@ -225,6 +225,7 @@ int main(int argc, char* argv[]){
 					int tipo = -1; // 0 = client; 1 = table device; 2 = kitchen device.
 					int j;
 					for(j = 0; j <= max(nMaxClient, nMaxTd, nMaxKd); j++) {
+						// Mutua esclusione
 						if (socket_client[j%nMaxClient] == i){
 							tipo = 0;
 							printf("Richiesta da client\n");
@@ -282,6 +283,7 @@ int main(int argc, char* argv[]){
 							for(posto = 0; posto < nMaxClient; posto++)
 								if(i == socket_client[posto]) break;
 							FD_CLR(i, &master);
+							gestisciClient((void*)&socket_client[posto]);
 							break;
 						case 1: // Table device che vuole utilizzare servizi
 							for(posto = 0; posto < nMaxTd; posto++)

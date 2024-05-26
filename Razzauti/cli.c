@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
     struct sockaddr_in server_addr;
 
     // variabili di utilità
-    char *id; // codice per riconoscere il Client
+    char *id = NULL; // codice per riconoscere il Client
     char *codice = NULL;           // find o book
     char cognome[30];
     int quantita, wordLen, numPersone, tavoliDisp = 0; // tavoliDisp = numero tavoli restituiti dalla Find
@@ -81,8 +81,8 @@ int main(int argc, char *argv[]){
     // Aggiorno il nuovo fdmax
     fdmax = sockfd;
 
-/*     // Invio codice id client = 'C' al server
-    strcpy(id, "C\0");
+    // Invio codice id client = 'C' al server
+    strcpy(&id, "C\0");
     ret = send(sockfd, (void *)id, LEN_ID, 0);
     check_errori(ret, sockfd);
 
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]){
         fflush(stdout);
         close(sockfd);
         exit(1);
-    } */
+    }
 
     printf(WELCOME_CLIENT);
     fflush(stdout);

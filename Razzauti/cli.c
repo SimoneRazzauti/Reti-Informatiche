@@ -293,7 +293,7 @@ int main(int argc, char *argv[]){
                         check_errori(ret, sockfd);
                         printf("Prenotazione effettuata con successo, codice: %s.\n", buffer);
                         priorita = 0;
-                        break;
+                        continue;
                     }
                 }
             }

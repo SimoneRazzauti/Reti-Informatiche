@@ -91,10 +91,10 @@ int main(int argc, char *argv[])
     max_fd = sockfd;
     // invio codice identificativo Client
     ret = send(sockfd, (void *)identificativo, validLen, 0);
-    gestione_errore(ret, sockfd);
+    check_errori(ret, sockfd);
 
     ret = recv(sockfd, (void *)buffer, validLen, 0);
-    gestione_errore(ret, sockfd);
+    check_errori(ret, sockfd);
     if (buffer[0] != 'S')
     {
         perror("Troppi Client connessi. RIPROVARE.\n\n");
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
         if (FD_ISSET(sockfd, &read_fds))
         { // PRONTO SOCKET DI COMUNICAZIONE
             ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-            gestione_errore(ret, sockfd);
+            check_errori(ret, sockfd);
 
             len_HO = ntohl(len_NO);
             ret = recv(sockfd, buffer, len_HO, 0);
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 
                         // mando codice "find"
                         ret = send(sockfd, (void *)codice, codiceLen, 0);
-                        gestione_errore(ret, sockfd);
+                        check_errori(ret, sockfd);
 
                         sscanf(datiInformazioni[1], "%s", cognome);
 
@@ -177,11 +177,11 @@ int main(int argc, char *argv[])
 
                         // mando lunghezza del messaggio
                         ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
-                        gestione_errore(ret, sockfd);
+                        check_errori(ret, sockfd);
 
                         // mando il vero e proprio MESSAGGIO
                         ret = send(sockfd, (void *)buffer, len_HO, 0);
-                        gestione_errore(ret, sockfd);
+                        check_errori(ret, sockfd);
 
                         sleep(1);
 
@@ -190,11 +190,11 @@ int main(int argc, char *argv[])
                         for (;;)
                         {
                             ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                            gestione_errore(ret, sockfd);
+                            check_errori(ret, sockfd);
                             len_HO = ntohl(len_NO);
 
                             ret = recv(sockfd, buffer, len_HO, 0);
-                            gestione_errore(ret, sockfd);
+                            check_errori(ret, sockfd);
 
                             if (strncmp(buffer, "STOP", strlen("STOP")) == 0) // per fare terminare il loop
                             {
@@ -244,26 +244,26 @@ int main(int argc, char *argv[])
                     // mando codice "book"
                     codice = "book\0";
                     ret = send(sockfd, (void *)codice, codiceLen, 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     sprintf(buffer, "%d %d-%d-%d-%d %d %s", quantita, numPersone, giorno, mese, anno, ora, cognome);
                     len_HO = strlen(buffer) + 1;
                     len_NO = htonl(len_HO);
 
                     ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     // mando tutti i dati per la prenotazione
                     ret = send(sockfd, (void *)buffer, len_HO, 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     // ricevo se ha confermato prenotazione o no
                     ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
                     len_HO = ntohl(len_NO);
 
                     ret = recv(sockfd, buffer, len_HO, 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     if (strcmp(buffer, "NO") == 0)
                     {
@@ -274,11 +274,11 @@ int main(int argc, char *argv[])
                         memset(buffer, 0, sizeof(buffer));
                         // ricevo se ha confermato prenotazione o no
                         ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                        gestione_errore(ret, sockfd);
+                        check_errori(ret, sockfd);
                         len_HO = ntohl(len_NO);
 
                         ret = recv(sockfd, buffer, len_HO, 0);
-                        gestione_errore(ret, sockfd);
+                        check_errori(ret, sockfd);
                         printf("PRENOTAZIONE EFFETTUATA, codice: %s.\n", buffer);
                     }
                 }

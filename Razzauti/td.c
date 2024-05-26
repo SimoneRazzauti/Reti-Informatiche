@@ -30,7 +30,7 @@ void comandi_table()
     printf("4) conto \t\t --> chiede il conto \n");
 }
 
-void gestione_errore(int ret, int socket)
+void check_errori(int ret, int socket)
 { // Gestione errori e gestione in caso di chiusura del socket remoto, termino.
     if (ret == -1)
     {
@@ -161,10 +161,10 @@ int main(int argc, char *argv[])
     max_fd = sockfd;
     // invio codice identificativo
     ret = send(sockfd, (void *)identificativo, validLen, 0);
-    gestione_errore(ret, sockfd);
+    check_errori(ret, sockfd);
 
     ret = recv(sockfd, (void *)buffer, validLen, 0);
-    gestione_errore(ret, sockfd);
+    check_errori(ret, sockfd);
     if (buffer[0] != 'S')
     {
         perror("Pieno.\n\n");
@@ -181,17 +181,17 @@ int main(int argc, char *argv[])
 
         // mando codice "code" per identificare la sezione
         ret = send(sockfd, (void *)codice, codiceLen, 0);
-        gestione_errore(ret, sockfd);
+        check_errori(ret, sockfd);
 
         len_HO = strlen(buffer) + 1;
         len_NO = htonl(len_HO);
         // mando lunghezza del codice
         ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
-        gestione_errore(ret, sockfd);
+        check_errori(ret, sockfd);
 
         // mando MESSAGGIO codice
         ret = send(sockfd, (void *)buffer, len_HO, 0);
-        gestione_errore(ret, sockfd);
+        check_errori(ret, sockfd);
 
         if (buffer[2] == '-')
         { // tavolo da 0-9
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
             sscanf(buffer, "%3s", tavoloMemorizzato);
         }
         ret = recv(sockfd, (void *)buffer, validLen, 0);
-        gestione_errore(ret, sockfd);
+        check_errori(ret, sockfd);
 
         if (buffer[0] == 'S')
         { // S = confermato
@@ -226,11 +226,11 @@ int main(int argc, char *argv[])
         if (FD_ISSET(sockfd, &read_fds))
         { // PRONTO SOCKET DI COMUNICAZIONE
             ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-            gestione_errore(ret, sockfd);
+            check_errori(ret, sockfd);
 
             len_HO = ntohl(len_NO);
             ret = recv(sockfd, buffer, len_HO, 0);
-            gestione_errore(ret, sockfd);
+            check_errori(ret, sockfd);
             if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
             { // se il server ha chiamato "stop", avviso e termino.
                 printf("AVVISO: il server è stato arrestato.\nARRESTO IN CORSO...\n");
@@ -278,16 +278,16 @@ int main(int argc, char *argv[])
 
                     // mando codice "menu"
                     ret = send(sockfd, (void *)codice, codiceLen, 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
                     quanti_piatti = 0;
                     for (;;)
                     {
                         ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                        gestione_errore(ret, sockfd);
+                        check_errori(ret, sockfd);
 
                         len_HO = ntohl(len_NO);
                         ret = recv(sockfd, buffer, len_HO, 0);
-                        gestione_errore(ret, sockfd);
+                        check_errori(ret, sockfd);
 
                         if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
                         {
@@ -341,26 +341,26 @@ int main(int argc, char *argv[])
                 {
                     codice = "comm\0"; // mando codice "comm"
                     ret = send(sockfd, (void *)codice, codiceLen, 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     ret = send(sockfd, &word_count, sizeof(uint16_t), 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     ret = send(sockfd, &quante_comande, sizeof(uint16_t), 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     len_HO = strlen(tavoloMemorizzato) + 1;
                     len_NO = htonl(len_HO);
                     // mando lunghezza del codice
                     ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
                     // mando MESSAGGIO TXX
                     ret = send(sockfd, (void *)tavoloMemorizzato, len_HO, 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     // quante comande ho avuto
                     ret = recv(sockfd, buffer, validLen, 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     if (buffer[0] == 'N')
                     { // cucina piena
@@ -375,11 +375,11 @@ int main(int argc, char *argv[])
                         len_NO = htonl(len_HO);
                         // mando lunghezza del codice
                         ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
-                        gestione_errore(ret, sockfd);
+                        check_errori(ret, sockfd);
 
                         // mando MESSAGGIO comande PIATTO-QUANTITA
                         ret = send(sockfd, (void *)datiInformazioni[j], len_HO, 0);
-                        gestione_errore(ret, sockfd);
+                        check_errori(ret, sockfd);
 
                         sscanf(datiInformazioni[j], "%2s-%d", coda_comande[quante_comande].desc[k],
                                &coda_comande[quante_comande].quantita[k]); // mi salvo le comande
@@ -399,19 +399,19 @@ int main(int argc, char *argv[])
 
                 codice = "cont\0"; // mando codice "cont"
                 ret = send(sockfd, (void *)codice, codiceLen, 0);
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
 
                 len_HO = strlen(tavoloMemorizzato) + 1;
                 len_NO = htonl(len_HO);
                 // mando lunghezza del codice
                 ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
                 // mando MESSAGGIO TXX
                 ret = send(sockfd, (void *)tavoloMemorizzato, len_HO, 0);
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
 
                 ret = recv(sockfd, buffer, validLen, 0);
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
 
                 if (buffer[0] == 'S')
                 {

@@ -36,7 +36,7 @@ void comandi_table()
     printf("3) ready com. \t\t --> imposta lo stato della comanda \n");
 }
 
-void gestione_errore(int ret, int socket)
+void check_errori(int ret, int socket)
 { // Gestione errori e gestione in caso di chiusura del socket remoto, termino.
     if (ret == -1)
     {
@@ -125,10 +125,10 @@ int main(int argc, char *argv[])
     max_fd = sockfd;
     // invio codice identificativo
     ret = send(sockfd, (void *)identificativo, validLen, 0);
-    gestione_errore(ret, sockfd);
+    check_errori(ret, sockfd);
 
     ret = recv(sockfd, (void *)buffer, validLen, 0);
-    gestione_errore(ret, sockfd);
+    check_errori(ret, sockfd);
     if (buffer[0] != 'S')
     {
         perror("Pieno.\n\n");
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 
             len_HO = ntohl(len_NO);
             ret = recv(sockfd, buffer, len_HO, 0);
-            gestione_errore(ret, sockfd);
+            check_errori(ret, sockfd);
             if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
             { // se il server ha chiamato "stop", avviso e termino.
                 printf("AVVISO: il server è stato arrestato.\nARRESTO IN CORSO...\n");
@@ -195,14 +195,14 @@ int main(int argc, char *argv[])
                 // mando codice "take"
                 codice = "take\0";
                 ret = send(sockfd, (void *)codice, codiceLen, 0);
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
 
                 ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
 
                 len_HO = ntohl(len_NO);
                 ret = recv(sockfd, buffer, len_HO, 0);
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
 
                 if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
                 {
@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
                 sscanf(buffer, "%s", coda_comande[quante_comande].tav_num);
 
                 ret = recv(sockfd, &stampaC, sizeof(uint16_t), 0);
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
                 stampaC++;
 
                 printf("Com%d Tavolo %s:\n", stampaC, coda_comande[quante_comande].tav_num);
@@ -222,11 +222,11 @@ int main(int argc, char *argv[])
                 for (;;)
                 {
                     ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     len_HO = ntohl(len_NO);
                     ret = recv(sockfd, buffer, len_HO, 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
                     {
@@ -247,16 +247,16 @@ int main(int argc, char *argv[])
                 codice = "show\0";
                 // mando codice "show"
                 ret = send(sockfd, (void *)codice, codiceLen, 0);
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
 
                 for (;;)
                 {
                     ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     len_HO = ntohl(len_NO);
                     ret = recv(sockfd, buffer, len_HO, 0);
-                    gestione_errore(ret, sockfd);
+                    check_errori(ret, sockfd);
 
                     if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
                     { // Per uscire dal loop
@@ -274,18 +274,18 @@ int main(int argc, char *argv[])
                 // mando codice "ready"
                 codice = "read\0"; // mando codice "read"
                 ret = send(sockfd, (void *)codice, codiceLen, 0);
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
 
                 len_HO = strlen(datiInformazioni[1]) + 1;
                 len_NO = htonl(len_HO);
                 ret = send(sockfd, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
 
                 ret = send(sockfd, datiInformazioni[1], len_HO, 0); // mando il messaggio
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
 
                 ret = recv(sockfd, (void *)buffer, validLen, 0);
-                gestione_errore(ret, sockfd);
+                check_errori(ret, sockfd);
                 if (buffer[0] == 'S')
                 {
                     printf("COMANDA IN SERVIZIO.\n\n");

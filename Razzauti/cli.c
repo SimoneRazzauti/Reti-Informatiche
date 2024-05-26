@@ -138,26 +138,27 @@ int main(int argc, char *argv[]){
             // salvo nel buffer il contenuto digitato da stdin 
             fgets(buffer, BUFFER_SIZE, stdin);
 
-            // Estrae le parole dalla frase utilizzando la funzione 'strtok'
-            char *word = strtok(buffer, " "); // Estrae la prima parola utilizzando lo spazio come delimitatore
+            // Estrae le parole dalla frase utilizzando 'strtok' e lo spazio come delimitatore a blocchi di chunks
+            char *chunk = strtok(buffer, " ");
             word_count = 0;
-            while (word != NULL && word_count < MAX_WORDS)
-            { // Finchè ci sono parole da estrarre e non si supera il limite massimo
+
+            // Finchè ci sono parole da estrarre e non si supera il limite massimo
+            while (chunk != NULL && word_count < MAX_WORDS){ 
                 // Rimuove il carattere di fine riga dalla parola se presente
-                wordLen = strlen(word);
-                if (word[wordLen - 1] == '\n')
-                {
-                    word[wordLen - 1] = '\0';
+                wordLen = strlen(chunk);
+                if (chunk[wordLen - 1] == '\n'){
+                    chunk[wordLen - 1] = '\0';
                 }
 
                 // Aggiunge la parola all'array di parole
-                datiInformazioni[word_count] = word; // Memorizza il puntatore alla parola nell'array
+                datiInformazioni[word_count] = chunk; // Memorizza il puntatore alla parola nell'array
                 word_count++;                        // Incrementa il contatore di parole estratte
 
                 // Estrae la prossima parola
-                word = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
+                chunk = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
             }
 
+            // Adesso tutte le parole estratte da input sono salvate a 
             if (strcmp(datiInformazioni[0], "find") == 0)
             { // se siamo qui datiInformazioni[1] = cognome, datiInformazioni[2] = Num. persone, datiInformazioni[3] = data e datiInformazioni[4] = ora
                 // analizza la stringa e assegna i valori alle variabili

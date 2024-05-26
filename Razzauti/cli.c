@@ -242,24 +242,24 @@ int main(int argc, char *argv[]){
                 // la seconda parola estratta deve essere un decimale e si riferisce al tavolo nella lista dei tavoli proposti dal server
                 sscanf(info[1], "%d", &quantita);
 
-                if (tavoliDisp < quantita) // se il numeri scelto è > di quanti la find abbia restituito
-                {
+                // se il numeri scelto è maggiore di quanti la find abbia restituito
+                if (tavoliDisp < quantita) {
                     printf("Numero non valido, ri eseguire la prenotazione...\n");
-                     priorita = 0;
                     fflush(stdout);
                     continue;
                 }
-                else
-                {
-                    // invio codice "book"
+                else{
+                    // invio codice "book" al server
                     codice = "book\0";
                     ret = send(sockfd, (void *)codice, codiceLen, 0);
                     check_errori(ret, sockfd);
 
+                    // innvio i dettagli della prenotazione al server
                     sprintf(buffer, "%d %d-%d-%d-%d %d %s", quantita, nPersone, giorno, mese, anno, ora, cognome);
                     len_HO = strlen(buffer) + 1;
                     len_NO = htonl(len_HO);
 
+                    // invio la dimensione
                     ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
                     check_errori(ret, sockfd);
 
@@ -272,24 +272,25 @@ int main(int argc, char *argv[]){
                     check_errori(ret, sockfd);
                     len_HO = ntohl(len_NO);
 
+                    // ricevo il messaggio
                     ret = recv(sockfd, buffer, len_HO, 0);
                     check_errori(ret, sockfd);
 
-                    if (strcmp(buffer, "NO") == 0)
-                    {
-                        printf("Ripetere prenotazione. \n Il tavolo scelto è stato occupato. \n");
+                    // mutua esclusione
+                    if (strcmp(buffer, "NO") == 0){
+                        printf("Ripetere prenotazione. \n Il tavolo che hai scelto è stato occupato. \n");
                     }
-                    else
-                    {
+
+                    // **** prenotazione avvenuta con successo
+                    else{
                         memset(buffer, 0, sizeof(buffer));
-                        // ricevo se ha confermato prenotazione o no
                         ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
                         check_errori(ret, sockfd);
                         len_HO = ntohl(len_NO);
 
                         ret = recv(sockfd, buffer, len_HO, 0);
                         check_errori(ret, sockfd);
-                        printf("PRENOTAZIONE EFFETTUATA, codice: %s.\n", buffer);
+                        printf("Prenotazione avvenuta con successo, codice: %s.\n", buffer);
                     }
                 }
             }
@@ -308,9 +309,6 @@ int main(int argc, char *argv[]){
             }
         }
     }
-
     close(sockfd);
     return 0;
 }
-
-// TO DO: mutua esclusione sul client

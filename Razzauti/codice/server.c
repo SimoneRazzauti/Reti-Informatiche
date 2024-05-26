@@ -248,6 +248,7 @@ int main(int argc, char* argv[]){
 						}
 					}
 					
+					int lmsg, posto;
 					switch(tipo) {
 						case -1: // Si sta presentando
 							ret = riceviLunghezza(i, &lmsg);

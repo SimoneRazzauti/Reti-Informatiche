@@ -27,6 +27,7 @@
 
 # 2.2 esecuzione di un client sulla porta 7000
 	gnome-terminal -x sh -c "./cli 7000; exec bash"
+  gnome-terminal -x sh -c "./cli 7100; exec bash"
 
 
 # 2.3 esecuzione di 3 table device sulle porte {5001,...,5003}

@@ -88,7 +88,7 @@ int main(int argc, char *argv[]){
 
     ret = recv(sockfd, (void *)buffer, LEN_ID, 0);
     check_errori(ret, sockfd);
-    if (buffer[0] != ''){
+    if (buffer[0] != 'S'){
         perror("Ci sono troppi Client connessi, per favore RIPROVARE.\n\n");
         fflush(stdout);
         close(sockfd);

@@ -292,6 +292,8 @@ int main(int argc, char *argv[]){
                         ret = recv(sockfd, buffer, len_HO, 0);
                         check_errori(ret, sockfd);
                         printf("Prenotazione effettuata con successo, codice: %s.\n", buffer);
+                        priorita = 0;
+                        break;
                     }
                 }
             }

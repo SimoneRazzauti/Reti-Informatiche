@@ -12,7 +12,8 @@
 #include "funzioni.c" // funzioni varie
 
 #define BUFFER_SIZE 1024 // dimensione massima del buffer
-#define WELCOME_TD1 "Benvenuto\nInserisci il codice prenotazione: "
+#define WELCOME "Benvenuto"
+#define WELCOME_TD1 "\nInserisci il codice prenotazione: "
 #define WELCOME_TD2 "\n***************** BENVENUTO AL RISTORANTE *****************\n Digita un comando:\n1) help --> mostra i dettagli dei comandi\n2) menu --> mostra il menu dei piatti\n3) comanda --> invia una comanda\n4) conto --> chiede il conto\n"
 #define HELP "Comandi:\nmenu -> stampa il menu\ncomanda -> invia una comanda in cucina\n\t\t   NOTA: deve essere nel formato\n \t\t   {<piatto_1-quantità_1>...<piatto_n-quantità_n>}\nconto -> richiesta del conto\n"
 
@@ -65,6 +66,7 @@ int controllo_menu(char info[10], int quanti_piatti)
 int main(int argc, char *argv[])
 {
     int sockfd, ret, fdmax; // variabili per i socket
+    int welcome = 1;
 
     fd_set master; // variabili per set
     fd_set read_fds;
@@ -152,7 +154,10 @@ int main(int argc, char *argv[])
     while (1)
     { // validazione codice per identificare il Table D.
 
+        if(welcome)
+            printf(WELCOME);
         printf(WELCOME_TD1);
+        fflush(stdout);
 
         fgets(buffer, BUFFER_SIZE, stdin);
         codice = "code\0";
@@ -184,12 +189,13 @@ int main(int argc, char *argv[])
 
         if (buffer[0] == 'S')
         { // S = confermato
-            printf("Benvenuto, codice corretto.\n\n");
+            printf("Codice corretto...\n\n");
             break;
         }
         else
         {
             printf("Ripetere digitazione. Codice errato.\n\n");
+            welcome = 0;
         }
     }
 

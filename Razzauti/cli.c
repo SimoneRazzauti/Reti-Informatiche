@@ -13,7 +13,7 @@
 #include "strutture.h" // strutture
 
 #define BUFFER_SIZE 1024 // dimensione max del buffer
-#define WELCOME_CLIENT "BENVENUTO CLIENTE\nComandi disponibili...\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n" // messaggio di benvenuto 
+#define WELCOME_CLIENT "BENVENUTO CLIENTE\nComandi disponibili...\n\nfind --> ricerca la disponibilita' per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n" // messaggio di benvenuto 
 
 #define MAX_WORDS 10 // Numero massimo di parole che possono essere estratte dalla frase
 #define MAX_WORD_LENGTH 50 // Lunghezza massima di ogni parola
@@ -118,7 +118,7 @@ int main(int argc, char *argv[]){
 
             // se il server ha detto "stop", avviso e termino.
             if (strncmp(buffer, "STOP", strlen("STOP")) == 0){ // strncmp compara le prime n lettere con n passato come terzo parametro
-                printf("\nAVVISO: il server si è arrestato tramite comando STOP.\n\n");
+                printf("\nAVVISO: il server si e' arrestato tramite comando STOP.\n\n");
                 fflush(stdout);
                 close(sockfd);
                 exit(0);
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]){
             chunk = strtok(buffer, " ");
             chunk_count = 0;
 
-            // Finchè ci sono parole da estrarre e non si supera il limite massimo
+            // Finche' ci sono parole da estrarre e non si supera il limite massimo
             while (chunk != NULL && chunk_count < MAX_WORDS){ 
                 // Rimuove il carattere di fine riga dalla parola se presente
                 chunk_len = strlen(chunk);
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]){
 
             // ******* Adesso tutte le parole estratte da input sono salvate nell'array info
 
-            // Se la prima parola è find ho digitato il comando find 
+            // Se la prima parola e' find ho digitato il comando find 
             if (strcmp(info[0], "find") == 0){ 
                 // info[1] = cognome, info[2] = Num. persone, info[3] = data e info[4] = ora
 
@@ -205,7 +205,7 @@ int main(int argc, char *argv[]){
                             // per fermare il loop
                             printf("\n");
                             fflush(stdout);
-                            if (tavoliDisp == 0){ // se nessun tavolo è stato proposto, avviso
+                            if (tavoliDisp == 0){ // se nessun tavolo e' stato proposto, avviso
                                 printf("Non ci sono tavoli disponibili. \nPer favore, prova ad inserire una data diversa o un numero inferiore di commensali.\n");
                                 fflush(stdout);
                             }
@@ -218,15 +218,15 @@ int main(int argc, char *argv[]){
                     fflush(stdout);
 
                     // TAVOLI DISPONIBILI
-                    priorita = 1; // adesso è possibile selezionare book
+                    priorita = 1; // adesso e' possibile selezionare book
                 }
                 else{
-                    printf("Hai inserito una data non valida oppure non è una data futura, riprova.\n");
+                    printf("Hai inserito una data non valida oppure non e' una data futura, riprova.\n");
                     continue;
                 }
             }
             
-            // Se la prima parola estratta dal buffer è book gestisco il comando book
+            // Se la prima parola estratta dal buffer e' book gestisco il comando book
             else if (strcmp(info[0], "book") == 0 && priorita == 0){
                 printf("Non puoi prenotare un tavolo prima di effettuare una prenotazione. Riprova con una find.\n\n");
                 fflush(stdout);
@@ -236,7 +236,7 @@ int main(int argc, char *argv[]){
                 // la seconda parola estratta deve essere un decimale e si riferisce al tavolo nella lista dei tavoli proposti dal server
                 sscanf(info[1], "%d", &quantita);
 
-                // se il numeri scelto è maggiore di quanti la find abbia restituito
+                // se il numeri scelto e' maggiore di quanti la find abbia restituito
                 if (tavoliDisp < quantita) {
                     printf("Numero non valido, ri eseguire la prenotazione...\n");
                     fflush(stdout);
@@ -273,7 +273,7 @@ int main(int argc, char *argv[]){
 
                     // mutua esclusione
                     if (strcmp(buffer, "NO") == 0){
-                        printf("Ripetere prenotazione. \n Il tavolo che hai scelto è stato occupato. \n");
+                        printf("Ripetere prenotazione. \n Il tavolo che hai scelto e' stato occupato. \n");
                     }
 
                     // **** prenotazione effettuata con successo
@@ -294,7 +294,7 @@ int main(int argc, char *argv[]){
             else if (strcmp(info[0], "esc") == 0){
                 printf("Uscita in corso...\nArrivederci :)\n\n");
                 fflush(stdout);
-                // TO DO: si potrebbe inviare un messaggio al server per dire che il client si è disconnesso
+                // TO DO: si potrebbe inviare un messaggio al server per dire che il client si e' disconnesso
                 close(sockfd);
                 exit(0);
             }

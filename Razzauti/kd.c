@@ -157,11 +157,11 @@ int main(int argc, char *argv[])
             check_errori(ret, sockfd);
             if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
             { // se il server ha chiamato "stop", avviso e termino.
-                printf("AVVISO: il server è stato arrestato.\nARRESTO IN CORSO...\n");
+                printf("AVVISO: il server e' stato arrestato.\nARRESTO IN CORSO...\n");
                 fflush(stdout);
                 exit(0);
                 close(sockfd);
-            }                       // altrimenti, il server sta avvisando che una comanda è in preparazione/in servizio.
+            }                       // altrimenti, il server sta avvisando che una comanda e' in preparazione/in servizio.
             printf("%s\n", buffer); // Mi serve solo stampare il messaggio.
             fflush(stdout);
         }

@@ -32,13 +32,13 @@ int array_kds[MAX_KITCHENDEVICES]; // contiene i sockfd dei socket di comunicazi
 struct comanda
 {
     char tav_num[5];                    // numero del tavolo da cui proviene la comanda
-    int num_comande;                    // quante comande ha la comanda X
+    int id_comanda;                    // quante comande ha la comanda X
     char desc[MAX_PIATTI][DESCRIZIONE]; // sarà A1, A3, P2 ecc... il codice del piatto
     int quantita[MAX_PIATTI];           // quantita
     char stato;                         // stato della comanda: a (attesa), p (preparazione) o s (servizio)
     uint16_t id;
-    int td_assegnato; // socket di comunicazione connesso a quello del td a cui la comanda è stata assegnata
-    int kd_assegnato; // socket di comunicazione connesso a quello del kd a cui la comanda è stata assegnata
+    int td_assegnato; // socket di comunicazione connesso a quello del td a cui la comanda e' stata assegnata
+    int kd_assegnato; // socket di comunicazione connesso a quello del kd a cui la comanda e' stata assegnata
 };
 
 struct comanda coda_comande[MAX_COMANDE_IN_ATTESA];    // coda di comande in attesa/ preparazione
@@ -75,8 +75,8 @@ void comandi_disponibili()
     fflush(stdout);
 }
 
-// Cerca_prenotazione è una funzione che mi serve per realizzare la lista da restituire al cliente che esegue la Find, utilizzata nella controlla_tavoli_liberi(...).
-// Se un tavolo è occupato per la stessa data e ora, non viene inviato.
+// Cerca_prenotazione e' una funzione che mi serve per realizzare la lista da restituire al cliente che esegue la Find, utilizzata nella controlla_tavoli_liberi(...).
+// Se un tavolo e' occupato per la stessa data e ora, non viene inviato.
 
 int cerca_prenotazione(char *tavolinoX, char *data, int ora, char *percorsoFile)
 {
@@ -96,7 +96,7 @@ int cerca_prenotazione(char *tavolinoX, char *data, int ora, char *percorsoFile)
         sscanf(arraycopia, "%*s %s %d-%d-%d %d %*s %*d-%*d-%*d", tavolino, &GG, &MM, &AA, &HH);
         sscanf(data, "%d-%d-%d", &giorno, &mese, &anno);
         if ((strcmp(tavolino, tavolinoX) == 0) && GG == giorno && MM == mese && AA == anno && HH == ora)
-        { // se è occupato
+        { // se e' occupato
             return 0;
         }
     }
@@ -290,7 +290,7 @@ void stampa_stat_lettera(char lettera)
         for (j = 0; j < quante_servite; j++)
         {
             printf("Comanda %d del tavolo %s. Stato <In SERVIZIO>\n", comande_servite[j].id + 1, comande_servite[j].tav_num);
-            for (a = 0; a < comande_servite[j].num_comande; a++)
+            for (a = 0; a < comande_servite[j].id_comanda; a++)
             {
                 printf("Piatto scelto: %s x %d\n", comande_servite[j].desc[a], comande_servite[j].quantita[a]);
             }
@@ -309,7 +309,7 @@ void stampa_stat_lettera(char lettera)
             {
                 check = 1;
                 printf("Comanda %d del tavolo %s. Stato <In ATTESA>\n", coda_comande[j].id + 1, coda_comande[j].tav_num);
-                for (a = 0; a < coda_comande[j].num_comande; a++)
+                for (a = 0; a < coda_comande[j].id_comanda; a++)
                 {
                     printf("Piatto scelto: %s x %d\n", coda_comande[j].desc[a], coda_comande[j].quantita[a]);
                 }
@@ -318,7 +318,7 @@ void stampa_stat_lettera(char lettera)
             {
                 check = 1;
                 printf("Comanda %d del tavolo %s. Stato <In PREPARAZIONE>\n", coda_comande[j].id + 1, coda_comande[j].tav_num);
-                for (a = 0; a < coda_comande[j].num_comande; a++)
+                for (a = 0; a < coda_comande[j].id_comanda; a++)
                 {
                     printf("Piatto scelto: %s x %d\n", coda_comande[j].desc[a], coda_comande[j].quantita[a]);
                 }
@@ -346,7 +346,7 @@ void stampa_stat_tavolo(char tavolino[5])
                 printf("in ATTESA>\n");
             else if (coda_comande[j].stato == 'p')
                 printf("in PREPARAZIONE>\n");
-            for (a = 0; a < coda_comande[j].num_comande; a++)
+            for (a = 0; a < coda_comande[j].id_comanda; a++)
             {
                 printf("Piatto scelto: %s x %d\n", coda_comande[j].desc[a], coda_comande[j].quantita[a]);
             }
@@ -359,7 +359,7 @@ void stampa_stat_tavolo(char tavolino[5])
         if (strcmp(comande_servite[j].tav_num, tavolino) == 0)
         {
             printf("Comanda %d - Stato <In SERVIZIO>\n", comande_servite[j].id + 1);
-            for (a = 0; a < comande_servite[j].num_comande; a++)
+            for (a = 0; a < comande_servite[j].id_comanda; a++)
             {
                 printf("Piatto scelto: %s x %d\n", comande_servite[j].desc[a], comande_servite[j].quantita[a]);
             }
@@ -385,7 +385,7 @@ void stampa_stat_all()
             printf("in ATTESA> del tavolo: %s\n", coda_comande[j].tav_num);
         else if (coda_comande[j].stato == 'p')
             printf("in PREPARAZIONE> del tavolo: %s\n", coda_comande[j].tav_num);
-        for (a = 0; a < coda_comande[j].num_comande; a++)
+        for (a = 0; a < coda_comande[j].id_comanda; a++)
         {
             printf("Piatto scelto: %s x %d\n", coda_comande[j].desc[a], coda_comande[j].quantita[a]);
         }
@@ -395,7 +395,7 @@ void stampa_stat_all()
     for (j = 0; j < quante_servite; j++)
     {
         printf("Comanda %d - Stato <In SERVIZIO> del tavolo: %s\n", comande_servite[j].id + 1, comande_servite[j].tav_num);
-        for (a = 0; a < comande_servite[j].num_comande; a++)
+        for (a = 0; a < comande_servite[j].id_comanda; a++)
         {
             printf("Piatto scelto: %s x %d\n", comande_servite[j].desc[a], comande_servite[j].quantita[a]);
         }
@@ -426,7 +426,7 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
         return;
     }
     else if (ret == -1)
-    { // nel caso in cui c'è stato un errore, lo stampo a video
+    { // nel caso in cui c'e' stato un errore, lo stampo a video
         perror("ERRORE nella comunicazione con un socket remoto");
         return;
     }
@@ -531,8 +531,8 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                                 coda_comande[a].id = coda_comande[a + 1].id;
                                 coda_comande[a].kd_assegnato = coda_comande[a + 1].kd_assegnato;
                                 coda_comande[a].td_assegnato = coda_comande[a + 1].td_assegnato;
-                                coda_comande[a].num_comande = coda_comande[a + 1].num_comande;
-                                for (c = 0; c < coda_comande[a + 1].num_comande; c++)
+                                coda_comande[a].id_comanda = coda_comande[a + 1].id_comanda;
+                                for (c = 0; c < coda_comande[a + 1].id_comanda; c++)
                                 {
                                     strcpy(coda_comande[a].desc[c], coda_comande[a + 1].desc[c]);
                                     coda_comande[a].quantita[c] = coda_comande[a + 1].quantita[c];
@@ -545,7 +545,7 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                             coda_comande[quante_comande + 1].stato = 'x';
                             coda_comande[quante_comande + 1].kd_assegnato = -1;
                             coda_comande[quante_comande + 1].td_assegnato = -1;
-                            coda_comande[quante_comande + 1].num_comande = 0;
+                            coda_comande[quante_comande + 1].id_comanda = 0;
                             coda_comande[quante_comande + 1].id = -1;
                             b--; // se l'ho trovato, sposto tutto di 1 potrei perdermi una comanda se non torno indietro
                             check = 1;
@@ -675,9 +675,9 @@ int main(int argc, char *argv[])
                     if (strcmp(comando, "stat") == 0)
                     {
                         if (strlen(buffer) > 5)
-                        {                                                                                 // è stato inserito qualcosa dopo stat
+                        {                                                                                 // e' stato inserito qualcosa dopo stat
                             if (copia[0] != 'a' && copia[0] != 'p' && copia[0] != 's' && copia[0] != 'T') // se dice lo stato
-                            {                                                                             // vedo se lo stato indicato è corretto
+                            {                                                                             // vedo se lo stato indicato e' corretto
                                 printf("ERRORE: stato non valido.\n");
                                 fflush(stdout);
                                 continue;
@@ -689,7 +689,7 @@ int main(int argc, char *argv[])
                             else if (sscanf(copia, "T%d", &nT) == 1)
                             { // se dice il tavolo
                                 if (nT < 1 || nT > MAX_TAVOLI)
-                                { // vedo il numero del tavolo è valido
+                                { // vedo il numero del tavolo e' valido
                                     printf("ERRORE: numero del tavolo non valido.\n");
                                     fflush(stdout);
                                     continue;
@@ -1165,7 +1165,7 @@ int main(int argc, char *argv[])
                         coda_comande[quante_comande].stato = 'a';
                         coda_comande[quante_comande].td_assegnato = i;
 
-                        coda_comande[quante_comande].num_comande = n_comande - 1;
+                        coda_comande[quante_comande].id_comanda = n_comande - 1;
                         coda_comande[quante_comande].id = codice_id;
 
                         quante_comande++;
@@ -1202,7 +1202,7 @@ int main(int argc, char *argv[])
                         check = 0;
                         for (j = 0; j < quante_comande; j++)
                         {
-                            if (strcmp(coda_comande[j].tav_num, TavConto) == 0 && (coda_comande[j].stato == 'p' || coda_comande[j].stato == 'a')) // c'è sempre qualche ordinazione
+                            if (strcmp(coda_comande[j].tav_num, TavConto) == 0 && (coda_comande[j].stato == 'p' || coda_comande[j].stato == 'a')) // c'e' sempre qualche ordinazione
                             {                                                                                                                     // Se ci sono sempre comande in Preparazione o in Attesa non può confermare il conto. (Il conto viene calcolato poi direttamente dal T.D. per alleggerire il carico del server)
                                 ret = send(i, (void *)negazione, LEN_ID, 0);
                                 errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
@@ -1236,7 +1236,7 @@ int main(int argc, char *argv[])
                                 ret = send(i, &coda_comande[j].id, sizeof(uint16_t), 0); // mando il messaggio
                                 errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                                for (a = 0; a < coda_comande[j].num_comande; a++) // Mando tutte le comande
+                                for (a = 0; a < coda_comande[j].id_comanda; a++) // Mando tutte le comande
                                 {
                                     sprintf(comando, "%s %d", coda_comande[j].desc[a], coda_comande[j].quantita[a]);
 
@@ -1251,7 +1251,7 @@ int main(int argc, char *argv[])
                                 coda_comande[j].kd_assegnato = i; // Socket del K.D. che ha preso la comanda
 
                                 sprintf(comando, "** Comanda %d in PREPARAZIONE **", coda_comande[j].id + 1);
-                                // AVVISO il T.D. che la comanda X è stata presa in carico
+                                // AVVISO il T.D. che la comanda X e' stata presa in carico
                                 len_HO = strlen(comando) + 1;
                                 len_NO = htonl(len_HO);
                                 ret = send(coda_comande[j].td_assegnato, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
@@ -1292,7 +1292,7 @@ int main(int argc, char *argv[])
                                 ret = send(i, comando, len_HO, 0); // mando il messaggio
                                 errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                                for (a = 0; a < coda_comande[j].num_comande; a++)
+                                for (a = 0; a < coda_comande[j].id_comanda; a++)
                                 {
                                     sprintf(comando, "%s %d", coda_comande[j].desc[a], coda_comande[j].quantita[a]);
 
@@ -1335,8 +1335,8 @@ int main(int argc, char *argv[])
                                 comande_servite[quante_servite].stato = 's';
                                 comande_servite[quante_servite].kd_assegnato = coda_comande[j].kd_assegnato;
                                 comande_servite[quante_servite].td_assegnato = coda_comande[j].td_assegnato;
-                                comande_servite[quante_servite].num_comande = coda_comande[j].num_comande;
-                                for (a = 0; a < coda_comande[j].num_comande; a++)
+                                comande_servite[quante_servite].id_comanda = coda_comande[j].id_comanda;
+                                for (a = 0; a < coda_comande[j].id_comanda; a++)
                                 {
                                     strcpy(comande_servite[quante_servite].desc[a], coda_comande[j].desc[a]);
                                     comande_servite[quante_servite].quantita[a] = coda_comande[j].quantita[a];
@@ -1351,8 +1351,8 @@ int main(int argc, char *argv[])
                                     coda_comande[a].id = coda_comande[a + 1].id;
                                     coda_comande[a].kd_assegnato = coda_comande[a + 1].kd_assegnato;
                                     coda_comande[a].td_assegnato = coda_comande[a + 1].td_assegnato;
-                                    coda_comande[a].num_comande = coda_comande[a + 1].num_comande;
-                                    for (c = 0; c < coda_comande[a + 1].num_comande; c++)
+                                    coda_comande[a].id_comanda = coda_comande[a + 1].id_comanda;
+                                    for (c = 0; c < coda_comande[a + 1].id_comanda; c++)
                                     {
                                         strcpy(coda_comande[a].desc[c], coda_comande[a + 1].desc[c]);
                                         coda_comande[a].quantita[c] = coda_comande[a + 1].quantita[c];
@@ -1365,11 +1365,11 @@ int main(int argc, char *argv[])
                                 coda_comande[quante_comande + 1].stato = 'x';
                                 coda_comande[quante_comande + 1].kd_assegnato = -1;
                                 coda_comande[quante_comande + 1].td_assegnato = -1;
-                                coda_comande[quante_comande + 1].num_comande = 0;
+                                coda_comande[quante_comande + 1].id_comanda = 0;
                                 coda_comande[quante_comande + 1].id = -1;
 
                                 sprintf(comando, "** Comanda %d in SERVIZIO **", comande_servite[quante_servite].id + 1);
-                                // avviso il T.D. che la comanda X è in SERVIZIO
+                                // avviso il T.D. che la comanda X e' in SERVIZIO
                                 len_HO = strlen(comando) + 1;
                                 len_NO = htonl(len_HO);
                                 ret = send(comande_servite[quante_servite].td_assegnato, &len_NO, sizeof(uint32_t), 0); // mando la dimensione

@@ -15,7 +15,7 @@
 
 // Strutture per salvare le informazioni del menu e delle comande
 struct piatto{
-    char nome[2]; // contiene la descrizione del piatto
+    char id[2]; // contiene la descrizione del piatto
     int costo;    // contiene il costo del piatto
     char desc[DESCRIZIONE];
 };
@@ -24,9 +24,9 @@ struct piatto{
 struct piatto menu[MAX_PIATTI]; 
 
 struct comanda{
-    int num_comande;
+    int id_comanda;
     char desc[MAX_PIATTI][DESCRIZIONE]; // sarà A1, A3, P2 ecc... il codice del piatto
-    int quantita[MAX_PIATTI];           // Quantità scelta del piatto XX
+    int quantita[MAX_PIATTI];           // Quantita' scelta del piatto XX
 };
 
 struct comanda coda_comande[MAX_COMANDE_IN_ATTESA]; // coda di comande in attesa

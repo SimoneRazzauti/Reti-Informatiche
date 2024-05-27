@@ -1,7 +1,7 @@
 # ************************************************************************************
 # NOTA: di seguito, tutti i device sono lanciati passando una un numero di porta
 # a linea di comando, per generalità. Se si decide che un device si comporta da client
-# non è necessario recuperare la porta nel codice, né effettuare la bind().
+# non e' necessario recuperare la porta nel codice, ne' effettuare la bind().
 # Supporre che i dispositivi contattino il server sulla porta 4242, inserendola
 # staticamente nel codice sorgente.
 # ************************************************************************************
@@ -15,7 +15,7 @@
   read -p "Compilazione eseguita. Premi invio per eseguire..."
 
 # 2. ESECUZIONE
-# I file eseguibili devono chiamarsi come descritto in specifica, e cioè:
+# I file eseguibili devono chiamarsi come descritto in specifica, e cioe':
 #    a) 'server' per il server;
 #    b) 'td' per il table device;
 #    c) 'kd' per il kitchen device;

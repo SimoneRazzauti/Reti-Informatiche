@@ -16,17 +16,17 @@ int check_data(int GG, int MM, int AA, int HH){
 
     // Controllo che il mese sia valido (deve essere compreso tra 1 e 12)
     if (MM < 1 || MM > 12){
-        return 0; // Ritorna 0 se il mese non è valido
+        return 0; // Ritorna 0 se il mese non e' valido
     }
 
-    // Verifico se l'anno è bisestile
+    // Verifico se l'anno e' bisestile
     int giorni_in_febbraio = (AA % 4 == 0 && (AA % 100 != 0 || AA % 400 == 0)) ? 29 : 28;
 
     // Controllo che il giorno sia valido in base al mese e all'anno
     switch (MM){
         case 2:
             if (GG < 1 || GG > giorni_in_febbraio){
-                return 0; // Ritorna 0 se il giorno non è valido per febbraio
+                return 0; // Ritorna 0 se il giorno non e' valido per febbraio
             }
             break;
         case 4:
@@ -34,12 +34,12 @@ int check_data(int GG, int MM, int AA, int HH){
         case 9:
         case 11:
             if (GG < 1 || GG > 30){
-                return 0; // Ritorna 0 se il giorno non è valido per aprile, giugno, settembre o novembre
+                return 0; // Ritorna 0 se il giorno non e' valido per aprile, giugno, settembre o novembre
             }
             break;
         default:
             if (GG < 1 || GG > 31){
-                return 0; // Ritorna 0 se il giorno non è valido per gli altri mesi
+                return 0; // Ritorna 0 se il giorno non e' valido per gli altri mesi
             }
             break;
     }
@@ -47,7 +47,7 @@ int check_data(int GG, int MM, int AA, int HH){
     // Verifico l'ora (deve essere compresa tra 10 e 23)
     if (HH < 10 || HH > 23)
     {
-        return 0; // Ritorna 0 se l'ora non è valida
+        return 0; // Ritorna 0 se l'ora non e' valida
     }
 
     // Inizializzo una variabile time_t per contenere il tempo della data inserita
@@ -63,7 +63,7 @@ int check_data(int GG, int MM, int AA, int HH){
     input_time = mktime(&input_timeinfo);
 
     // Confronto il tempo corrente con il tempo della data passata come parametro
-    // e restituisco 1 se la data è futura, altrimenti 0
+    // e restituisco 1 se la data e' futura, altrimenti 0
     return (input_time >= current_time);
 }
 

@@ -101,7 +101,7 @@ int main(int argc, char *argv[]){
 
     // Aggiorno il nuovo fdmax
     fdmax = sockfd;
-    printf("1");
+
     // Invio codice id td = 'T' al server
     ret = send(sockfd, (void *)id, LEN_ID, 0);
     check_errori(ret, sockfd);
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]){
 			exit(1);
 		}
 
-        // contro
+        // controllo che il server non abbia chiuso la connessione mentre aspetto il codice del tavolo
         if (FD_ISSET(sockfd, &read_fds)){
  
             // ricevo la lunghezza del messaggio
@@ -153,7 +153,8 @@ int main(int argc, char *argv[]){
             // altrimenti, il server sta inviando un messaggio da stampare
             printf("%s\n", buffer); // stampo il messaggio
             fflush(stdout);
-        }   
+        }
+           
         // salvo su buffer il contenuto dello stdin
         fgets(buffer, BUFFER_SIZE, stdin);
         codice = "code\0";
@@ -172,7 +173,7 @@ int main(int argc, char *argv[]){
         // invio MESSAGGIO codice
         ret = send(sockfd, (void *)buffer, len_HO, 0);
         check_errori(ret, sockfd);
-    printf("33333");
+
         // tavolo da 0-9
         if (buffer[2] == '-'){ 
             sscanf(buffer, "%2s", tavoloMemorizzato);

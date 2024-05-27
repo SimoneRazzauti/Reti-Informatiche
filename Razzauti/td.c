@@ -10,6 +10,7 @@
 #include <time.h>
 
 #include "funzioni.c" // funzioni varie
+#include "strutture.h" // strutture
 
 #define BUFFER_SIZE 1024 // dimensione massima del buffer
 #define WELCOME "Benvenuto"
@@ -19,49 +20,14 @@
 
 #define MAX_WORDS 50     // Numero massimo di parole che possono essere estratte dalla frase
 
-#define MAX_PIATTI 10
+#define MAX_PIATTI 15 // nnumero massimo di piatti nel menu
 #define MAX_COMANDE_IN_ATTESA 10
 
-#define DESCRIZIONE 100
+#define DESCRIZIONE 100 // descrizione del piatto
 
 #define LEN_ID 2
 #define codiceLen 5
 
-// Strutture per salvare le informazioni del menu e delle comande
-struct piatto
-{
-    char nome[2]; // contiene la descrizione del piatto
-    int costo;    // contiene il costo del piatto
-    char desc[DESCRIZIONE];
-};
-
-struct piatto menu[MAX_PIATTI]; // sarà salvato il menu
-
-struct comanda
-{
-    int num_comande;
-    char desc[MAX_PIATTI][DESCRIZIONE]; // sarà A1, A3, P2 ecc... il codice del piatto
-    int quantita[MAX_PIATTI];           // Quantità scelta del piatto XX
-};
-
-struct comanda coda_comande[MAX_COMANDE_IN_ATTESA]; // coda di comande in attesa
-
-// Controlla se i piatti selezionati sono nel Menu
-int controllo_menu(char info[10], int quanti_piatti)
-{
-    int x = 0;
-    char piattoN[2];
-    sscanf(info, "%2s-%*d", piattoN); // mi salvo il piatto per controllare che sia nel Menu
-
-    for (x = 0; x <= quanti_piatti; x++)
-    {
-        if (strcmp(menu[x].nome, piattoN) == 0)
-        { // se trova il piatto nel menu
-            return 1;
-        }
-    }
-    return 0;
-}
 
 int main(int argc, char *argv[])
 {
@@ -310,7 +276,7 @@ int main(int argc, char *argv[])
             {
                 for (j = 1; j < chunk_count; j++)
                 { // Controllo se i piatti scelti vanno bene
-                    if (controllo_menu(info[j], quanti_piatti) == 0)
+                    if (check_menu(info[j], quanti_piatti) == 0)
                     {
                         errore = 1;
                         break;

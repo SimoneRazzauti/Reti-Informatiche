@@ -13,10 +13,10 @@
 #include "strutture.h" // strutture
 
 #define BUFFER_SIZE 1024 // dimensione massima del buffer
-#define WELCOME "Benvenuto"
-#define WELCOME_TD1 "\nInserisci il codice prenotazione: "
+#define WELCOME "Benvenuto.\n"
+#define WELCOME_TD1 "Inserisci il codice prenotazione: "
 #define WELCOME_TD2 "\n***************** BENVENUTO AL RISTORANTE *****************\n Digita un comando:\n1) help --> mostra i dettagli dei comandi\n2) menu --> mostra il menu dei piatti\n3) comanda --> invia una comanda\n4) conto --> chiede il conto\n"
-#define HELP "Comandi:\nmenu -> stampa il menu\ncomanda -> invia una comanda in cucina\n\t\t   NOTA: deve essere nel formato\n \t\t   {<piatto_1-quantità_1>...<piatto_n-quantità_n>}\nconto -> richiesta del conto\n"
+#define HELPER "Comandi:\nmenu -> stampa il menu\ncomanda -> invia una comanda in cucina\n\t\t   NOTA: deve essere nel formato\n \t\t   {<piatto_1-quantità_1>...<piatto_n-quantità_n>}\nconto -> richiesta del conto\n"
 
 #define MAX_WORDS 50 // numero massimo di parole che possono essere estratte dalla frase
 #define LEN_ID 2 // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)
@@ -32,7 +32,6 @@ int check_menu(char info[15], int quanti_piatti){
     int x = 0;
     char piattoN[2];
     sscanf(info, "%2s-%*d", piattoN); // mi salvo il piatto per controllare che sia nel Menu
-
     for (x = 0; x <= quanti_piatti; x++){
         // se trova il piatto nel menu
         if (strcmp(menu[x].nome, piattoN) == 0){ 
@@ -54,9 +53,9 @@ int main(int argc, char *argv[]){
     int chunk_len, prezzo, a, k, j, quanti_piatti = 0;
     int quante_comande = 0;
     char tavoloMemorizzato[5]; //memorizza il tavolo assegnato al cliente come stringa
-    int menuPresente = 0;
+    int richiestaMenu = 0; // server per richiedere il menu al server la prima volta o casharlo
     int errore = 0; // controllo se il piatto scelto è nel menu
-    int richiesto = 0; // controlo se e' stato richiesto il menu per il controllo del Conto
+    int ordine = 0; // controlo se e' stato prima richiesto il menu per inviare una comanda o un conto
     char *chunk; // per l'estrazione delle parole dal buffer
     uint16_t chunk_count = 0; // Il numero di parole estratte dalla frase
     char *info[MAX_WORDS]; // array di puntatori in cui vengono memorizzate le parole estratte dal buffer con la strtok
@@ -171,72 +170,83 @@ int main(int argc, char *argv[]){
 
     printf(WELCOME_TD2);
     fflush(stdout);
-    while (1)
-    {
-        memset(buffer, 0, sizeof(buffer)); // In caso contrario, rimarrebbe l'ultima cosa che c'era dentro.
-        read_fds = master;
-        select(fdmax + 1, &read_fds, NULL, NULL, NULL);
 
-        if (FD_ISSET(sockfd, &read_fds))
-        { // PRONTO SOCKET DI COMUNICAZIONE
+    // CICLO PRINCIPALE
+    while (1){
+        memset(buffer, 0, BUFFER_SIZE); // ripulsco il buffer di comunicazione
+        read_fds = master; // copia del set da monitorare
+        ret = select(fdmax + 1, &read_fds, NULL, NULL, NULL);
+		if(ret < 0) {
+			perror("Errore nella select!");
+			exit(1);
+		}
+
+        // CASO 1: PRONTO SOCKET DI COMUNICAZIONE
+        if (FD_ISSET(sockfd, &read_fds)){
+
+            // ricevo la lunghezza del messaggio
             ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
             check_errori(ret, sockfd);
-
             len_HO = ntohl(len_NO);
+
+            // ricevo il messaggio 
             ret = recv(sockfd, buffer, len_HO, 0);
             check_errori(ret, sockfd);
-            if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
-            { // se il server ha chiamato "stop", avviso e termino.
-                printf("AVVISO: il server è stato arrestato.\nARRESTO IN CORSO...\n");
+
+            // se il server ha detto "stop", avviso e termino.
+            if (strncmp(buffer, "STOP", strlen("STOP")) == 0){ // strncmp compara le prime n lettere con n passato come terzo parametro
+                printf("\nAVVISO: il server si è arrestato tramite comando STOP.\n\n");
                 fflush(stdout);
-                exit(0);
                 close(sockfd);
-            }                       // altrimenti, il server sta avvisando che una comanda è in preparazione/in servizio.
-            printf("%s\n", buffer); // Mi serve solo stampare il messaggio.
+                exit(0);
+            }              
+            // altrimenti, il server sta inviando un messaggio da stampare
+            printf("%s\n", buffer); // stampo il messaggio
             fflush(stdout);
-        }
-        else
-        {
-            // Lettura del messaggio da stdin
+        }   
+        // CASO 2: PRONTO SOCKET stdin
+        else{
+            // salvo nel buffer il contenuto digitato da stdin 
             fgets(buffer, BUFFER_SIZE, stdin);
 
-            // Estrai le parole dalla frase utilizzando la funzione 'strtok'
-            chunk = strtok(buffer, " "); // Estrai la prima parola utilizzando lo spazio come delimitatore
+            // Estrae le parole dalla frase utilizzando 'strtok' e lo spazio come delimitatore a blocchi di chunks
+            chunk = strtok(buffer, " ");
             chunk_count = 0;
-            while (chunk != NULL && chunk_count < MAX_WORDS)
-            { // Finche' ci sono parole da estrarre e non si supera il limite massimo
-                // Rimuovi il carattere di fine riga dalla parola se presente
+
+            // Finchè ci sono parole da estrarre e non si supera il limite massimo
+            while (chunk != NULL && chunk_count < MAX_WORDS){ 
+                // Rimuove il carattere di fine riga dalla parola se presente
                 chunk_len = strlen(chunk);
-                if (chunk[chunk_len - 1] == '\n')
-                {
+                if (chunk[chunk_len - 1] == '\n'){
                     chunk[chunk_len - 1] = '\0';
                 }
 
-                // Aggiungi la parola all'array di parole
+                // Aggiunge la parola all'array di parole
                 info[chunk_count] = chunk; // Memorizza il puntatore alla parola nell'array
                 chunk_count++;                        // Incrementa il contatore di parole estratte
 
-                // Estrai la prossima parola
+                // Estrae la prossima parola
                 chunk = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
             }
 
-            if (strcmp(info[0], "help") == 0)
-            {
-                printf(HELP);
+            // ******* Adesso tutte le parole estratte da input sono salvate nell'array info, ci sono 4 casi 1) help 2) menu 3) comanda 4) conto
+
+            // CASO 1: stampo l'helper
+            if (strcmp(info[0], "help") == 0){
+                printf(HELPER);
                 fflush(stdout);
             }
-            else if (strcmp(info[0], "menu") == 0)
-            {
-                codice = "menu\0";
-                if (menuPresente == 0)
-                { // Se è la prima volta che si chiede il Menu. -> Richiediamo al Server -> Salviamo nell'array Menu per le prossime volte
 
+            // CASO 2: stampo l'elenco dei piatti sul menu
+            else if (strcmp(info[0], "menu") == 0){
+                codice = "menu\0";
+                // Se è la prima volta che si chiede il Menu. -> chiedo al Server -> Salvo nell'array Menu per le prossime volte
+                if (richiestaMenu == 0){
                     // mando codice "menu"
                     ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                     check_errori(ret, sockfd);
                     quanti_piatti = 0;
-                    for (;;)
-                    {
+                    for (;;){
                         ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
                         check_errori(ret, sockfd);
 
@@ -244,39 +254,37 @@ int main(int argc, char *argv[]){
                         ret = recv(sockfd, buffer, len_HO, 0);
                         check_errori(ret, sockfd);
 
-                        if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
-                        {
+                        // se ho finito di stampare il menu, esco dal loop
+                        if (strncmp(buffer, "STOP", strlen("STOP")) == 0){
                             printf("\n");
                             fflush(stdout);
                             break;
                         }
 
-                        sscanf(buffer, "%2s - %d %*s - %[^\n]", menu[quanti_piatti].nome, &menu[quanti_piatti].costo, menu[quanti_piatti].desc); // MI SALVO IL MENU
+                        // salvo il menu corrente
+                        sscanf(buffer, "%2s - %d %*s - %[^\n]", menu[quanti_piatti].nome, &menu[quanti_piatti].costo, menu[quanti_piatti].desc); 
 
                         quanti_piatti++;
                         printf("%s", buffer); // stampo il menu
                         fflush(stdout);
                     }
-                    menuPresente = 1;
+                    richiestaMenu = 1;
                     printf("\n");
-                }
-                else
-                { // se il menu e' gia' stato chiesto 1 volta -> NON chiedo al Server
-                    for (j = 0; j < quanti_piatti; j++)
-                    {
+                }else{ // se il menu e' gia' stato chiesto 1 volta -> lo casho
+                    for (j = 0; j < quanti_piatti; j++){
                         printf("%s - %s - %d Euro \n", menu[j].desc, menu[j].nome, menu[j].costo); // stampo il menu
                         fflush(stdout);
                     }
                     printf("\n");
                 }
-                richiesto = 1;
+                // aggiorno ordine, il protocollo è che prima si richieda il menu e successivamente gli altri comandi ad esclusione dell'help
+                ordine = 1;
             }
-            else if (richiesto == 0)
-            {
-                printf("AVVISO: Controlla il Menu' prima di fare una comanda o chiedere il conto.\n\n");
+            else if (ordine == 0){
+                printf("AVVISO: Per favore, controlla il Menu' giornaliero prima di effettuare una comanda o richiedere il conto.\n\n");
                 fflush(stdout);
             }
-            else if ((strcmp(info[0], "comanda") == 0) && richiesto == 1)
+            else if ((strcmp(info[0], "comanda") == 0) && ordine == 1)
             {
                 for (j = 1; j < chunk_count; j++)
                 { // Controllo se i piatti scelti vanno bene
@@ -349,7 +357,7 @@ int main(int argc, char *argv[]){
                     printf("AVVISO: COMANDA SPEDITA! \n\n");
                 }
             }
-            else if ((strcmp(info[0], "conto") == 0) && richiesto == 1)
+            else if ((strcmp(info[0], "conto") == 0) && ordine == 1)
             {
 
                 codice = "cont\0"; // mando codice "cont"

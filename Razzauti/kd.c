@@ -129,7 +129,7 @@ int main(int argc, char *argv[]){
                 exit(0);
             }              
             // altrimenti, il server sta inviando un messaggio da stampare
-            printf("\n%s\n", buffer); // stampo il messaggio
+            printf("\n%s\n\n", buffer); // stampo il messaggio
             fflush(stdout);
         }
         // CASO 2: PRONTO SOCKET stdin
@@ -269,7 +269,7 @@ int main(int argc, char *argv[]){
                 if (buffer[0] == 'S'){
                     printf("%s\n\n", "COMANDA IN SERVIZIO.");
                 }else{
-                    printf("ERRORE: COMANDA INESISTENTE.\n\n");
+                    printf("%s\n\n", "ERRORE: COMANDA INESISTENTE.");
                 }
             }else{ // nessun comando inserito valido
                 printf("Errore: Comando non consentito, RIPROVA...\n\n");

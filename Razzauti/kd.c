@@ -222,7 +222,7 @@ int main(int argc, char *argv[]){
                 // mando codice "show" per la sezione del codice server
                 ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                 check_errori(ret, sockfd);
-
+                
                 // stampo l'elenco delle comande in preparazione
                 for (;;){
                     ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
@@ -235,7 +235,7 @@ int main(int argc, char *argv[]){
                     // per uscire dal loop quando ho stampato tutto il buffer
                     if (strncmp(buffer, "STOP", strlen("STOP")) == 0){
                         if (!printed) {
-                            printf("NON CI SONO COMANDE IN PREPARAZIONE\n");
+                            printf("NON CI SONO COMANDE IN PREPARAZIONE\n\n");
                             fflush(stdout);
                         }
                         break;
@@ -244,6 +244,8 @@ int main(int argc, char *argv[]){
                     fflush(stdout);
                     printed = 1;
                 }
+                // resetto printed
+                printed = 0;
             }
 
             else if (strcmp(info[0], "ready") == 0)

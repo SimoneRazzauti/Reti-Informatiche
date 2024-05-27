@@ -9,8 +9,6 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "strutture.h"
-
 // Funzione che controlla che la data inserita con la 'find' sia valida nel formato gg-mm-aa hh e che sia futura rispetto alla data attuale
 int check_data(int GG, int MM, int AA, int HH){
     // Ottengo il tempo corrente
@@ -84,18 +82,4 @@ void check_errori(int ret, int socket){
         close(socket);
         exit(1);
     }
-}
-
-// Controlla se i piatti selezionati siano nel Menu
-int check_menu(char info[15], int quanti_piatti){
-    int x = 0;
-    char piattoN[2];
-    sscanf(info, "%2s-%*d", piattoN); // mi salvo il piatto per controllare che sia nel Menu
-    for (x = 0; x <= quanti_piatti; x++){
-        // se trova il piatto nel menu
-        if (strcmp(menu[x].id, piattoN) == 0){ 
-            return 1;
-        }
-    }
-    return 0;
 }

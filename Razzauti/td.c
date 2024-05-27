@@ -122,6 +122,7 @@ int main(int argc, char *argv[]){
             printf(WELCOME);
         printf(WELCOME_TD1);
         fflush(stdout);
+        
             memset(buffer, 0, BUFFER_SIZE); // ripulsco il buffer di comunicazione
         read_fds = master; // copia del set da monitorare
         ret = select(fdmax + 1, &read_fds, NULL, NULL, NULL);
@@ -130,7 +131,7 @@ int main(int argc, char *argv[]){
 			exit(1);
 		}
 
-        // CASO 1: PRONTO SOCKET DI COMUNICAZIONE
+        // contro
         if (FD_ISSET(sockfd, &read_fds)){
  
             // ricevo la lunghezza del messaggio

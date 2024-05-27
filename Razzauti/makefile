@@ -6,7 +6,7 @@ server: server.o
 cli: cli.o funzioni.c
 	gcc -Wall cli.o -o cli
 
-kd: kd.o
+kd: kd.o funzioni.c strutture.h
 	gcc -Wall kd.o -o kd
 
 td: td.o funzioni.c strutture.h

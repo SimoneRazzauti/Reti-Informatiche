@@ -48,23 +48,17 @@ int main(int argc, char *argv[]){
     char buffer[BUFFER_SIZE];
     struct sockaddr_in server_addr;
 
-
+    // variabili di utiltà
     int welcome = 1; // per l'output
-    
-
+    char id[] = "T\0"; // codice per riconoscere il TABLE DEVICE
     int chunk_len, prezzo, a, k, j, quanti_piatti = 0;
     int quante_comande = 0;
-    char id[] = "T\0"; // codice per riconoscere il TABLE DEVICE
-
     char tavoloMemorizzato[5];
-
-    char *chunk;
     int menuPresente = 0;
-
     int errore = 0; // controllo se il piatto scelto è nel menu
-
-    int richiesto = 0;                 // controlo se e' stato richiesto il menu per il controllo del Conto
-    uint16_t chunk_count = 0;           // Il numero di parole estratte dalla frase
+    int richiesto = 0; // controlo se e' stato richiesto il menu per il controllo del Conto
+    char *chunk; // per l'estrazione delle parole dal buffer
+    uint16_t chunk_count = 0; // Il numero di parole estratte dalla frase
     char *info[MAX_WORDS]; // array di puntatori in cui vengono memorizzate le parole estratte dal buffer con la strtok
     char *codice = NULL; // help, menu, comand, conto
 

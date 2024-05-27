@@ -28,6 +28,21 @@
 #define LEN_ID 2
 #define codiceLen 5
 
+// Controlla se i piatti selezionati siano nel Menu
+int check_menu(char info[10], int quanti_piatti){
+    int x = 0;
+    char piattoN[2];
+    sscanf(info, "%2s-%*d", piattoN); // mi salvo il piatto per controllare che sia nel Menu
+
+    for (x = 0; x <= quanti_piatti; x++)
+    {
+        if (strcmp(menu[x].nome, piattoN) == 0)
+        { // se trova il piatto nel menu
+            return 1;
+        }
+    }
+    return 0;
+}
 
 int main(int argc, char *argv[])
 {

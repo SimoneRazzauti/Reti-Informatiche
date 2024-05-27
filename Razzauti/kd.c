@@ -94,7 +94,6 @@ int main(int argc, char *argv[]){
         exit(1);
     }
 
-
     while (1){
         printf(WELCOME_KD); // stampo il benvenuto
         printf(COMANDI); // stampo la lista dei comandi

@@ -141,7 +141,7 @@ int main(int argc, char *argv[]){
         // invio MESSAGGIO codice
         ret = send(sockfd, (void *)buffer, len_HO, 0);
         check_errori(ret, sockfd);
-
+    printf("33333");
         // tavolo da 0-9
         if (buffer[2] == '-'){ 
             sscanf(buffer, "%2s", tavoloMemorizzato);

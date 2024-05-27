@@ -17,7 +17,7 @@
 #define MAX_COMANDE_IN_ATTESA 10
 #define DESCRIZIONE 100
 #define LEN_ID 2
-#define codiceLen 5
+#define LEN_COMANDO 5
 
 struct comanda
 {
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
             {
                 // mando codice "take"
                 codice = "take\0";
-                ret = send(sockfd, (void *)codice, codiceLen, 0);
+                ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                 check_errori(ret, sockfd);
 
                 ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
             {
                 codice = "show\0";
                 // mando codice "show"
-                ret = send(sockfd, (void *)codice, codiceLen, 0);
+                ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                 check_errori(ret, sockfd);
 
                 for (;;)
@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
             {
                 // mando codice "ready"
                 codice = "read\0"; // mando codice "read"
-                ret = send(sockfd, (void *)codice, codiceLen, 0);
+                ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                 check_errori(ret, sockfd);
 
                 len_HO = strlen(info[1]) + 1;

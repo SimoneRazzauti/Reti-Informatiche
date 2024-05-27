@@ -19,7 +19,7 @@
 #define MAX_COMANDE_IN_ATTESA 10
 
 #define LEN_ID 2
-#define codiceLen 5
+#define LEN_COMANDO 5
 
 #define DESCRIZIONE 100
 #define MAX_SALA_DESC 20
@@ -888,7 +888,7 @@ int main(int argc, char *argv[])
                 else
                 {
                     memset(buffer, 0, sizeof(buffer));
-                    n = recv(i, buffer, codiceLen, 0); // riceve il codice
+                    n = recv(i, buffer, LEN_COMANDO, 0); // riceve il codice
                     errori_ritorno(n, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                     if (strncmp(buffer, "find", strlen("find")) == 0)

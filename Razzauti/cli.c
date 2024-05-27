@@ -15,11 +15,10 @@
 #define BUFFER_SIZE 1024 // dimensione max del buffer
 #define WELCOME_CLIENT "BENVENUTO CLIENTE\nComandi disponibili...\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n" // messaggio di benvenuto 
 
-#define MAX_WORDS 10       // Numero massimo di parole che possono essere estratte dalla frase
+#define MAX_WORDS 10 // Numero massimo di parole che possono essere estratte dalla frase
 #define MAX_WORD_LENGTH 50 // Lunghezza massima di ogni parola
-
 #define LEN_ID 2  // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)
-#define codiceLen 5 // lunghezza dei codici da mandare al server
+#define LEN_COMANDO 5 // lunghezza dei comandi da mandare al server
 
 int main(int argc, char *argv[]){
     int sockfd, ret; // variabili per i socket
@@ -176,7 +175,7 @@ int main(int argc, char *argv[]){
                 if (check_data(giorno, mese, anno, ora)){
                     
                     // invio codice "find" al server
-                    ret = send(sockfd, (void *)codice, codiceLen, 0);
+                    ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                     check_errori(ret, sockfd);
 
                     sscanf(info[1], "%s", cognome);
@@ -252,7 +251,7 @@ int main(int argc, char *argv[]){
                 else{
                     // invio codice "book" al server
                     codice = "book\0";
-                    ret = send(sockfd, (void *)codice, codiceLen, 0);
+                    ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                     check_errori(ret, sockfd);
 
                     // innvio i dettagli della prenotazione al server

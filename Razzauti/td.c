@@ -9,8 +9,13 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define PORT 4242        // porta del server
+#include "funzioni.c" // funzioni varie
+
 #define BUFFER_SIZE 1024 // dimensione massima del buffer
+#define WELCOME_TD1 "Benvenuto\nInserisci il codice prenotazione: "
+#define WELCOME_TD2 "***************** BENVENUTO AL RISTORANTE *****************\n Digita un comando:\n1) help --> mostra i dettagli dei comandi\n2) menu --> mostra il menu dei piatti\n3) comanda --> invia una comanda\n4) conto --> chiede il conto\n"
+#define HELP "Comandi:\nmenu -> stampa il menu\ncomanda -> invia una comanda in cucina\n\t\t   NOTA: deve essere nel formato\n \t\t   {<piatto_1-quantità_1>...<piatto_n-quantità_n>}\nconto -> richiesta del conto\n"
+
 #define MAX_WORDS 50     // Numero massimo di parole che possono essere estratte dalla frase
 
 #define MAX_PIATTI 10
@@ -30,24 +35,6 @@ void comandi_table()
     printf("4) conto \t\t --> chiede il conto \n");
 }
 
-void check_errori(int ret, int socket)
-{ // Gestione errori e gestione in caso di chiusura del socket remoto, termino.
-    if (ret == -1)
-    {
-        perror("ERRORE nella comunicazione con il server\n");
-        printf("ARRESTO IN CORSO...\n\n");
-        fflush(stdout);
-        close(socket);
-        exit(1);
-    }
-    else if (ret == 0)
-    {
-        printf("AVVISO: il server ha chiuso il socket remoto.\nARRESTO IN CORSO...\n");
-        fflush(stdout);
-        close(socket);
-        exit(1);
-    }
-}
 // Strutture per salvare le informazioni del menu e delle comande
 struct piatto
 {
@@ -140,7 +127,7 @@ int main(int argc, char *argv[])
     }
 
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(PORT);
+    server_addr.sin_port = htons(4242);
     server_addr.sin_addr.s_addr = INADDR_ANY;
 
     ret = connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
@@ -174,7 +161,7 @@ int main(int argc, char *argv[])
     while (1)
     { // validazione codice per identificare il Table D.
 
-        printf("Inserisci Codice: \n");
+        printf(WELCOME_TD1);
 
         fgets(buffer, BUFFER_SIZE, stdin);
         codice = "code\0";

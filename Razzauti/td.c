@@ -101,7 +101,7 @@ int main(int argc, char *argv[]){
 
     // Aggiorno il nuovo fdmax
     fdmax = sockfd;
-
+    printf("1");
     // Invio codice id td = 'T' al server
     ret = send(sockfd, (void *)id, LEN_ID, 0);
     check_errori(ret, sockfd);
@@ -122,8 +122,8 @@ int main(int argc, char *argv[]){
             printf(WELCOME);
         printf(WELCOME_TD1);
         fflush(stdout);
-
-        // salvo su buffer il cotenuto dello stdin
+    printf("2");
+        // salvo su buffer il contenuto dello stdin
         fgets(buffer, BUFFER_SIZE, stdin);
         codice = "code\0";
 
@@ -329,7 +329,7 @@ int main(int argc, char *argv[]){
                     if (buffer[0] == 'N'){ // cucina piena
                         printf("In questo momento la cucina non può gestire ulteriori comande, ti preghiamo cortesemente di aspettare :) \n\n");
                         fflush(stdout);
-                        //continue;
+                        continue;
                     }
                     k = 0;
                     // invio piatti con la loro quanità 

@@ -233,7 +233,7 @@ int main(int argc, char *argv[]){
                     
                     // per uscire dal loop quando ho stampato tutto il buffer
                     if (strncmp(buffer, "STOP", strlen("STOP")) == 0){
-                        printf("NON CI SONO COMANDE IN PREPARAZIONE\n");
+                        printf("NON CI SONO ALTRE COMANDE IN PREPARAZIONE\n");
                         fflush(stdout);
                         break;
                     }

@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
     char id[] = "T\0"; // codice per riconoscere il TABLE DEVICE
     int chunk_len, prezzo, a, k, j, quanti_piatti = 0;
     int quante_comande = 0;
-    char tavoloMemorizzato[5];
+    char tavoloMemorizzato[5]; //memorizza il tavolo assegnato al cliente come stringa
     int menuPresente = 0;
     int errore = 0; // controllo se il piatto scelto è nel menu
     int richiesto = 0; // controlo se e' stato richiesto il menu per il controllo del Conto
@@ -116,51 +116,56 @@ int main(int argc, char *argv[]){
         exit(1);
     }
 
-    while (1)
-    { // validazione codice per identificare il Table D.
-
+    // Check-in del table device
+    while (1){
+        // stampo anche il benvenuto se il table device è stato avviato per la prima volta
         if(welcome)
             printf(WELCOME);
         printf(WELCOME_TD1);
         fflush(stdout);
 
+        // salvo su buffer il cotenuto dello stdin
         fgets(buffer, BUFFER_SIZE, stdin);
         codice = "code\0";
 
-        // mando codice "code" per identificare la sezione
+        // invio codice "code" per identificare la sezione nello script server
         ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
         check_errori(ret, sockfd);
 
         len_HO = strlen(buffer) + 1;
         len_NO = htonl(len_HO);
-        // mando lunghezza del codice
+
+        // invio lunghezza del codice
         ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
         check_errori(ret, sockfd);
 
-        // mando MESSAGGIO codice
+        // invio MESSAGGIO codice
         ret = send(sockfd, (void *)buffer, len_HO, 0);
         check_errori(ret, sockfd);
 
-        if (buffer[2] == '-')
-        { // tavolo da 0-9
+        // tavolo da 0-9
+        if (buffer[2] == '-'){ 
             sscanf(buffer, "%2s", tavoloMemorizzato);
-        }
-        else if (buffer[3] == '-')
-        { // tavolo da 10-99
+        } 
+        // tavolo da 10-99
+        else if (buffer[3] == '-'){ 
             sscanf(buffer, "%3s", tavoloMemorizzato);
         }
+
+        // ricevo la risposta dal server
         ret = recv(sockfd, (void *)buffer, LEN_ID, 0);
         check_errori(ret, sockfd);
 
-        if (buffer[0] == 'S')
-        { // S = confermato
+        // S = ok
+        if (buffer[0] == 'S'){ 
             printf("Codice corretto...\n\n");
+            // delay per una migliore leggibilità
+            sleep(1);
             break;
-        }
-        else
-        {
-            printf("Ripetere digitazione. Codice errato.\n\n");
+        }else{
+            printf("Codice errato, inserisci un codice valdo.\n\n");
             welcome = 0;
+            continue;
         }
     }
 

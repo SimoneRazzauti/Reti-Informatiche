@@ -9,51 +9,26 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define PORT 4242
+#include "funzioni.c" // funzioni varie
+
 #define BUFFER_SIZE 1024
+#define WELCOME_KD "************** KITCHEN DEVICE **************\n"
+#define COMANDI "Digita un comando: \n\n1) take \t\t --> accetta una comanda \n2) show \t\t --> mostra le comande accettate (in preparazione) \n3) ready com. \t\t --> imposta lo stato della comanda \n"
 
 #define MAX_WORDS 50 // Numero massimo di parole che possono essere estratte dalla frase
-#define MAX_PIATTI 10
+#define MAX_PIATTI 15
 #define MAX_COMANDE_IN_ATTESA 10
 #define DESCRIZIONE 100
 #define LEN_ID 2
 #define LEN_COMANDO 5
 
-struct comanda
-{
+struct comanda{
     char tav_num[5];                    // numero del tavolo da cui proviene la comanda
     char desc[MAX_PIATTI][DESCRIZIONE]; // sarà A1, A3, P2 ecc... il codice del piatto
     int quantita[MAX_PIATTI];           // quantita
 };
 
 struct comanda coda_comande[MAX_COMANDE_IN_ATTESA]; // coda di comande in attesa
-
-void comandi_table()
-{
-    printf("Digita un comando: \n\n");
-    printf("1) take \t\t --> accetta una comanda \n");
-    printf("2) show \t\t --> mostra le comande accettate (in preparazione) \n");
-    printf("3) ready com. \t\t --> imposta lo stato della comanda \n");
-}
-
-void check_errori(int ret, int socket)
-{ // Gestione errori e gestione in caso di chiusura del socket remoto, termino.
-    if (ret == -1)
-    {
-        perror("ERRORE nella comunicazione con il server\n");
-        printf("ARRESTO IN CORSO...\n\n");
-        fflush(stdout);
-        close(socket);
-        exit(1);
-    }
-    else if (ret == 0)
-    {
-        printf("AVVISO: il server ha chiuso il socket remoto.\nARRESTO IN CORSO...\n");
-        fflush(stdout);
-        close(socket);
-        exit(1);
-    }
-}
 
 int main(int argc, char *argv[])
 {
@@ -104,7 +79,7 @@ int main(int argc, char *argv[])
     }
 
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(PORT);
+    server_addr.sin_port = htons(4242);
     server_addr.sin_addr.s_addr = INADDR_ANY;
 
     ret = connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
@@ -135,8 +110,9 @@ int main(int argc, char *argv[])
         close(sockfd);
     }
 
-    printf("************** BENVENUTO **************\n");
-    comandi_table();
+    printf(WELCOME_KD);
+    printf(COMANDI);
+    fflush(stdout);
     while (1)
     {
         memset(buffer, 0, sizeof(buffer));

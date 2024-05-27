@@ -38,6 +38,7 @@ int main(int argc, char *argv[]){
     int chunk_count = 0; // Il numero di parole estratte dalla frase
     char *info[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
     char *codice = NULL; // take, show, ready com
+    int printed = 0;  // flag per la stampa condizionale del comando show
 
     // variabili per la select
     fd_set master; // set di descrittori da monitorare
@@ -231,18 +232,18 @@ int main(int argc, char *argv[]){
                     ret = recv(sockfd, buffer, len_HO, 0);
                     check_errori(ret, sockfd);
                     
-                    // per uscire dal loop quando ho stampato tutto il buffer
-                    if (strncmp(buffer, "STOP", strlen("STOP")) == 0){
-                        if(ret <= strlen("STOP"))
-                            printf("NON CI SONO ALTRE COMANDE IN PREPARAZIONE\n");
-                        else
-                            printf("\n");
+                // per uscire dal loop quando ho stampato tutto il buffer
+                if (strncmp(buffer, "STOP", strlen("STOP")) == 0){
+                    if (!printed) {
+                        printf("NON CI SONO COMANDE IN PREPARAZIONE\n");
                         fflush(stdout);
-                        break;
                     }
+                    break;
+                }
 
-                    printf("%s\n", buffer);
+                    printf("%s\n\n", buffer);
                     fflush(stdout);
+                    printed = 1;
                 }
             }
 

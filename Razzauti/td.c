@@ -122,7 +122,37 @@ int main(int argc, char *argv[]){
             printf(WELCOME);
         printf(WELCOME_TD1);
         fflush(stdout);
-    printf("2");
+            memset(buffer, 0, BUFFER_SIZE); // ripulsco il buffer di comunicazione
+        read_fds = master; // copia del set da monitorare
+        ret = select(fdmax + 1, &read_fds, NULL, NULL, NULL);
+		if(ret < 0) {
+			perror("Errore nella select!");
+			exit(1);
+		}
+
+        // CASO 1: PRONTO SOCKET DI COMUNICAZIONE
+        if (FD_ISSET(sockfd, &read_fds)){
+ 
+            // ricevo la lunghezza del messaggio
+            ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
+            check_errori(ret, sockfd);
+            len_HO = ntohl(len_NO);
+
+            // ricevo il messaggio del server
+            ret = recv(sockfd, buffer, len_HO, 0);
+            check_errori(ret, sockfd);
+
+            // se il server ha detto "stop", avviso e termino.
+            if (strncmp(buffer, "STOP", strlen("STOP")) == 0){ // strncmp compara le prime n lettere con n passato come terzo parametro
+                printf("\nAVVISO: il server si e' arrestato tramite comando STOP.\n\n");
+                fflush(stdout);
+                close(sockfd);
+                exit(0);
+            }              
+            // altrimenti, il server sta inviando un messaggio da stampare
+            printf("%s\n", buffer); // stampo il messaggio
+            fflush(stdout);
+        }   
         // salvo su buffer il contenuto dello stdin
         fgets(buffer, BUFFER_SIZE, stdin);
         codice = "code\0";

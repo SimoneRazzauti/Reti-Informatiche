@@ -50,7 +50,7 @@ int main(int argc, char *argv[]){
     int welcome = 1; // per l'output
     char id[] = "T\0"; // codice per riconoscere il TABLE DEVICE
     int chunk_len, prezzo, a, k, j, quanti_piatti = 0;
-    int quante_comande = 0;
+    int quante_comande = 0; // numero di comande che deve gestire il server
     char tavoloMemorizzato[5]; //memorizza il tavolo assegnato al cliente come stringa
     int richiestaMenu = 0; // server per richiedere il menu al server la prima volta o casharlo
     int errore = 0; // controllo se il piatto scelto e' nel menu

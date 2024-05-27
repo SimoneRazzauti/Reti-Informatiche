@@ -24,37 +24,31 @@
 #define MAX_COMANDE_IN_ATTESA 10
 #define DESCRIZIONE 100 // descrizione del piatto
 
-
-
-int main(int argc, char *argv[])
-{
-    fd_set master; // variabili per set
-    fd_set read_fds;
-
-    int fdmax;
-    int sockfd, ret, chunk_len, j; // variabili per i socket + variabili utili
-
-    in_port_t porta = htons(atoi(argv[1]));
-
-    struct sockaddr_in server_addr, cli_addr;
-
-    int quante_comande = 0;
-
-    char id[] = "K\0";
-    char *codice = NULL;
-    char *chunk;
+int main(int argc, char *argv[]){
+    // variabili per i socket
+    int sockfd, ret; 
     char buffer[BUFFER_SIZE];
+    struct sockaddr_in server_addr;
 
+    // variabili di utilità
+    char id[] = "K\0";
+    int chunk_len, j; 
+    int quante_comande = 0; // numero di comande che deve gestire il server
+    char *chunk;
+    int chunk_count = 0; // Il numero di parole estratte dalla frase
     char *info[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
-    int chunk_count = 0;                // Il numero di parole estratte dalla frase
+    char *codice = NULL;
+
+    // variabili per la select
+    fd_set master; // set di descrittori da monitorare
+    fd_set read_fds; // sed di descrittori pronti
+	int fdmax; // descrittore max
 
     uint32_t len_HO; // lunghezza del messaggio espressa in host order
     uint32_t len_NO; // lunghezza del messaggio espressa in network order
     uint16_t stampaC;
 
     // CREAZIONE SOCKET
-    memset((void *)&cli_addr, 0, sizeof(cli_addr));
-    memset((void *)&server_addr, 0, sizeof(server_addr));
     // Creazione del socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0)
@@ -62,21 +56,11 @@ int main(int argc, char *argv[])
         perror("Errore nella creazione del socket");
         exit(1);
     }
-    cli_addr.sin_family = AF_INET;
-    cli_addr.sin_port = porta;
-    cli_addr.sin_addr.s_addr = INADDR_ANY;
-    ret = bind(sockfd, (struct sockaddr *)&cli_addr, sizeof(cli_addr));
-    if (ret == -1)
-    {
-        perror("ERRORE nella bind()");
-        printf("ARRESTO IN CORSO...\n");
-        fflush(stdout);
-        exit(1);
-    }
 
+    memset((void *)&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(4242);
-    server_addr.sin_addr.s_addr = INADDR_ANY;
+    inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
 
     ret = connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
     if (ret == -1)

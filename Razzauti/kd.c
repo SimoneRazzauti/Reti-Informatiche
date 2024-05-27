@@ -129,7 +129,7 @@ int main(int argc, char *argv[]){
                 exit(0);
             }              
             // altrimenti, il server sta inviando un messaggio da stampare
-            printf("%s\n", buffer); // stampo il messaggio
+            printf("\n%s\n", buffer); // stampo il messaggio
             fflush(stdout);
         }
         // CASO 2: PRONTO SOCKET stdin
@@ -176,7 +176,7 @@ int main(int argc, char *argv[]){
                 
                 // Se non ci sono comande in attesa stampo un messaggio al kitchen device
                 if (strncmp(buffer, "STOP", strlen("STOP")) == 0){
-                    printf("NON CI SONO COMANDE IN ATTESA.\n");
+                    printf("NON CI SONO COMANDE IN ATTESA.\n\n");
                     fflush(stdout);
                     continue;
                 }
@@ -247,9 +247,8 @@ int main(int argc, char *argv[]){
                 // resetto printed
                 printed = 0;
             }
-
-            else if (strcmp(info[0], "ready") == 0)
-            {
+            // CASO 3: notifico che una comanda è pronta
+            else if (strcmp(info[0], "ready") == 0){
                 // mando codice "ready"
                 codice = "read\0"; // mando codice "read"
                 ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
@@ -265,18 +264,16 @@ int main(int argc, char *argv[]){
 
                 ret = recv(sockfd, (void *)buffer, LEN_ID, 0);
                 check_errori(ret, sockfd);
-                if (buffer[0] == 'S')
-                {
-                    printf("COMANDA IN SERVIZIO.\n\n");
+
+                // successo
+                if (buffer[0] == 'S'){
+                    printf("%s\n\n", "COMANDA IN SERVIZIO.");
+                }else{
+                    printf("ERRORE: COMANDA INESISTENTE.\n\n");
                 }
-                else
-                {
-                    printf("ERRORE: COMANDA NON TROVATA.\n\n");
-                }
-            }
-            else
-            {
-                printf("ERRORE: comando non valido.\n");
+            }else{ // nessun comando inserito valido
+                printf("Errore: Comando non consentito, RIPROVA...\n\n");
+                continue;
             }
         }
     }

@@ -273,7 +273,7 @@ int main(int argc, char *argv[]){
 
                     // mutua esclusione
                     if (strcmp(buffer, "NO") == 0){
-                        printf("Ripetere prenotazione. \n Il tavolo che hai scelto e' stato occupato. \n");
+                        printf("Il tavolo che hai scelto è occupato, scegliere un altro tavolo o ripetere la prenotazione con una nuova ricerca\n");
                     }
 
                     // **** prenotazione effettuata con successo

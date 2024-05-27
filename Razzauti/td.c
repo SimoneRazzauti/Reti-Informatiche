@@ -183,13 +183,13 @@ int main(int argc, char *argv[]){
 
         // CASO 1: PRONTO SOCKET DI COMUNICAZIONE
         if (FD_ISSET(sockfd, &read_fds)){
-
+ 
             // ricevo la lunghezza del messaggio
             ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
             check_errori(ret, sockfd);
             len_HO = ntohl(len_NO);
 
-            // ricevo il messaggio 
+            // ricevo il messaggio del server
             ret = recv(sockfd, buffer, len_HO, 0);
             check_errori(ret, sockfd);
 

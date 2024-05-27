@@ -48,54 +48,59 @@ int main(int argc, char *argv[]){
     uint32_t len_NO; // lunghezza del messaggio espressa in network order
     uint16_t stampaC;
 
-    // CREAZIONE SOCKET
-    // Creazione del socket
+    // CREAZIONE del socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
-    {
-        perror("Errore nella creazione del socket");
+    if (sockfd < 0){
+        perror("Errore: impossibile creare un nuovo socket\n");
         exit(1);
     }
 
-    memset((void *)&server_addr, 0, sizeof(server_addr));
+    // CREAZIONE indirizzo del server
+    memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(4242);
-    inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
+	inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
 
+    // CONNESSIONE
     ret = connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
-    if (ret == -1)
-    {
-        perror("ERRORE nella connect()");
+    if (ret < 0){
+        perror("Errore: errore nella connessione\n");
         printf("ARRESTO IN CORSO...\n");
         fflush(stdout);
         exit(1);
     }
 
-    // CREAZIONE SET E ALTRE INIZIALIZZAZIONI
+    // Resetto i descrittori di socket
     FD_ZERO(&master);
     FD_ZERO(&read_fds);
-    FD_SET(0, &master);
-    FD_SET(sockfd, &master);
 
+    // Aggiungo il socket di ascolto 'listener' e 'stdin' (0) ai socket monitorati
+    FD_SET(sockfd, &master);
+    FD_SET(0, &master);
+
+    // Aggiorno il nuovo fdmax
     fdmax = sockfd;
-    // invio codice id
+
+    // Invio codice id td = 'T' al server
     ret = send(sockfd, (void *)id, LEN_ID, 0);
     check_errori(ret, sockfd);
 
     ret = recv(sockfd, (void *)buffer, LEN_ID, 0);
     check_errori(ret, sockfd);
-    if (buffer[0] != 'S')
-    {
-        perror("Pieno.\n\n");
+    if (buffer[0] != 'S'){
+        perror("Il ristorante e' pieno\n\n");
+        fflush(stdout);
         close(sockfd);
+        exit(1);
     }
 
-    printf(WELCOME_KD);
-    printf(COMANDI);
-    fflush(stdout);
-    while (1)
-    {
-        memset(buffer, 0, sizeof(buffer));
+
+    while (1){
+        printf(WELCOME_KD); // stampo il benvenuto
+        printf(COMANDI); // stampo la lista dei comandi
+        fflush(stdout);
+
+        memset(buffer, 0, BUFFER_SIZE); // ripulsco il buffer di comunicazione
         read_fds = master;
         select(fdmax + 1, &read_fds, NULL, NULL, NULL);
         if (FD_ISSET(sockfd, &read_fds))

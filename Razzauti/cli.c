@@ -189,7 +189,6 @@ int main(int argc, char *argv[]){
                     // delay per il trasferimento
                     sleep(1);
 
-                    printf("I tavoli disponibili che soddisfano la tua richiesta sono:\n");
                     tavoliDisp = 0;
                     for (;;){
                         // ricevo la lunghezza del messaggio
@@ -213,6 +212,7 @@ int main(int argc, char *argv[]){
                         }
                         // stampo i tavoli che il server mi fornisce
                         tavoliDisp++;
+                        printf("I tavoli disponibili che soddisfano la tua richiesta sono:\n");
                         printf("%s\n", buffer);
                     }
                     fflush(stdout);

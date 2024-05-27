@@ -10,25 +10,21 @@
 #include <time.h>
 
 #include "funzioni.c" // funzioni varie
+#include "strutture.h" // strutture
 
 #define BUFFER_SIZE 1024
 #define WELCOME_KD "************** KITCHEN DEVICE **************\n"
 #define COMANDI "Digita un comando: \n\n1) take \t\t --> accetta una comanda \n2) show \t\t --> mostra le comande accettate (in preparazione) \n3) ready com. \t\t --> imposta lo stato della comanda \n"
 
-#define MAX_WORDS 50 // Numero massimo di parole che possono essere estratte dalla frase
-#define MAX_PIATTI 15
+#define MAX_WORDS 50 // numero massimo di parole che possono essere estratte dalla frase
+#define LEN_ID 2 // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)
+#define LEN_COMANDO 5 // lunghezza dei comandi da mandare al server
+
+#define MAX_PIATTI 15 // numero massimo di piatti nel menu
 #define MAX_COMANDE_IN_ATTESA 10
-#define DESCRIZIONE 100
-#define LEN_ID 2
-#define LEN_COMANDO 5
+#define DESCRIZIONE 100 // descrizione del piatto
 
-struct comanda{
-    char tav_num[5];                    // numero del tavolo da cui proviene la comanda
-    char desc[MAX_PIATTI][DESCRIZIONE]; // sarà A1, A3, P2 ecc... il codice del piatto
-    int quantita[MAX_PIATTI];           // quantita
-};
 
-struct comanda coda_comande[MAX_COMANDE_IN_ATTESA]; // coda di comande in attesa
 
 int main(int argc, char *argv[])
 {
@@ -187,13 +183,13 @@ int main(int argc, char *argv[])
                     continue;
                 }
                 // Se non ho ricevuto lo STOP, c'era una comanda in Attesa. Ricevo le informazioni
-                sscanf(buffer, "%s", coda_comande[quante_comande].tav_num);
+                sscanf(buffer, "%s", coda_comande_kd[quante_comande].tav_num);
 
                 ret = recv(sockfd, &stampaC, sizeof(uint16_t), 0);
                 check_errori(ret, sockfd);
                 stampaC++;
 
-                printf("Com%d Tavolo %s:\n", stampaC, coda_comande[quante_comande].tav_num);
+                printf("Com%d Tavolo %s:\n", stampaC, coda_comande_kd[quante_comande].tav_num);
                 j = 0;
                 for (;;)
                 {
@@ -211,7 +207,7 @@ int main(int argc, char *argv[])
                         break;
                     }
 
-                    sscanf(buffer, "%2s %d", coda_comande[quante_comande].desc[j], &coda_comande[quante_comande].quantita[j]);
+                    sscanf(buffer, "%2s %d", coda_comande_kd[quante_comande].desc[j], &coda_comande_kd[quante_comande].quantita[j]);
                     j++;
                     printf("%s\n", buffer);
                     fflush(stdout);

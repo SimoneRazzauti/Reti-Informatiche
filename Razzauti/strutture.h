@@ -30,3 +30,11 @@ struct comanda{
 };
 
 struct comanda coda_comande[MAX_COMANDE_IN_ATTESA]; // coda di comande in attesa
+
+struct comanda_kd{
+    char tav_num[5];                    // numero del tavolo da cui proviene la comanda
+    char desc[MAX_PIATTI][DESCRIZIONE]; // sarà A1, A3, P2 ecc... il codice del piatto
+    int quantita[MAX_PIATTI];           // quantita
+};
+
+struct comanda_kd coda_comande_kd[MAX_COMANDE_IN_ATTESA]; // coda di comande in attesa

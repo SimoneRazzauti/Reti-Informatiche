@@ -77,7 +77,7 @@ void check_errori(int ret, int socket){
         exit(1);
     }
     else if (ret == 0){
-        printf("AVVISO: il server ha chiuso la connessione.\nARRESTO IN CORSO...\n");
+        printf("\nAVVISO: il server ha chiuso la connessione.\nARRESTO IN CORSO...\n");
         fflush(stdout);
         close(socket);
         exit(1);

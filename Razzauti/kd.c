@@ -232,15 +232,14 @@ int main(int argc, char *argv[]){
                     ret = recv(sockfd, buffer, len_HO, 0);
                     check_errori(ret, sockfd);
                     
-                // per uscire dal loop quando ho stampato tutto il buffer
-                if (strncmp(buffer, "STOP", strlen("STOP")) == 0){
-                    if (!printed) {
-                        printf("NON CI SONO COMANDE IN PREPARAZIONE\n");
-                        fflush(stdout);
+                    // per uscire dal loop quando ho stampato tutto il buffer
+                    if (strncmp(buffer, "STOP", strlen("STOP")) == 0){
+                        if (!printed) {
+                            printf("NON CI SONO COMANDE IN PREPARAZIONE\n");
+                            fflush(stdout);
+                        }
+                        break;
                     }
-                    break;
-                }
-
                     printf("%s\n\n", buffer);
                     fflush(stdout);
                     printed = 1;

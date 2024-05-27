@@ -34,10 +34,10 @@ int main(int argc, char *argv[]){
     char id[] = "K\0";
     int chunk_len, j; 
     int quante_comande = 0; // numero di comande che deve gestire il server
-    char *chunk;
+    char *chunk; // per l'estrazione delle parole dal buffer
     int chunk_count = 0; // Il numero di parole estratte dalla frase
     char *info[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
-    char *codice = NULL;
+    char *codice = NULL; // take, show, ready com
 
     // variabili per la select
     fd_set master; // set di descrittori da monitorare
@@ -165,30 +165,35 @@ int main(int argc, char *argv[]){
                 ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                 check_errori(ret, sockfd);
 
+                // ricevo la risposta del server
                 ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
                 check_errori(ret, sockfd);
 
                 len_HO = ntohl(len_NO);
                 ret = recv(sockfd, buffer, len_HO, 0);
                 check_errori(ret, sockfd);
-
-                if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
-                {
-                    printf("NESSUNA COMANDA TROVATA. \n");
+                
+                // Se non ci sono comande in attesa stampo un messaggio al kitchen device
+                if (strncmp(buffer, "STOP", strlen("STOP")) == 0){
+                    printf("NON CI SONO COMANDE IN ATTESA.\n");
                     fflush(stdout);
                     continue;
                 }
-                // Se non ho ricevuto lo STOP, c'era una comanda in Attesa. Ricevo le informazioni
+
+                // C'è almeno una comanda in attesa -> ricevo le informazioni
                 sscanf(buffer, "%s", coda_comande_kd[quante_comande].tav_num);
 
+                // ricevo il numero della comanda dal server
                 ret = recv(sockfd, &stampaC, sizeof(uint16_t), 0);
                 check_errori(ret, sockfd);
                 stampaC++;
 
+                // stampo il numero della comanda e il tavolo assegnato
                 printf("Com%d Tavolo %s:\n", stampaC, coda_comande_kd[quante_comande].tav_num);
                 j = 0;
-                for (;;)
-                {
+
+                // stampo l'elenco di tutti i piatti della comanda
+                for (;;){
                     ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
                     check_errori(ret, sockfd);
 
@@ -196,8 +201,8 @@ int main(int argc, char *argv[]){
                     ret = recv(sockfd, buffer, len_HO, 0);
                     check_errori(ret, sockfd);
 
-                    if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
-                    {
+                    // per uscire dal loop quando ho stampato tutto il buffer
+                    if (strncmp(buffer, "STOP", strlen("STOP")) == 0){
                         printf("\n");
                         fflush(stdout);
                         break;
@@ -210,25 +215,25 @@ int main(int argc, char *argv[]){
                 }
                 quante_comande++;
             }
-            else if (strcmp(info[0], "show") == 0)
-            {
+            // CASO 2: se ci sono comande in preparazione stampo l'elenco 
+            else if (strcmp(info[0], "show") == 0){
                 codice = "show\0";
-                // mando codice "show"
+                // mando codice "show" per la sezione del codice server
                 ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                 check_errori(ret, sockfd);
 
-                for (;;)
-                {
+                // stampo l'elenco delle comande in preparazione
+                for (;;){
                     ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
                     check_errori(ret, sockfd);
 
                     len_HO = ntohl(len_NO);
                     ret = recv(sockfd, buffer, len_HO, 0);
                     check_errori(ret, sockfd);
-
-                    if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
-                    { // Per uscire dal loop
-                        printf("\n");
+                    
+                    // per uscire dal loop quando ho stampato tutto il buffer
+                    if (strncmp(buffer, "STOP", strlen("STOP")) == 0){
+                        printf("NON CI SONO COMANDE IN PREPARAZIONE\n");
                         fflush(stdout);
                         break;
                     }
@@ -237,6 +242,7 @@ int main(int argc, char *argv[]){
                     fflush(stdout);
                 }
             }
+
             else if (strcmp(info[0], "ready") == 0)
             {
                 // mando codice "ready"

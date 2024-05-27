@@ -58,7 +58,7 @@ int main(int argc, char *argv[]){
     char *chunk; // per l'estrazione delle parole dal buffer
     uint16_t chunk_count = 0; // Il numero di parole estratte dalla frase
     char *info[MAX_WORDS]; // array di puntatori in cui vengono memorizzate le parole estratte dal buffer con la strtok
-    char *codice = NULL; // help, menu, comand, conto
+    char *codice = NULL; // help, menu, comanda, conto
 
     // variabili per la select
     fd_set master; // set di descrittori da monitorare

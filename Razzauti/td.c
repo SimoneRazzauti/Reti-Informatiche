@@ -13,7 +13,7 @@
 
 #define BUFFER_SIZE 1024 // dimensione massima del buffer
 #define WELCOME_TD1 "Benvenuto\nInserisci il codice prenotazione: "
-#define WELCOME_TD2 "***************** BENVENUTO AL RISTORANTE *****************\n Digita un comando:\n1) help --> mostra i dettagli dei comandi\n2) menu --> mostra il menu dei piatti\n3) comanda --> invia una comanda\n4) conto --> chiede il conto\n"
+#define WELCOME_TD2 "\n***************** BENVENUTO AL RISTORANTE *****************\n Digita un comando:\n1) help --> mostra i dettagli dei comandi\n2) menu --> mostra il menu dei piatti\n3) comanda --> invia una comanda\n4) conto --> chiede il conto\n"
 #define HELP "Comandi:\nmenu -> stampa il menu\ncomanda -> invia una comanda in cucina\n\t\t   NOTA: deve essere nel formato\n \t\t   {<piatto_1-quantità_1>...<piatto_n-quantità_n>}\nconto -> richiesta del conto\n"
 
 #define MAX_WORDS 50     // Numero massimo di parole che possono essere estratte dalla frase
@@ -25,15 +25,6 @@
 
 #define LEN_ID 2
 #define codiceLen 5
-
-void comandi_table()
-{
-    printf("Digita un comando: \n\n");
-    printf("1) help \t\t --> mostra i dettagli dei comandi \n");
-    printf("2) menu \t\t --> mostra il menu dei piatti e \n");
-    printf("3) comanda \t\t --> invia una comanda \n");
-    printf("4) conto \t\t --> chiede il conto \n");
-}
 
 // Strutture per salvare le informazioni del menu e delle comande
 struct piatto
@@ -202,8 +193,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    printf("************** BENVENUTO **************\n");
-    comandi_table();
+    printf(WELCOME_TD2);
+    fflush(stdout);
     while (1)
     {
         memset(buffer, 0, sizeof(buffer)); // In caso contrario, rimarrebbe l'ultima cosa che c'era dentro.
@@ -255,7 +246,8 @@ int main(int argc, char *argv[])
 
             if (strcmp(info[0], "help") == 0)
             {
-                comandi_table();
+                printf(HELP);
+                fflush(stdout);
             }
             else if (strcmp(info[0], "menu") == 0)
             {

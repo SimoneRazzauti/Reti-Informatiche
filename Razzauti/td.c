@@ -229,7 +229,7 @@ int main(int argc, char *argv[]){
                 chunk = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
             }
 
-            // ******* Adesso tutte le parole estratte da input sono salvate nell'array info, ci sono 4 casi 1) help 2) menu 3) comanda 4) conto
+            // ******* Adesso tutte le parole estratte da input sono salvate nell'array info, ci sono 5 casi 1) help 2) menu 3) comanda 4) conto 5) esc
 
             // CASO 1: stampo l'helper
             if (strcmp(info[0], "help") == 0){
@@ -285,7 +285,7 @@ int main(int argc, char *argv[]){
                 fflush(stdout);
             }
 
-            // CASO 2: gestisco l'inivio della comanda al servers
+            // CASO 3: gestisco l'inivio della comanda al server
             else if ((strcmp(info[0], "comanda") == 0) && ordine == 1){
                 for (j = 1; j < chunk_count; j++){ 
                     // Controllo se i piatti scelti vanno bene
@@ -294,24 +294,25 @@ int main(int argc, char *argv[]){
                         break;
                     }
                 }
-                if (errore == 1)
-                {
+                if (errore == 1){
                     printf("Errore: Hai scelto un piatto che non e' presente nel Menu'. Riprova.\n\n");
                     fflush(stdout);
                     errore = 0;
-                }
-                else
-                {
-                    codice = "comm\0"; // mando codice "comm"
+                }else{
+                    codice = "comm\0"; 
+                    // mando codice "comm" per la sezione dello script server
                     ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                     check_errori(ret, sockfd);
 
+                    // invio il numero di chunk che si deve aspettare il server
                     ret = send(sockfd, &chunk_count, sizeof(uint16_t), 0);
                     check_errori(ret, sockfd);
 
+                    // invio il numero di quante comande deve gestire il server
                     ret = send(sockfd, &quante_comande, sizeof(uint16_t), 0);
                     check_errori(ret, sockfd);
 
+                    // invio il codice del tavolo
                     len_HO = strlen(tavoloMemorizzato) + 1;
                     len_NO = htonl(len_HO);
                     // mando lunghezza del codice
@@ -321,21 +322,21 @@ int main(int argc, char *argv[]){
                     ret = send(sockfd, (void *)tavoloMemorizzato, len_HO, 0);
                     check_errori(ret, sockfd);
 
-                    // quante comande ho avuto
+                    // quante comande ho avuto, se superano il numero massimo di comande bisogna aspettare
                     ret = recv(sockfd, buffer, LEN_ID, 0);
                     check_errori(ret, sockfd);
 
-                    if (buffer[0] == 'N')
-                    { // cucina piena
-                        printf("Aspettare, la cucina e' piena di ordini! :) \n\n");
+                    if (buffer[0] == 'N'){ // cucina piena
+                        printf("In questo momento la cucina non può gestire ulteriori comande, ti preghiamo cortesemente di aspettare :) \n\n");
                         fflush(stdout);
                         continue;
                     }
                     k = 0;
-                    for (j = 1; j < chunk_count; j++)
-                    {
+                    // invio piatti con la loro quanità 
+                    for (j = 1; j < chunk_count; j++){
                         len_HO = strlen(info[j]) + 1;
                         len_NO = htonl(len_HO);
+
                         // mando lunghezza del codice
                         ret = send(sockfd, &len_NO, sizeof(uint32_t), 0);
                         check_errori(ret, sockfd);
@@ -350,20 +351,23 @@ int main(int argc, char *argv[]){
                         k++;
                     }
 
+                    // aggiorno i campi delle strutture
                     coda_comande[quante_comande].id_comanda = chunk_count - 1;
-
                     quante_comande++;
 
-                    printf("AVVISO: COMANDA SPEDITA! \n\n");
+                    printf("SUCCESSO: comanda inviata! Ti preghiamo di attendere la preparazione\n\n");
                 }
             }
-            else if ((strcmp(info[0], "conto") == 0) && ordine == 1)
-            {
 
-                codice = "cont\0"; // mando codice "cont"
+            // CASO 4: richiedo il conto, gestisco l'invio del saldo finale
+            else if ((strcmp(info[0], "conto") == 0) && ordine == 1){
+
+                // mando codice "cont" per la sezione dello script del server
+                codice = "cont\0"; 
                 ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                 check_errori(ret, sockfd);
 
+                // invio il codice del tavolo
                 len_HO = strlen(tavoloMemorizzato) + 1;
                 len_NO = htonl(len_HO);
                 // mando lunghezza del codice
@@ -373,37 +377,36 @@ int main(int argc, char *argv[]){
                 ret = send(sockfd, (void *)tavoloMemorizzato, len_HO, 0);
                 check_errori(ret, sockfd);
 
+                // ricevo la risposta del server
                 ret = recv(sockfd, buffer, LEN_ID, 0);
                 check_errori(ret, sockfd);
 
-                if (buffer[0] == 'S')
-                {
-                    printf("Conto: \n");
+                if (buffer[0] == 'S'){
+                    printf("Conto finale: \n");
                     fflush(stdout);
                 }
-                else
-                {
-                    printf("Deve sempre arrivare qualche piatto... \n");
+                else{
+                    printf("Attendi: deve sempre arrivare qualche piatto... \n");
                     fflush(stdout);
                     continue;
                 }
                 prezzo = 0;
-                for (j = 0; j < quante_comande; j++)
-                { // tutte le comande
-                    for (a = 0; a < coda_comande[j].id_comanda; a++)
-                    { // percorro il contenuto di tutta la comanda
+                // per tutte le comande
+                for (j = 0; j < quante_comande; j++){ 
+                    // percorro il contenuto di tutta la comanda
+                    for (a = 0; a < coda_comande[j].id_comanda; a++){ 
                         // manda la comanda id x quantita = prezzo euro
-                        for (k = 0; k < MAX_PIATTI; k++)
-                        { // percorro tutti i piatti
-                            if (strcmp(coda_comande[j].desc[a], menu[k].id) == 0)
-                            {
+                        // percorro tutti i piatti
+                        for (k = 0; k < MAX_PIATTI; k++){ 
+                            if (strcmp(coda_comande[j].desc[a], menu[k].id) == 0){
                                 prezzo += coda_comande[j].quantita[a] * menu[k].costo; // prezzo totale
                                 sprintf(buffer, "%s x %d = %d euro", coda_comande[j].desc[a],
                                         coda_comande[j].quantita[a], coda_comande[j].quantita[a] * menu[k].costo);
                             }
                         }
 
-                        printf("%s\n", buffer); // stampo "scontrino"
+                        // stampo lo "scontrino"
+                        printf("%s\n", buffer); 
                         fflush(stdout);
                     }
                 }
@@ -412,14 +415,15 @@ int main(int argc, char *argv[]){
                 close(sockfd);
                 exit(0);
             }
+
+            // CASO 5: uscita forzata del client, chiusura
             else if (strcmp(info[0], "esc") == 0){
                 printf("Uscita in corso...\nArrivederci :)\n\n");
                 fflush(stdout);
                 // TO DO: si potrebbe inviare un messaggio al server per dire che il td si e' disconnesso
                 close(sockfd);
                 exit(0);
-            }
-            else{ // nessun comando inserito valido
+            }else{ // nessun comando inserito valido
                 printf("Errore: Comando non consentito, RIPROVA...\n\n");
                 continue;
             }

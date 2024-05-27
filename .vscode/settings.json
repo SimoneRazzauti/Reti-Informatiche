@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "funzioni.h": "c"
-    }
+    },
+    "C_Cpp.default.compilerPath": ""
 }

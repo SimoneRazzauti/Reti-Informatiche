@@ -10,6 +10,7 @@
 #include <time.h>
 
 #include "funzioni.c" // funzioni varie
+#include "strutture.h" // strutture
 
 #define BUFFER_SIZE 1024 // dimensione max del buffer
 #define WELCOME_CLIENT "BENVENUTO CLIENTE\nComandi disponibili...\n\nfind --> ricerca la disponibilità per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n" // messaggio di benvenuto 

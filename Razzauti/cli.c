@@ -291,16 +291,14 @@ int main(int argc, char *argv[]){
                     }
                 }
             }
-            else if (strcmp(info[0], "esc") == 0)
-            {
+            else if (strcmp(info[0], "esc") == 0){
                 printf("Uscita in corso...\nArrivederci :)\n\n");
                 fflush(stdout);
                 // TO DO: si potrebbe inviare un messaggio al server per dire che il client si è disconnesso
                 close(sockfd);
                 exit(0);
             }
-            else
-            { // nessun comando inserito valido
+            else{ // nessun comando inserito valido
                 printf("Errore: Comando non consentito, RIPROVA...\n\n");
                 continue;
             }

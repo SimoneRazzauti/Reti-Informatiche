@@ -329,7 +329,7 @@ int main(int argc, char *argv[]){
                     if (buffer[0] == 'N'){ // cucina piena
                         printf("In questo momento la cucina non può gestire ulteriori comande, ti preghiamo cortesemente di aspettare :) \n\n");
                         fflush(stdout);
-                        continue;
+                        //continue;
                     }
                     k = 0;
                     // invio piatti con la loro quanità 

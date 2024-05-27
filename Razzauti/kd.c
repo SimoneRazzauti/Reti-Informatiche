@@ -219,7 +219,7 @@ int main(int argc, char *argv[]){
             // CASO 2: se ci sono comande in preparazione stampo l'elenco 
             else if (strcmp(info[0], "show") == 0){
                 codice = "show\0";
-                // mando codice "show" per la sezione del codice server
+                // invio codice "show" per la sezione del codice server
                 ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                 check_errori(ret, sockfd);
                 
@@ -249,20 +249,20 @@ int main(int argc, char *argv[]){
             }
             // CASO 3: notifico che una comanda è pronta
             else if (strcmp(info[0], "ready") == 0){
-                // mando codice "ready"
-                codice = "read\0"; // mando codice "read"
+                codice = "read\0"; 
+                // invio codice "read" per la sezione del codice server
                 ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                 check_errori(ret, sockfd);
 
                 len_HO = strlen(info[1]) + 1;
                 len_NO = htonl(len_HO);
-                ret = send(sockfd, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
+                ret = send(sockfd, &len_NO, sizeof(uint32_t), 0); // invio la dimensione
                 check_errori(ret, sockfd);
 
-                ret = send(sockfd, info[1], len_HO, 0); // mando il messaggio
+                ret = send(sockfd, info[1], len_HO, 0); // invio il messaggio
                 check_errori(ret, sockfd);
 
-                ret = recv(sockfd, (void *)buffer, LEN_ID, 0);
+                ret = recv(sockfd, (void *)buffer, LEN_ID, 0); // ricevo il messaggio
                 check_errori(ret, sockfd);
 
                 // successo

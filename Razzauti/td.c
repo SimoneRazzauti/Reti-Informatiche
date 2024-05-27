@@ -70,60 +70,50 @@ int main(int argc, char *argv[]){
     uint32_t len_HO; // lunghezza del messaggio espressa in host order
     uint32_t len_NO; // lunghezza del messaggio espressa in network order
 
-    // CREAZIONE SOCKET
-    memset((void *)&cli_addr, 0, sizeof(cli_addr));
-    memset((void *)&server_addr, 0, sizeof(server_addr));
-    // Creazione del socket
+    // CREAZIONE del socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
-    {
-        perror("Errore nella creazione del socket");
+    if (sockfd < 0){
+        perror("Errore: impossibile creare un nuovo socket\n");
         exit(1);
     }
 
-    // Inizializzazione della struttura
-    cli_addr.sin_family = AF_INET;
-    cli_addr.sin_port = porta;
-    cli_addr.sin_addr.s_addr = INADDR_ANY;
-    ret = bind(sockfd, (struct sockaddr *)&cli_addr, sizeof(cli_addr));
-    if (ret == -1)
-    {
-        perror("ERRORE nella bind()");
-        printf("ARRESTO IN CORSO...\n");
-        fflush(stdout);
-        exit(1);
-    }
-
+    // CREAZIONE indirizzo del server
+    memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(4242);
-    server_addr.sin_addr.s_addr = INADDR_ANY;
+	inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
 
+    // CONNESSIONE
     ret = connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
-    if (ret == -1)
-    {
-        perror("ERRORE nella connect()");
+    if (ret < 0){
+        perror("Errore: errore nella connessione\n");
         printf("ARRESTO IN CORSO...\n");
         fflush(stdout);
         exit(1);
     }
 
-    // CREAZIONE SET E ALTRE INIZIALIZZAZIONI
+    // Resetto i descrittori di socket
     FD_ZERO(&master);
     FD_ZERO(&read_fds);
-    FD_SET(0, &master);
-    FD_SET(sockfd, &master);
 
+    // Aggiungo il socket di ascolto 'listener' e 'stdin' (0) ai socket monitorati
+    FD_SET(sockfd, &master);
+    FD_SET(0, &master);
+
+    // Aggiorno il nuovo fdmax
     fdmax = sockfd;
-    // invio codice id
+
+    // Invio codice id td = 'T' al server
     ret = send(sockfd, (void *)id, LEN_ID, 0);
     check_errori(ret, sockfd);
 
     ret = recv(sockfd, (void *)buffer, LEN_ID, 0);
     check_errori(ret, sockfd);
-    if (buffer[0] != 'S')
-    {
-        perror("Pieno.\n\n");
+    if (buffer[0] != 'S'){
+        perror("Il ristorante è pieno\n\n");
+        fflush(stdout);
         close(sockfd);
+        exit(1);
     }
 
     while (1)

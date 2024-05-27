@@ -9,7 +9,7 @@ cli: cli.o funzioni.c
 kd: kd.o
 	gcc -Wall kd.o -o kd
 
-td: td.o
+td: td.o funzioni.c strutture.h
 	gcc -Wall td.o -o td
 
 clean:

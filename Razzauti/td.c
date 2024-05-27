@@ -273,7 +273,7 @@ int main(int argc, char *argv[]){
                 codice = "menu\0";
                 // Se e' la prima volta che si chiede il Menu. -> chiedo al Server -> Salvo nell'array Menu per le prossime volte
                 if (richiestaMenu == 0){
-                    // mando codice "menu"
+                    // mando codice "menu" per la sezione di script server
                     ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                     check_errori(ret, sockfd);
                     quanti_piatti = 0;

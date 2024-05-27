@@ -94,65 +94,73 @@ int main(int argc, char *argv[]){
         exit(1);
     }
 
+    printf(WELCOME_KD); // stampo il benvenuto
+    printf(COMANDI); // stampo la lista dei comandi
+    fflush(stdout);
+
+    // CICLO PRINCIPALE
     while (1){
-        printf(WELCOME_KD); // stampo il benvenuto
-        printf(COMANDI); // stampo la lista dei comandi
-        fflush(stdout);
-
         memset(buffer, 0, BUFFER_SIZE); // ripulsco il buffer di comunicazione
-        read_fds = master;
-        select(fdmax + 1, &read_fds, NULL, NULL, NULL);
-        if (FD_ISSET(sockfd, &read_fds))
-        { // PRONTO SOCKET DI COMUNICAZIONE
-            ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
-            if (ret == 0)
-            {
-                printf("AVVISO: il server ha chiuso il socket remoto.\nARRESTO IN CORSO...\n");
-                fflush(stdout);
-                exit(1);
-            }
+        read_fds = master; // copia del set da monitorare
+        ret = select(fdmax + 1, &read_fds, NULL, NULL, NULL);
+		if(ret < 0) {
+			perror("Errore nella select!");
+			exit(1);
+		}
 
+        // CASO 1: PRONTO SOCKET DI COMUNICAZIONE
+        if (FD_ISSET(sockfd, &read_fds)){
+
+            // ricevo la lunghezzza del messaggio
+            ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);
+            check_errori(ret, sockfd);
             len_HO = ntohl(len_NO);
+
+            // ricevo il messaggio del server
             ret = recv(sockfd, buffer, len_HO, 0);
             check_errori(ret, sockfd);
-            if (strncmp(buffer, "STOP", strlen("STOP")) == 0)
-            { // se il server ha chiamato "stop", avviso e termino.
-                printf("AVVISO: il server e' stato arrestato.\nARRESTO IN CORSO...\n");
+
+            // se il server ha detto "stop", avviso e termino.
+            if (strncmp(buffer, "STOP", strlen("STOP")) == 0){ // strncmp compara le prime n lettere con n passato come terzo parametro
+                printf("\nAVVISO: il server si e' arrestato tramite comando STOP.\n\n");
                 fflush(stdout);
-                exit(0);
                 close(sockfd);
-            }                       // altrimenti, il server sta avvisando che una comanda e' in preparazione/in servizio.
-            printf("%s\n", buffer); // Mi serve solo stampare il messaggio.
+                exit(0);
+            }              
+            // altrimenti, il server sta inviando un messaggio da stampare
+            printf("%s\n", buffer); // stampo il messaggio
             fflush(stdout);
         }
-        else
-        {
-            // Lettura del messaggio da stdin
+        // CASO 2: PRONTO SOCKET stdin
+        else{
+            // salvo nel buffer il contenuto digitato da stdin 
             fgets(buffer, BUFFER_SIZE, stdin);
 
-            // Estrai le parole dalla frase utilizzando la funzione 'strtok'
-            chunk = strtok(buffer, " "); // Estrai la prima parola utilizzando lo spazio come delimitatore
+            // Estrae le parole dalla frase utilizzando 'strtok' e lo spazio come delimitatore a blocchi di chunks
+            chunk = strtok(buffer, " ");
             chunk_count = 0;
-            while (chunk != NULL && chunk_count < MAX_WORDS)
-            { // Finche' ci sono parole da estrarre e non si supera il limite massimo
-                // Rimuovi il carattere di fine riga dalla parola se presente
+
+            // Finche' ci sono parole da estrarre e non si supera il limite massimo
+            while (chunk != NULL && chunk_count < MAX_WORDS){ 
+                // Rimuove il carattere di fine riga dalla parola se presente
                 chunk_len = strlen(chunk);
-                if (chunk[chunk_len - 1] == '\n') // Inserisco il fine stringa
-                {
+                if (chunk[chunk_len - 1] == '\n'){
                     chunk[chunk_len - 1] = '\0';
                 }
 
-                // Aggiungi la parola all'array di parole
-                info[chunk_count] = chunk;
-                chunk_count++; // Incrementa il contatore di parole estratte
+                // Aggiunge la parola all'array di parole
+                info[chunk_count] = chunk; // Memorizza il puntatore alla parola nell'array
+                chunk_count++;                        // Incrementa il contatore di parole estratte
 
-                // Estrai la prossima parola
+                // Estrae la prossima parola
                 chunk = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
             }
 
-            if (strcmp(info[0], "take") == 0)
-            {
-                // mando codice "take"
+            // ******* Adesso tutte le parole estratte da input sono salvate nell'array info, ci sono 3 casi 1) take 2) show 3) ready
+
+            // CASO 1: accetto una comanda, rifiuto se ho troppe comande pendenti
+            if (strcmp(info[0], "take") == 0){
+                // mando codice "take" al server per la sezione di script server
                 codice = "take\0";
                 ret = send(sockfd, (void *)codice, LEN_COMANDO, 0);
                 check_errori(ret, sockfd);
@@ -261,7 +269,6 @@ int main(int argc, char *argv[]){
             }
         }
     }
-
     close(sockfd);
     return 0;
 }

@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
     char id[] = "K\0";
     char *codice = NULL;
-    char *word;
+    char *chunk;
     char buffer[BUFFER_SIZE];
 
     char *info[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
@@ -171,23 +171,23 @@ int main(int argc, char *argv[])
             fgets(buffer, BUFFER_SIZE, stdin);
 
             // Estrai le parole dalla frase utilizzando la funzione 'strtok'
-            word = strtok(buffer, " "); // Estrai la prima parola utilizzando lo spazio come delimitatore
+            chunk = strtok(buffer, " "); // Estrai la prima parola utilizzando lo spazio come delimitatore
             chunk_count = 0;
-            while (word != NULL && chunk_count < MAX_WORDS)
+            while (chunk != NULL && chunk_count < MAX_WORDS)
             { // Finche' ci sono parole da estrarre e non si supera il limite massimo
                 // Rimuovi il carattere di fine riga dalla parola se presente
-                chunk_len = strlen(word);
-                if (word[chunk_len - 1] == '\n') // Inserisco il fine stringa
+                chunk_len = strlen(chunk);
+                if (chunk[chunk_len - 1] == '\n') // Inserisco il fine stringa
                 {
-                    word[chunk_len - 1] = '\0';
+                    chunk[chunk_len - 1] = '\0';
                 }
 
                 // Aggiungi la parola all'array di parole
-                info[chunk_count] = word;
+                info[chunk_count] = chunk;
                 chunk_count++; // Incrementa il contatore di parole estratte
 
                 // Estrai la prossima parola
-                word = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
+                chunk = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
             }
 
             if (strcmp(info[0], "take") == 0)

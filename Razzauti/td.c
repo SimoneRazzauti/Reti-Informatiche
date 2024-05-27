@@ -43,40 +43,35 @@ int check_menu(char info[15], int quanti_piatti){
 }
 
 int main(int argc, char *argv[]){
-    int sockfd, ret; // variabili per i socket
+    // variabili per i socket
+    int sockfd, ret; 
+    char buffer[BUFFER_SIZE];
+    struct sockaddr_in server_addr;
+
+
+    int welcome = 1; // per l'output
     
-    
-    int welcome = 1;
-
-    // set di descrittori da monitorare
-    fd_set master; 
-
-    // sed di descrittori pronti
-    fd_set read_fds;
-
-    // Descrittore max
-	int fdmax;
-
-    in_port_t porta = htons(atoi(argv[1])); // utilizzo della funzione atoi per convertire la stringa rappresentante il numero di porta inserito dall'utente da terminale in un intero
-
-    struct sockaddr_in server_addr, cli_addr;
 
     int chunk_len, prezzo, a, k, j, quanti_piatti = 0;
     int quante_comande = 0;
-    char buffer[BUFFER_SIZE];
-    char id[] = "T\0";
-    char *codice = NULL;
+    char id[] = "T\0"; // codice per riconoscere il TABLE DEVICE
 
     char tavoloMemorizzato[5];
 
-    char *word;
+    char *chunk;
     int menuPresente = 0;
 
     int errore = 0; // controllo se il piatto scelto è nel menu
 
     int richiesto = 0;                 // controlo se e' stato richiesto il menu per il controllo del Conto
-    char *info[MAX_WORDS]; // L'array di puntatori in cui vengono memorizzate le parole
     uint16_t chunk_count = 0;           // Il numero di parole estratte dalla frase
+    char *info[MAX_WORDS]; // array di puntatori in cui vengono memorizzate le parole estratte dal buffer con la strtok
+    char *codice = NULL; // help, menu, comand, conto
+
+    // variabili per la select
+    fd_set master; // set di descrittori da monitorare
+    fd_set read_fds; // sed di descrittori pronti
+	int fdmax; // descrittore max
 
     uint32_t len_HO; // lunghezza del messaggio espressa in host order
     uint32_t len_NO; // lunghezza del messaggio espressa in network order
@@ -217,23 +212,23 @@ int main(int argc, char *argv[]){
             fgets(buffer, BUFFER_SIZE, stdin);
 
             // Estrai le parole dalla frase utilizzando la funzione 'strtok'
-            word = strtok(buffer, " "); // Estrai la prima parola utilizzando lo spazio come delimitatore
+            chunk = strtok(buffer, " "); // Estrai la prima parola utilizzando lo spazio come delimitatore
             chunk_count = 0;
-            while (word != NULL && chunk_count < MAX_WORDS)
+            while (chunk != NULL && chunk_count < MAX_WORDS)
             { // Finche' ci sono parole da estrarre e non si supera il limite massimo
                 // Rimuovi il carattere di fine riga dalla parola se presente
-                chunk_len = strlen(word);
-                if (word[chunk_len - 1] == '\n')
+                chunk_len = strlen(chunk);
+                if (chunk[chunk_len - 1] == '\n')
                 {
-                    word[chunk_len - 1] = '\0';
+                    chunk[chunk_len - 1] = '\0';
                 }
 
                 // Aggiungi la parola all'array di parole
-                info[chunk_count] = word; // Memorizza il puntatore alla parola nell'array
+                info[chunk_count] = chunk; // Memorizza il puntatore alla parola nell'array
                 chunk_count++;                        // Incrementa il contatore di parole estratte
 
                 // Estrai la prossima parola
-                word = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
+                chunk = strtok(NULL, " "); // Utilizza 'NULL' come primo parametro per estrarre le parole successive
             }
 
             if (strcmp(info[0], "help") == 0)

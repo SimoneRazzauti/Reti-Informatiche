@@ -21,7 +21,8 @@
 #define LEN_COMANDO 5 // lunghezza dei comandi da mandare al server
 
 int main(int argc, char *argv[]){
-    int sockfd, ret; // variabili per i socket
+    // variabili per i socket
+    int sockfd, ret; 
     char buffer[BUFFER_SIZE];
     struct sockaddr_in server_addr;
 
@@ -31,25 +32,18 @@ int main(int argc, char *argv[]){
     int giorno, mese, anno, ora;
     int quantita, chunk_len, nPersone, tavoliDisp = 0; // tavoliDisp = numero tavoli restituiti dalla Find
     int priorita = 0; // server a controllare che prima si faccia la find e dopo book
-
+    char *chunk; // per l'estrazione delle parole dal buffer
     int chunk_count = 0; // numero di parole estratte dal buffer
     char *info[MAX_WORDS]; // array di puntatori in cui vengono memorizzate le parole estratte dal buffer con la strtok
     char *codice = NULL; // find o book
 
-    // set di descrittori da monitorare
-    fd_set master; 
+    // variabili per la select
+    fd_set master; // set di descrittori da monitorare
+    fd_set read_fds; // sed di descrittori pronti
+    int fdmax;// Descrittore max
 
-    // sed di descrittori pronti
-    fd_set read_fds;
-
-    // Descrittore max
-	int fdmax;
-
-    // lunghezza del messaggio scambiato espressa in host order
-    uint32_t len_HO; 
-    
-    // lunghezza del messaggio scambiato espressa in network order
-    uint32_t len_NO; 
+    uint32_t len_HO; // lunghezza del messaggio scambiato espressa in host order
+    uint32_t len_NO; // lunghezza del messaggio scambiato espressa in network order
 
     // CREAZIONE del socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -124,7 +118,7 @@ int main(int argc, char *argv[]){
 
             // se il server ha detto "stop", avviso e termino.
             if (strncmp(buffer, "STOP", strlen("STOP")) == 0){ // strncmp compara le prime n lettere con n passato come terzo parametro
-                printf("AVVISO: il server si è arrestato tramite comando STOP.\n\n");
+                printf("\nAVVISO: il server si è arrestato tramite comando STOP.\n\n");
                 fflush(stdout);
                 close(sockfd);
                 exit(0);
@@ -139,7 +133,7 @@ int main(int argc, char *argv[]){
             fgets(buffer, BUFFER_SIZE, stdin);
 
             // Estrae le parole dalla frase utilizzando 'strtok' e lo spazio come delimitatore a blocchi di chunks
-            char *chunk = strtok(buffer, " ");
+            chunk = strtok(buffer, " ");
             chunk_count = 0;
 
             // Finchè ci sono parole da estrarre e non si supera il limite massimo

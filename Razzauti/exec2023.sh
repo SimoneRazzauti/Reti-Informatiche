@@ -38,6 +38,6 @@
 #  done
 
 # 2.4 esecuzione di 2 kitchen device sulle porte 6001 e 6002
-	gnome-terminal -x sh -c "./kd 6000; exec bash"
-	gnome-terminal -x sh -c "./kd 6001; exec bash"
+#	gnome-terminal -x sh -c "./kd 6000; exec bash"
+#	gnome-terminal -x sh -c "./kd 6001; exec bash"
 

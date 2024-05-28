@@ -107,11 +107,9 @@ void imposta_tavoli(int numPersone, char *pathFile, int i){
     fclose(file); // chiude il file
 }
 
-// Salva una nuova prenotazione su file nel path: penotazioni/"nome file".txt
+// Salva una nuova prenotazione su file nel path: prenotazioni/<giorno>.txt
 int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char *tav){
-    // nel file prenotazione avro': codice tavolo GG-MM-AA HH cognome data_prenotazione
-    // pathFile = txts/giorno.txt
-
+    // nel file prenotazione avro': codice tavolo GG-MM-AA HH cognome data_prenotazione timestamp->(GG-MM-AA)
     char arraycopia[DESCRIZIONE]; // array per la lettura del file
     int giorno, mese, anno, ora;
     char tavolo[10];
@@ -174,16 +172,17 @@ int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char 
     return 1;
 }
 
-// Verifica se il codice inserito dal T. Device e' corretto.
-int controlla_prenotazione(char stringa[30])
-{
-    char arraycopia[DESCRIZIONE];
-    char nomeFile[70] = "prenotazioni/"; // stringa per il nome del file
-    char codice[30];
+// Verifica che il codice inserito dal Table Device sia corretto.
+int autenticazione(char stringa[30]){
+    char arraycopia[DESCRIZIONE]; 
+    char nomeFile[70] = "prenotazioni/"; // la radice del path del file in cui cerchiamo un match tra il codice inserito al tavolo e il codice della prenotazione salvato sul file
+    char codice[30]; // codice della prenotazione sul file
     char data[30];
     int g, m, a;
 
+    // sostituisco il carattere \n dalla stringa passata alla funzione con il finestringa
     stringa[strcspn(stringa, "\n")] = '\0';
+
     sscanf(stringa, "T%*d-%d-%d-%d-%*d", &g, &m, &a); // La stringa di formato "T%d-%d-%d" indica che la stringa di input deve iniziare con la lettera "T". Se ha gia' fatto l'accesso la T -> diventa X. Cosi' da segnare il tavolo occupato.
     sprintf(data, "%d-%d-%d", g, m, a);
 
@@ -993,7 +992,7 @@ int main(int argc, char *argv[])
                         ret = recv(i, buffer, len_HO, 0);
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                        if (controlla_prenotazione(buffer))
+                        if (autenticazione(buffer))
                         {
                             printf("Nuovo t. %d device arrivato al ristorante.\n", i);
 

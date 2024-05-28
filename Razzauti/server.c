@@ -729,13 +729,13 @@ int main(int argc, char *argv[])
                                     ret = send(array_kds[j], &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                     if (ret < 0)
                                     {
-                                        perror("Errore nell'invio del messaggio");
+                                        perror("Errore nell'invio del messaggio1");
                                         exit(1);
                                     }
                                     ret = send(array_kds[j], stop, len_HO, 0); // mando il messaggio
                                     if (ret < 0)
                                     {
-                                        perror("Errore nell'invio del messaggio");
+                                        perror("Errore nell'invio del messaggio2");
                                         exit(1);
                                     }
                                 }
@@ -749,13 +749,13 @@ int main(int argc, char *argv[])
                                     ret = send(array_tds[j], &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                     if (ret < 0)
                                     {
-                                        perror("Errore nell'invio del messaggio");
+                                        perror("Errore nell'invio del messaggio3");
                                         exit(1);
                                     }
                                     ret = send(array_tds[j], stop, len_HO, 0); // mando il messaggio
                                     if (ret < 0)
                                     {
-                                        perror("Errore nell'invio del messaggio");
+                                        perror("Errore nell'invio del messaggio4");
                                         exit(1);
                                     }
                                 }
@@ -948,13 +948,13 @@ int main(int argc, char *argv[])
                                 ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio");
+                                    perror("Errore nell'invio del messaggio5");
                                     exit(1);
                                 }
                                 ret = send(i, buffer, len_HO, 0); // mando il messaggio
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio");
+                                    perror("Errore nell'invio del messaggio6");
                                     exit(1);
                                 }
                                 c++;

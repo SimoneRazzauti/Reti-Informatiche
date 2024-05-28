@@ -116,7 +116,7 @@ int prenotazione_tavolo(char *pathFile, int GG, int MM, int AA, int HH, char *co
     // pathFile = prenotazioni/giorno.txt
 
     char arraycopia[DESCRIZIONE];
-    int giorno, mese, anno, file
+    int giorno, mese, anno, file;
     char tavolo[10];
 
     time_t rawtime;

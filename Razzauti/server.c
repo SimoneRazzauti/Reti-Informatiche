@@ -10,7 +10,6 @@
 #include <sys/time.h>
 #include <time.h>
 #include "strutture.h"
-#include "funzioni.c"
 
 // messaggio di benvenuto
 #define WELCOME_SERVER "\n*********************** AVVIO SERVER ***********************\n"\
@@ -21,6 +20,7 @@
 "*  stop --> termina il server                              *\n"\
 "*                                                          *\n"\
 "************************************************************\n\n"
+
 
 int main(int argc, char *argv[])
 {

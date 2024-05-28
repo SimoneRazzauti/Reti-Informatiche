@@ -34,12 +34,6 @@
 
 #define DESCRIZIONE 100 // descrizione del piatto
 
-int indicetavolo = 0; // indice di quanti tavoli sono stati proposti, utilizzato nelle funzioni
-
-int array_tds[MAX_TAVOLI];         // contiene i sockfd dei socket di comunicazione usati per comunicare con i table device
-int array_kds[MAX_KITCHENDEVICES]; // contiene i sockfd dei socket di comunicazione usati per comunicare con i kitchen device
-
-
 // Cerca_prenotazione e' una funzione che mi serve per realizzare la lista da restituire al cliente che esegue la Find, utilizzata nella controlla_tavoli_liberi(...).
 // Se un tavolo e' occupato per la stessa data e ora, non viene inviato.
 

@@ -107,11 +107,10 @@ void imposta_tavoli(int numPersone, char *pathFile, int i){
     fclose(file); // chiude il file
 }
 
-// Inserisce una prenotazione
-int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char *tav)
-{
+// Salva una nuova prenotazione 
+int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char *tav){
     // nel file prenotazione avro': codice tavolo GG-MM-AA HH cognome data_prenotazione
-    // pathFile = prenotazioni/giorno.txt
+    // pathFile = txts/giorno.txt
 
     char arraycopia[DESCRIZIONE]; // array per la lettura del file
     int giorno, mese, anno, ora;
@@ -120,31 +119,30 @@ int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char 
     // struttura per il tempo corrente
     time_t rawtime;
     struct tm *timeinfo;
-    FILE *destination_file;
 
+    // puntatori di file
+    FILE *destination_file;
     FILE *file;
-    if (access(pathFile, F_OK) == -1)
-    {                                                // il file non esiste
-        destination_file = fopen(pathFile, "w"); // creo il file se non esiste.
-        if (destination_file == NULL)
-        {
+
+    // Se file passato come argomento della funzione non esiste
+    if (access(pathFile, F_OK) == -1){
+        destination_file = fopen(pathFile, "w"); // creo il nuovo file se non esiste nel percorso indicato come parametro della funzione
+        // se si è creato un errore termino
+        if (destination_file == NULL){
             printf("errore");
             return 0;
         }
         fclose(destination_file);
-    }
-    else
-    {
+    }else{ // il file esiste
         file = fopen(pathFile, "r"); // apre il file in modalita'  lettura
 
-        if (file == NULL)
-        {
-            printf("Errore nell'apertura del file prenotazione\n");
+        if (file == NULL){
+            printf("Errore nell'apertura del file prenotazione. Uscita in corso...\n");
             exit(1); // esce dal programma in caso di errore
         }
 
-        while (fgets(arraycopia, DESCRIZIONE, file) != NULL)
-        {
+        // estraggo le parole dal file e le salvo su arraycopia
+        while (fgets(arraycopia, DESCRIZIONE, file) != NULL){
             sscanf(arraycopia, "%*s %s %d-%d-%d %d %*s %*d-%*d-%*d", tavolo, &giorno, &mese, &anno, &ora);
 
             if ((strcmp(tavolo, tav) == 0) && GG == giorno && MM == mese && AA == anno && HH == ora)

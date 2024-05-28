@@ -21,7 +21,7 @@
 "*  2) show --> mostra le comande accettate         *\n"\
 "*  3) ready com. --> cambia lo stato della comanda *\n"\
 "*                                                  *\n"\
-"****************************************************\n"
+"****************************************************\n\n"
 
 #define MAX_WORDS 50 // numero massimo di parole che possono essere estratte dalla frase
 #define LEN_ID 2 // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)

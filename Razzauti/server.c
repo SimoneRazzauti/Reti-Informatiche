@@ -22,7 +22,7 @@
 "************************************************************\n\n"
 
 // funzione che serve per realizzare la lista da restituire al cliente che esegue la 'find', se un tavolo è occupato per la stessa data e ora, non viene inviato.
-int cerca_prenotazione(char *tableX, char *data, int ora, char *pathFile){
+int find_prenotazione(char *tableX, char *data, int ora, char *pathFile){
     char arraycopia[DESCRIZIONE]; // array per la lettura del file
     int GG, MM, AA, HH, giorno, mese, anno;
     char tavolino[5];
@@ -30,7 +30,7 @@ int cerca_prenotazione(char *tableX, char *data, int ora, char *pathFile){
 
     // se il file è inesistente o si verifica un errore fase di apertura
     if (file == NULL){
-        printf("Errore nell'apertura del file cerca_prenotazione\n");
+        printf("Errore nell'apertura del file in: find_prenotazione\n");
         exit(1);
     }
 
@@ -48,19 +48,19 @@ int cerca_prenotazione(char *tableX, char *data, int ora, char *pathFile){
     return 1;
 }
 
-// Funzione utile per avere la lista dei tavoli liberi. Leggo dal file nella cartella tavoli/lista.txt e con l'aiuto di cerca_prenotazione mi salvo SOLO i tavoli disponibili e che rispettano la quantita' di persone
-void controlla_tavoli_liberi(char *data, int ora, int NPersone, char *pathFile, int i)
+// Funzione utile per avere la lista dei tavoli liberi. Leggo dal file nella cartella txts/tavoli.txt e con l'aiuto di find_prenotazione mi salvo SOLO i tavoli disponibili e che rispettano la quantita' di persone
+void check_tavoli_liberi(char *data, int ora, int NPersone, char *pathFile, int i)
 {
-    char arraycopia[DESCRIZIONE]; // array di passaggio per le informazioni
+    char arraycopia[DESCRIZIONE]; // array per la lettura del file
     int n = 0;
 
     char tavolino[5];
 
-    FILE *file = fopen("tavoli/lista.txt", "r"); // apre il file in modalita' lettura
+    FILE *file = fopen("txts/tavoli.txt", "r"); // apre il file in modalita' lettura
     int quanti;
     if (file == NULL)
     {
-        printf("Errore nell'apertura del file controlla_tavoli_liberi\n");
+        printf("Errore nell'apertura del file check_tavoli_liberi\n");
         exit(1); // esce dal programma in caso di errore
     }
     // legge le frasi dal file & non superando il numero MAX di tavoli consentiti nel ristorante
@@ -69,7 +69,7 @@ void controlla_tavoli_liberi(char *data, int ora, int NPersone, char *pathFile, 
         sscanf(arraycopia, "%s %*s %d %*s", tavolino, &quanti);
         if (NPersone <= quanti)
         {
-            if (cerca_prenotazione(tavolino, data, ora, pathFile))
+            if (find_prenotazione(tavolino, data, ora, pathFile))
             { // se NON e' gia' stato prenotato
                 sscanf(arraycopia, "%s %s %d %s", client_fds[i].tavoli_proposti[indicetavolo].tav, client_fds[i].tavoli_proposti[indicetavolo].sala,
                        &client_fds[i].tavoli_proposti[indicetavolo].posti, client_fds[i].tavoli_proposti[indicetavolo].descrizione);
@@ -866,7 +866,7 @@ int main(int argc, char *argv[])
                             fclose(fp);
 
                             indicetavolo = 0;
-                            controlla_tavoli_liberi(data, ora, nPersone, nomeFile, i); // metto i tavoli disonibili in un array
+                            check_tavoli_liberi(data, ora, nPersone, nomeFile, i); // metto i tavoli disonibili in un array
 
                             c = 1;
                             for (a = 0; a < indicetavolo; a++)
@@ -898,7 +898,7 @@ int main(int argc, char *argv[])
                             // genero il file con tutti i tavoli
                             // passo tutti i tavoli perche' non c'erano prenotazioni
                             indicetavolo = 0;
-                            imposta_tavoli(nPersone, "tavoli/lista.txt", i); // metto i tavoli disonibili in un array
+                            imposta_tavoli(nPersone, "txts/tavoli.txt", i); // metto i tavoli disonibili in un array
 
                             c = 1;
                             stop = "STOP\0";

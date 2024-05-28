@@ -12,6 +12,9 @@
 #define MAX_PIATTI 15 // nnumero massimo di piatti nel menu
 #define MAX_COMANDE_IN_ATTESA 10
 #define DESCRIZIONE 100 // descrizione del piatto
+#define MAX_CLIENTS 10 // numero massimo di clienti connessi
+#define MAX_TAVOLI 15 // numero massimo di tavoli nel ristorante
+#define MAX_SALA_DESC 20 // il numero massimo di caratteri per descrivere una sala
 
 // Strutture per salvare le informazioni del menu e delle comande
 struct piatto{

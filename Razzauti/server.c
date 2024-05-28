@@ -9,10 +9,12 @@
 #include <dirent.h>
 #include <sys/time.h>
 #include <time.h>
-
+#include "strutture.h"
 
 #define MAX_CLIENTS 10 // numero massimo di clienti connessi
 #define MAX_TAVOLI 15 // numero massimo di tavoli nel ristorante
+#define MAX_SALA_DESC 20 // il numero massimo di caratteri per descrivere una sala
+
 #define BUFFER_SIZE 1024
 #define WELCOME_SERVER "\n*********************** AVVIO SERVER ***********************\n"\
 "*                                                          *\n"\
@@ -31,7 +33,6 @@
 #define LEN_COMANDO 5 // lunghezza dei comandi da mandare ai vari client
 
 #define DESCRIZIONE 100 // descrizione del piatto
-#define MAX_SALA_DESC 20 // il numero massimo di caratteri per descrivere una sala
 
 int indicetavolo = 0; // indice di quanti tavoli sono stati proposti, utilizzato nelle funzioni
 

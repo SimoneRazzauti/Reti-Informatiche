@@ -21,7 +21,7 @@
 "*  stat --> mostra lo stato delle comande ai vari tavoli   *\n"\
 "*  stop --> termina il server                              *\n"\
 "*                                                          *\n"\
-"************************************************************\n"
+"************************************************************\n\n"
 
 #define MAX_PIATTI 10 // numero massimo di piatti nel menu
 #define MAX_KITCHENDEVICES 10 // numero massio di kitchen device connessi

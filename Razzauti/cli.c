@@ -14,16 +14,15 @@
 
 #define BUFFER_SIZE 1024 // dimensione max del buffer
 // messaggio di benvenuto
-#define WELCOME_CLIENT "\n****************************************************\n"\
-"*                   BENVENUTO CLIENTE               *\n"\
-"*                                                  *\n"\
-"*  Comandi disponibili:                            *\n"\
-"*                                                  *\n"\
-"*  find --> avvia una nuova prenotazione           *\n"\
-"*  book --> conferma la prenotazione               *\n"\
-"*  esc  --> termina il client                      *\n"\
-"*                                                  *\n"\
-"****************************************************\n" 
+#define WELCOME_CLIENT "\n***************** BENVENUTO CLIENTE *****************\n"\
+"*                                                   *\n"\
+"*  Comandi disponibili:                             *\n"\
+"*                                                   *\n"\
+"*  find --> avvia una nuova prenotazione            *\n"\
+"*  book --> conferma la prenotazione                *\n"\
+"*  esc  --> termina il client                       *\n"\
+"*                                                   *\n"\
+"*****************************************************\n\n" 
 
 
 #define MAX_WORDS 10 // Numero massimo di parole che possono essere estratte dalla frase

@@ -25,7 +25,7 @@
 "*                                                          *\n"\
 "************************************************************\n\n"
 
-#define MAX_PIATTI 10 // numero massimo di piatti nel menu
+#define MAX_PIATTI 15 // numero massimo di piatti nel menu
 #define MAX_KITCHENDEVICES 10 // numero massio di kitchen device connessi
 #define MAX_COMANDE_IN_ATTESA 10 // numero massimo di comande in coda di attesa
 

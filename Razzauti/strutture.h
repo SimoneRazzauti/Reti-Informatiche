@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define MAX_PIATTI 10 // nnumero massimo di piatti nel menu
+#define MAX_PIATTI 15 // nnumero massimo di piatti nel menu
 #define MAX_COMANDE_IN_ATTESA 10
 #define DESCRIZIONE 100 // descrizione del piatto
 #define MAX_CLIENTS 10 // numero massimo di clienti connessi

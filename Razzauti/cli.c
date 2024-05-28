@@ -13,7 +13,18 @@
 #include "strutture.h" // strutture
 
 #define BUFFER_SIZE 1024 // dimensione max del buffer
-#define WELCOME_CLIENT "BENVENUTO CLIENTE\nComandi disponibili...\n\nfind --> ricerca la disponibilita' per una prenotazione\nbook --> invia una prenotazione\nesc --> termina il client\n" // messaggio di benvenuto 
+// messaggio di benvenuto
+#define WELCOME_CLIENT "\n****************************************************\n"\
+"*                   BENVENUTO CLIENTE               *\n"\
+"*                                                  *\n"\
+"*  Comandi disponibili:                            *\n"\
+"*                                                  *\n"\
+"*  find --> avvia una nuova prenotazione           *\n"\
+"*  book --> conferma la prenotazione               *\n"\
+"*  esc  --> termina il client                      *\n"\
+"*                                                  *\n"\
+"****************************************************\n" 
+
 
 #define MAX_WORDS 10 // Numero massimo di parole che possono essere estratte dalla frase
 #define MAX_WORD_LENGTH 50 // Lunghezza massima di ogni parola

@@ -174,35 +174,42 @@ int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char 
 
 // Verifica che il codice inserito dal Table Device sia corretto.
 int autenticazione(char stringa[30]){
-    char arraycopia[DESCRIZIONE]; 
+    // prima devo trovare il file, se non esiste lo creo
+    char arraycopia[DESCRIZIONE]; // array per la lettura del file
     char nomeFile[70] = "prenotazioni/"; // la radice del path del file in cui cerchiamo un match tra il codice inserito al tavolo e il codice della prenotazione salvato sul file
     char codice[30]; // codice della prenotazione sul file
-    char data[30];
-    int g, m, a;
+    char data[30]; // contiene il nome del file da aprire
+    int g, m, a; // servono a generare il nome del file da aprire
 
     // sostituisco il carattere \n dalla stringa passata alla funzione con il finestringa
     stringa[strcspn(stringa, "\n")] = '\0';
 
-    sscanf(stringa, "T%*d-%d-%d-%d-%*d", &g, &m, &a); // La stringa di formato "T%d-%d-%d" indica che la stringa di input deve iniziare con la lettera "T". Se ha gia' fatto l'accesso la T -> diventa X. Cosi' da segnare il tavolo occupato.
+    sscanf(stringa, "T%*d-%d-%d-%d-%*d", &g, &m, &a); // La stringa di formato "T%d-%d-%d" indica che la stringa di input deve iniziare con la lettera "T". Se ha gia' fatto l'accesso la T -> diventa P (presenza) Cosi' da segnare il tavolo occupato.
+    // salvo in data il nome del file da aprire es: 4-6-2024
     sprintf(data, "%d-%d-%d", g, m, a);
 
-    strcat(data, ".txt\0"); // aggiunge l'estensione
-    strcat(nomeFile, data); // nome del file data da cercare
+    strcat(data, ".txt\0"); // aggiunge l'estensione es: 4-6-2024.txt
+    strcat(nomeFile, data); // percorso assoluto del file da aprire es: prenotazioni/4-6-2024.txt
     int n = 0;
     FILE *file = fopen(nomeFile, "r+"); // "r+" -> indica di aprire il file in modalità di lettura e scrittura simultanea. il file può essere sia letto che scritto contemporaneamente. Se il file specificato non esiste, verrà creato un nuovo file.
-    if (file == NULL)
-    {
+    
+    // gestisco l'errore della fopen
+    if (file == NULL){
         return 0;
     }
-    while (fgets(arraycopia, DESCRIZIONE, file) != NULL)
-    {
+
+    // leggo tutte le parole del file 
+    while (fgets(arraycopia, DESCRIZIONE, file) != NULL){
+        // salvo il codice della prenotazione letto da file nella variabile 'codice'
         sscanf(arraycopia, "%s %*s %*d-%*d-%*d %*d %*s %*d-%*d-%*d", codice);
 
-        if (strcmp(stringa, codice) == 0)
-        {
+        // il codice è giusto 
+        if (strcmp(stringa, codice) == 0){
+
             // posiziona il puntatore del file all'inizio della riga modificata
             fseek(file, -strlen(arraycopia), SEEK_CUR);
-            arraycopia[0] = 'X'; // la T diventa X. Spiegazione poco sopra.
+
+            arraycopia[0] = 'P'; // la T diventa P. Spiegazione poco sopra.
 
             // scrive la nuova riga nel file
             fputs(arraycopia, file);

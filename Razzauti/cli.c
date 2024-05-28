@@ -12,7 +12,6 @@
 #include "funzioni.c" // funzioni varie
 #include "strutture.h" // strutture
 
-#define BUFFER_SIZE 1024 // dimensione max del buffer
 // messaggio di benvenuto
 #define WELCOME_CLIENT "\n***************** BENVENUTO CLIENTE *****************\n"\
 "*                                                   *\n"\
@@ -23,12 +22,6 @@
 "*  esc  --> termina il client                       *\n"\
 "*                                                   *\n"\
 "*****************************************************\n\n" 
-
-
-#define MAX_WORDS 10 // Numero massimo di parole che possono essere estratte dalla frase
-#define MAX_WORD_LENGTH 50 // Lunghezza massima di ogni parola
-#define LEN_ID 2  // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)
-#define LEN_COMANDO 5 // lunghezza dei comandi da mandare al server
 
 int main(int argc, char *argv[]){
     // variabili per i socket

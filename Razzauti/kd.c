@@ -12,7 +12,7 @@
 #include "funzioni.c" // funzioni varie
 #include "strutture.h" // strutture
 
-#define BUFFER_SIZE 1024 // dimensione max del buffer
+// messaggio di benvenuto
 #define WELCOME_KD "\n****************** KITCHEN DEVICE ******************\n"\
 "*                                                  *\n"\
 "*  Digita un comando:                              *\n"\
@@ -22,14 +22,6 @@
 "*  3) ready com. --> cambia lo stato della comanda *\n"\
 "*                                                  *\n"\
 "****************************************************\n\n"
-
-#define MAX_WORDS 50 // numero massimo di parole che possono essere estratte dalla frase
-#define LEN_ID 2 // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)
-#define LEN_COMANDO 5 // lunghezza dei comandi da mandare al server
-
-#define MAX_PIATTI 15 // numero massimo di piatti nel menu
-#define MAX_COMANDE_IN_ATTESA 10
-#define DESCRIZIONE 100 // descrizione del piatto
 
 int main(int argc, char *argv[]){
     // variabili per i socket

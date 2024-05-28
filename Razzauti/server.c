@@ -11,6 +11,7 @@
 #include <time.h>
 #include "strutture.h"
 
+// messaggio di benvenuto
 #define WELCOME_SERVER "\n*********************** AVVIO SERVER ***********************\n"\
 "*                                                          *\n"\
 "*                  Digita un comando:                      *\n"\

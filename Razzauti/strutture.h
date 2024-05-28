@@ -20,6 +20,8 @@
 #define BUFFER_SIZE 1024 // lunghezza del buffer di comunicazione client-server
 #define LEN_ID 2 // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)
 #define LEN_COMANDO 5 // lunghezza dei comandi da mandare ai vari client
+#define MAX_WORDS 50 // numero massimo di parole che possono essere estratte dalla frase
+#define MAX_WORD_LENGTH 50 // Lunghezza massima di ogni parola
 
 // struttura per descrivere un piatto
 struct piatto{

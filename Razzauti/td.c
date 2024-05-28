@@ -12,7 +12,6 @@
 #include "funzioni.c" // funzioni varie
 #include "strutture.h" // strutture
 
-#define BUFFER_SIZE 1024 // dimensione massima del buffer
 #define WELCOME "Benvenuto.\n"
 #define WELCOME_TD1 "Inserisci il codice prenotazione: "
 #define WELCOME_TD2 "\n****************** BENVENUTO AL RISTORANTE ******************\n"\
@@ -25,6 +24,7 @@
 "*  4) conto  --> chiede il conto                            *\n"\
 "*                                                           *\n"\
 "*************************************************************\n\n"
+
 #define HELPER "\n****************************** HELPER ******************************\n"\
 "Comandi:\n\n"\
 "menu    -> stampa il menu giornaliero\n"\
@@ -33,15 +33,6 @@
 "\t\t {<piatto_1-quantita'_1>...<piatto_n-quantita'_n>}\n"\
 "conto   -> richiesta del conto al tavolo\n"\
 "***********************************************************************\n\n"
-
-
-#define MAX_WORDS 50 // numero massimo di parole che possono essere estratte dalla frase
-#define LEN_ID 2 // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)
-#define LEN_COMANDO 5 // lunghezza dei comandi da mandare al server
-
-#define MAX_PIATTI 15 // numero massimo di piatti nel menu
-#define MAX_COMANDE_IN_ATTESA 10
-#define DESCRIZIONE 100 // descrizione del piatto
 
 // Controlla se i piatti selezionati siano nel Menu
 int check_menu(char info[15], int quanti_piatti){

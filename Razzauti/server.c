@@ -523,7 +523,7 @@ int main(int argc, char *argv[])
     char *id = "S\0";
     char *negazione = "N\0";
     char arraycopia[DESCRIZIONE];
-    uint16_t n_comande file
+    uint16_t n_comande = 0;
     uint16_t codice_id;
     char copia[5];
     char *stop;

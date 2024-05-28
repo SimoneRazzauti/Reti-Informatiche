@@ -11,11 +11,6 @@
 #include <time.h>
 #include "strutture.h"
 
-#define MAX_CLIENTS 10 // numero massimo di clienti connessi
-#define MAX_TAVOLI 15 // numero massimo di tavoli nel ristorante
-#define MAX_SALA_DESC 20 // il numero massimo di caratteri per descrivere una sala
-
-#define BUFFER_SIZE 1024
 #define WELCOME_SERVER "\n*********************** AVVIO SERVER ***********************\n"\
 "*                                                          *\n"\
 "*                  Digita un comando:                      *\n"\
@@ -24,15 +19,6 @@
 "*  stop --> termina il server                              *\n"\
 "*                                                          *\n"\
 "************************************************************\n\n"
-
-#define MAX_PIATTI 15 // numero massimo di piatti nel menu
-#define MAX_KITCHENDEVICES 10 // numero massio di kitchen device connessi
-#define MAX_COMANDE_IN_ATTESA 10 // numero massimo di comande in coda di attesa
-
-#define LEN_ID 2 // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)
-#define LEN_COMANDO 5 // lunghezza dei comandi da mandare ai vari client
-
-#define DESCRIZIONE 100 // descrizione del piatto
 
 // Cerca_prenotazione e' una funzione che mi serve per realizzare la lista da restituire al cliente che esegue la Find, utilizzata nella controlla_tavoli_liberi(...).
 // Se un tavolo e' occupato per la stessa data e ora, non viene inviato.

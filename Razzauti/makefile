@@ -1,6 +1,6 @@
 all: cli td kd server
 
-server: server.o
+server: server.o strutture.h
 	gcc -Wall server.o -o server
 
 cli: cli.o funzioni.c

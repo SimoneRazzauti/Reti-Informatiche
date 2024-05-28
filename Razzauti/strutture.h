@@ -9,13 +9,17 @@
 #include <sys/time.h>
 #include <time.h>
 
+#define BUFFER_SIZE 1024 // lunghezza del buffer di comunicazione client-server
 #define MAX_PIATTI 15 // nnumero massimo di piatti nel menu
-#define MAX_COMANDE_IN_ATTESA 10
+#define MAX_COMANDE_IN_ATTESA 10 // numero massimo di comande in coda di attes
 #define DESCRIZIONE 100 // descrizione del piatto
 #define MAX_CLIENTS 10 // numero massimo di clienti connessi
 #define MAX_TAVOLI 15 // numero massimo di tavoli nel ristorante
 #define MAX_SALA_DESC 20 // il numero massimo di caratteri per descrivere una sala
 #define MAX_KITCHENDEVICES 10 // numero massio di kitchen device connessi
+#define BUFFER_SIZE 1024 // lunghezza del buffer di comunicazione client-server
+#define LEN_ID 2 // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)
+#define LEN_COMANDO 5 // lunghezza dei comandi da mandare ai vari client
 
 // struttura per descrivere un piatto
 struct piatto{

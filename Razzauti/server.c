@@ -14,13 +14,13 @@
 #define MAX_CLIENTS 10 // numero massimo di clienti connessi
 #define MAX_TAVOLI 15 // numero massimo di tavoli nel ristorante
 #define BUFFER_SIZE 1024
-#define WELCOME_SERVER "\n********************** AVVIO SERVER **********************\n"\
+#define WELCOME_SERVER "\n*********************** AVVIO SERVER ***********************\n"\
 "* \t\t\t\tDigita un comando: \t\t\t\t\t*\n"\
 "* \t\t\t\t\t\t\t\t\t\t\t*\n"\
-"* stat --> mostra lo stato delle comande ai vari tavoli\t*\n"\
-"* stop --> termina il server\t\t\t\t*\n"\
+"*  stat --> mostra lo stato delle comande ai vari tavoli \t*\n"\
+"*  stop --> termina il server \t\t\t\t*\n"\
 "* \t\t\t\t\t\t\t\t\t\t\t*\n"\
-"**********************************************************\n"
+"************************************************************\n"
 
 #define MAX_PIATTI 10 // numero massimo di piatti nel menu
 #define MAX_KITCHENDEVICES 10 // numero massio di kitchen device connessi

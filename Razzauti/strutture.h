@@ -15,6 +15,7 @@
 #define MAX_CLIENTS 10 // numero massimo di clienti connessi
 #define MAX_TAVOLI 15 // numero massimo di tavoli nel ristorante
 #define MAX_SALA_DESC 20 // il numero massimo di caratteri per descrivere una sala
+#define MAX_KITCHENDEVICES 10 // numero massio di kitchen device connessi
 
 // struttura per descrivere un piatto
 struct piatto{

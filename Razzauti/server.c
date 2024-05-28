@@ -38,7 +38,7 @@ int indicetavolo = 0; // indice di quanti tavoli sono stati proposti, utilizzato
 int array_tds[MAX_TAVOLI];         // contiene i sockfd dei socket di comunicazione usati per comunicare con i table device
 int array_kds[MAX_KITCHENDEVICES]; // contiene i sockfd dei socket di comunicazione usati per comunicare con i kitchen device
 
-struct comanda
+struct comanda_server
 {
     char tav_num[5];                    // numero del tavolo da cui proviene la comanda
     int id_comanda;                    // quante comande ha la comanda X
@@ -50,8 +50,8 @@ struct comanda
     int kd_assegnato; // socket di comunicazione connesso a quello del kd a cui la comanda e' stata assegnata
 };
 
-struct comanda coda_comande[MAX_COMANDE_IN_ATTESA];    // coda di comande in attesa/ preparazione
-struct comanda comande_servite[MAX_COMANDE_IN_ATTESA]; // coda di comande in servizio
+struct comanda_server serv_coda_comande[MAX_COMANDE_IN_ATTESA];    // coda di comande in attesa/ preparazione
+struct comanda_server serv_comande_servite[MAX_COMANDE_IN_ATTESA]; // coda di comande in servizio
 
 int quante_comande = 0;
 int quante_servite = 0;
@@ -287,10 +287,10 @@ void stampa_stat_lettera(char lettera)
     {
         for (j = 0; j < quante_servite; j++)
         {
-            printf("Comanda %d del tavolo %s. Stato <In SERVIZIO>\n", comande_servite[j].id + 1, comande_servite[j].tav_num);
-            for (a = 0; a < comande_servite[j].id_comanda; a++)
+            printf("Comanda %d del tavolo %s. Stato <In SERVIZIO>\n", serv_comande_servite[j].id + 1, serv_comande_servite[j].tav_num);
+            for (a = 0; a < serv_comande_servite[j].id_comanda; a++)
             {
-                printf("Piatto scelto: %s x %d\n", comande_servite[j].desc[a], comande_servite[j].quantita[a]);
+                printf("Piatto scelto: %s x %d\n", serv_comande_servite[j].desc[a], serv_comande_servite[j].quantita[a]);
             }
         }
         if (quante_servite == 0)
@@ -303,22 +303,22 @@ void stampa_stat_lettera(char lettera)
     {
         for (j = 0; j < quante_comande; j++)
         {
-            if (coda_comande[j].stato == lettera && lettera == 'a')
+            if (serv_coda_comande[j].stato == lettera && lettera == 'a')
             {
                 check = 1;
-                printf("Comanda %d del tavolo %s. Stato <In ATTESA>\n", coda_comande[j].id + 1, coda_comande[j].tav_num);
-                for (a = 0; a < coda_comande[j].id_comanda; a++)
+                printf("Comanda %d del tavolo %s. Stato <In ATTESA>\n", serv_coda_comande[j].id + 1, serv_coda_comande[j].tav_num);
+                for (a = 0; a < serv_coda_comande[j].id_comanda; a++)
                 {
-                    printf("Piatto scelto: %s x %d\n", coda_comande[j].desc[a], coda_comande[j].quantita[a]);
+                    printf("Piatto scelto: %s x %d\n", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
                 }
             }
-            else if (coda_comande[j].stato == lettera && lettera == 'p')
+            else if (serv_coda_comande[j].stato == lettera && lettera == 'p')
             {
                 check = 1;
-                printf("Comanda %d del tavolo %s. Stato <In PREPARAZIONE>\n", coda_comande[j].id + 1, coda_comande[j].tav_num);
-                for (a = 0; a < coda_comande[j].id_comanda; a++)
+                printf("Comanda %d del tavolo %s. Stato <In PREPARAZIONE>\n", serv_coda_comande[j].id + 1, serv_coda_comande[j].tav_num);
+                for (a = 0; a < serv_coda_comande[j].id_comanda; a++)
                 {
-                    printf("Piatto scelto: %s x %d\n", coda_comande[j].desc[a], coda_comande[j].quantita[a]);
+                    printf("Piatto scelto: %s x %d\n", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
                 }
             }
         }
@@ -337,16 +337,16 @@ void stampa_stat_tavolo(char tavolino[5])
     int a, j, check = 0;
     for (j = 0; j < quante_comande; j++)
     {
-        if (strcmp(coda_comande[j].tav_num, tavolino) == 0)
+        if (strcmp(serv_coda_comande[j].tav_num, tavolino) == 0)
         {
-            printf("Comanda %d - Stato <", coda_comande[j].id + 1);
-            if (coda_comande[j].stato == 'a')
+            printf("Comanda %d - Stato <", serv_coda_comande[j].id + 1);
+            if (serv_coda_comande[j].stato == 'a')
                 printf("in ATTESA>\n");
-            else if (coda_comande[j].stato == 'p')
+            else if (serv_coda_comande[j].stato == 'p')
                 printf("in PREPARAZIONE>\n");
-            for (a = 0; a < coda_comande[j].id_comanda; a++)
+            for (a = 0; a < serv_coda_comande[j].id_comanda; a++)
             {
-                printf("Piatto scelto: %s x %d\n", coda_comande[j].desc[a], coda_comande[j].quantita[a]);
+                printf("Piatto scelto: %s x %d\n", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
             }
         }
         check = 1;
@@ -354,12 +354,12 @@ void stampa_stat_tavolo(char tavolino[5])
 
     for (j = 0; j < quante_servite; j++)
     {
-        if (strcmp(comande_servite[j].tav_num, tavolino) == 0)
+        if (strcmp(serv_comande_servite[j].tav_num, tavolino) == 0)
         {
-            printf("Comanda %d - Stato <In SERVIZIO>\n", comande_servite[j].id + 1);
-            for (a = 0; a < comande_servite[j].id_comanda; a++)
+            printf("Comanda %d - Stato <In SERVIZIO>\n", serv_comande_servite[j].id + 1);
+            for (a = 0; a < serv_comande_servite[j].id_comanda; a++)
             {
-                printf("Piatto scelto: %s x %d\n", comande_servite[j].desc[a], comande_servite[j].quantita[a]);
+                printf("Piatto scelto: %s x %d\n", serv_comande_servite[j].desc[a], serv_comande_servite[j].quantita[a]);
             }
             check = 1;
         }
@@ -378,24 +378,24 @@ void stampa_stat_all()
     int a, j, check = 0;
     for (j = 0; j < quante_comande; j++)
     {
-        printf("Comanda %d - Stato <", coda_comande[j].id + 1);
-        if (coda_comande[j].stato == 'a')
-            printf("in ATTESA> del tavolo: %s\n", coda_comande[j].tav_num);
-        else if (coda_comande[j].stato == 'p')
-            printf("in PREPARAZIONE> del tavolo: %s\n", coda_comande[j].tav_num);
-        for (a = 0; a < coda_comande[j].id_comanda; a++)
+        printf("Comanda %d - Stato <", serv_coda_comande[j].id + 1);
+        if (serv_coda_comande[j].stato == 'a')
+            printf("in ATTESA> del tavolo: %s\n", serv_coda_comande[j].tav_num);
+        else if (serv_coda_comande[j].stato == 'p')
+            printf("in PREPARAZIONE> del tavolo: %s\n", serv_coda_comande[j].tav_num);
+        for (a = 0; a < serv_coda_comande[j].id_comanda; a++)
         {
-            printf("Piatto scelto: %s x %d\n", coda_comande[j].desc[a], coda_comande[j].quantita[a]);
+            printf("Piatto scelto: %s x %d\n", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
         }
         check = 1;
     }
 
     for (j = 0; j < quante_servite; j++)
     {
-        printf("Comanda %d - Stato <In SERVIZIO> del tavolo: %s\n", comande_servite[j].id + 1, comande_servite[j].tav_num);
-        for (a = 0; a < comande_servite[j].id_comanda; a++)
+        printf("Comanda %d - Stato <In SERVIZIO> del tavolo: %s\n", serv_comande_servite[j].id + 1, serv_comande_servite[j].tav_num);
+        for (a = 0; a < serv_comande_servite[j].id_comanda; a++)
         {
-            printf("Piatto scelto: %s x %d\n", comande_servite[j].desc[a], comande_servite[j].quantita[a]);
+            printf("Piatto scelto: %s x %d\n", serv_comande_servite[j].desc[a], serv_comande_servite[j].quantita[a]);
         }
         check = 1;
     }
@@ -453,28 +453,28 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
 
                     for (b = 0; b < quante_comande; b++)
                     {
-                        if (coda_comande[b].kd_assegnato == i)
+                        if (serv_coda_comande[b].kd_assegnato == i)
                         {
-                            if (coda_comande[b].td_assegnato > 0)
+                            if (serv_coda_comande[b].td_assegnato > 0)
                             { // Avviso i T.D. del K. Device che ha abbandonato la cucina.
                                 strcpy(comando, "** Kitchen Device ha smesso di lavorare **\n");
                                 len_H = strlen(comando) + 1;
                                 len_N = htonl(len_H);
-                                ret = send(coda_comande[b].td_assegnato, &len_N, sizeof(uint32_t), 0); // mando la dimensione
+                                ret = send(serv_coda_comande[b].td_assegnato, &len_N, sizeof(uint32_t), 0); // mando la dimensione
                                 if (ret < 0)
                                 {
                                     perror("Errore nell'invio del messaggio");
                                     exit(1);
                                 }
-                                ret = send(coda_comande[b].td_assegnato, comando, len_H, 0); // mando il messaggio
+                                ret = send(serv_coda_comande[b].td_assegnato, comando, len_H, 0); // mando il messaggio
                                 if (ret < 0)
                                 {
                                     perror("Errore nell'invio del messaggio");
                                     exit(1);
                                 }
                             }
-                            coda_comande[b].stato = 'a'; // Rimetto la comanda in Attesa che qualche altro K. Device la prenda e tolgo il valore del suo socket dall'array
-                            coda_comande[b].kd_assegnato = -1;
+                            serv_coda_comande[b].stato = 'a'; // Rimetto la comanda in Attesa che qualche altro K. Device la prenda e tolgo il valore del suo socket dall'array
+                            serv_coda_comande[b].kd_assegnato = -1;
                             check = 1;
                         }
                     }
@@ -498,22 +498,22 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                     // Chiusura della connessione t. device
                     for (b = 0; b < quante_comande; b++)
                     {
-                        if (coda_comande[b].td_assegnato == i)
+                        if (serv_coda_comande[b].td_assegnato == i)
                         {
                             quante_comande--;
-                            if (coda_comande[b].kd_assegnato > 0)
+                            if (serv_coda_comande[b].kd_assegnato > 0)
                             { // Avviso TUTTI i K.D. che il cliente ha lasciato il ristorante.
-                                sprintf(comando, "** Cliente del tavolo %s ha lasciato il ristorante. **\n", coda_comande[b].tav_num);
+                                sprintf(comando, "** Cliente del tavolo %s ha lasciato il ristorante. **\n", serv_coda_comande[b].tav_num);
 
                                 len_H = strlen(comando) + 1;
                                 len_N = htonl(len_H);
-                                ret = send(coda_comande[b].kd_assegnato, &len_N, sizeof(uint32_t), 0); // mando la dimensione
+                                ret = send(serv_coda_comande[b].kd_assegnato, &len_N, sizeof(uint32_t), 0); // mando la dimensione
                                 if (ret < 0)
                                 {
                                     perror("Errore nell'invio del messaggio");
                                     exit(1);
                                 }
-                                ret = send(coda_comande[b].kd_assegnato, comando, len_H, 0); // mando il messaggio
+                                ret = send(serv_coda_comande[b].kd_assegnato, comando, len_H, 0); // mando il messaggio
                                 if (ret < 0)
                                 {
                                     perror("Errore nell'invio del messaggio");
@@ -524,27 +524,27 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                             // Rimuovo tutte le sue comande permettendo di poter fare lo STOP del server o di non far prendere al K.D. comande errate.
                             for (a = b; a < quante_comande; a++)
                             {
-                                strcpy(coda_comande[a].tav_num, coda_comande[a + 1].tav_num);
-                                coda_comande[a].stato = coda_comande[a + 1].stato;
-                                coda_comande[a].id = coda_comande[a + 1].id;
-                                coda_comande[a].kd_assegnato = coda_comande[a + 1].kd_assegnato;
-                                coda_comande[a].td_assegnato = coda_comande[a + 1].td_assegnato;
-                                coda_comande[a].id_comanda = coda_comande[a + 1].id_comanda;
-                                for (c = 0; c < coda_comande[a + 1].id_comanda; c++)
+                                strcpy(serv_coda_comande[a].tav_num, serv_coda_comande[a + 1].tav_num);
+                                serv_coda_comande[a].stato = serv_coda_comande[a + 1].stato;
+                                serv_coda_comande[a].id = serv_coda_comande[a + 1].id;
+                                serv_coda_comande[a].kd_assegnato = serv_coda_comande[a + 1].kd_assegnato;
+                                serv_coda_comande[a].td_assegnato = serv_coda_comande[a + 1].td_assegnato;
+                                serv_coda_comande[a].id_comanda = serv_coda_comande[a + 1].id_comanda;
+                                for (c = 0; c < serv_coda_comande[a + 1].id_comanda; c++)
                                 {
-                                    strcpy(coda_comande[a].desc[c], coda_comande[a + 1].desc[c]);
-                                    coda_comande[a].quantita[c] = coda_comande[a + 1].quantita[c];
+                                    strcpy(serv_coda_comande[a].desc[c], serv_coda_comande[a + 1].desc[c]);
+                                    serv_coda_comande[a].quantita[c] = serv_coda_comande[a + 1].quantita[c];
                                 }
                             }
 
-                            memset(coda_comande[quante_comande + 1].tav_num, 0, sizeof(coda_comande[quante_comande + 1].tav_num));
-                            memset(coda_comande[quante_comande + 1].desc, 0, sizeof(coda_comande[quante_comande + 1].desc));
-                            memset(coda_comande[quante_comande + 1].quantita, 0, sizeof(coda_comande[quante_comande + 1].quantita));
-                            coda_comande[quante_comande + 1].stato = 'x';
-                            coda_comande[quante_comande + 1].kd_assegnato = -1;
-                            coda_comande[quante_comande + 1].td_assegnato = -1;
-                            coda_comande[quante_comande + 1].id_comanda = 0;
-                            coda_comande[quante_comande + 1].id = -1;
+                            memset(serv_coda_comande[quante_comande + 1].tav_num, 0, sizeof(serv_coda_comande[quante_comande + 1].tav_num));
+                            memset(serv_coda_comande[quante_comande + 1].desc, 0, sizeof(serv_coda_comande[quante_comande + 1].desc));
+                            memset(serv_coda_comande[quante_comande + 1].quantita, 0, sizeof(serv_coda_comande[quante_comande + 1].quantita));
+                            serv_coda_comande[quante_comande + 1].stato = 'x';
+                            serv_coda_comande[quante_comande + 1].kd_assegnato = -1;
+                            serv_coda_comande[quante_comande + 1].td_assegnato = -1;
+                            serv_coda_comande[quante_comande + 1].id_comanda = 0;
+                            serv_coda_comande[quante_comande + 1].id = -1;
                             b--; // se l'ho trovato, sposto tutto di 1 potrei perdermi una comanda se non torno indietro
                             check = 1;
                         }
@@ -613,8 +613,8 @@ int main(int argc, char *argv[])
     memset(array_kds, -1, sizeof(array_kds));
     memset(array_tds, -1, sizeof(array_tds));
     memset(client_fds, 0, sizeof(client_fds)); // FORSE
-    memset(coda_comande, 0, sizeof(coda_comande));
-    memset(comande_servite, 0, sizeof(comande_servite));
+    memset(serv_coda_comande, 0, sizeof(serv_coda_comande));
+    memset(serv_comande_servite, 0, sizeof(serv_comande_servite));
 
     // Inizializzazione della struttura dell'indirizzo del server
     memset(&server_addr, 0, sizeof(server_addr));
@@ -709,7 +709,7 @@ int main(int argc, char *argv[])
                         ch = 0; // controllo check
                         for (j = 0; j < quante_comande; j++)
                         {
-                            if (coda_comande[j].stato == 'p' || coda_comande[j].stato == 'a')
+                            if (serv_coda_comande[j].stato == 'p' || serv_coda_comande[j].stato == 'a')
                             {
                                 printf("**ERRORE: Ci sono comande in preparazione o in attesa. RIPROVARE dopo. ** \n");
                                 ch = 1;
@@ -1158,14 +1158,14 @@ int main(int argc, char *argv[])
                             len_HO = ntohl(len_NO);
                             ret = recv(i, buffer, len_HO, 0);
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
-                            sscanf(buffer, "%2s-%d", coda_comande[quante_comande].desc[j], &coda_comande[quante_comande].quantita[j]);
+                            sscanf(buffer, "%2s-%d", serv_coda_comande[quante_comande].desc[j], &serv_coda_comande[quante_comande].quantita[j]);
                         }
-                        strcpy(coda_comande[quante_comande].tav_num, copia);
-                        coda_comande[quante_comande].stato = 'a';
-                        coda_comande[quante_comande].td_assegnato = i;
+                        strcpy(serv_coda_comande[quante_comande].tav_num, copia);
+                        serv_coda_comande[quante_comande].stato = 'a';
+                        serv_coda_comande[quante_comande].td_assegnato = i;
 
-                        coda_comande[quante_comande].id_comanda = n_comande - 1;
-                        coda_comande[quante_comande].id = codice_id;
+                        serv_coda_comande[quante_comande].id_comanda = n_comande - 1;
+                        serv_coda_comande[quante_comande].id = codice_id;
 
                         quante_comande++;
                         strcpy(comando, "** Nuova comanda **"); // Mando l'avviso a tutti i K.D. connessi
@@ -1201,7 +1201,7 @@ int main(int argc, char *argv[])
                         check = 0;
                         for (j = 0; j < quante_comande; j++)
                         {
-                            if (strcmp(coda_comande[j].tav_num, TavConto) == 0 && (coda_comande[j].stato == 'p' || coda_comande[j].stato == 'a')) // c'e' sempre qualche ordinazione
+                            if (strcmp(serv_coda_comande[j].tav_num, TavConto) == 0 && (serv_coda_comande[j].stato == 'p' || serv_coda_comande[j].stato == 'a')) // c'e' sempre qualche ordinazione
                             {                                                                                                                     // Se ci sono sempre comande in Preparazione o in Attesa non può confermare il conto. (Il conto viene calcolato poi direttamente dal T.D. per alleggerire il carico del server)
                                 ret = send(i, (void *)negazione, LEN_ID, 0);
                                 errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
@@ -1221,23 +1221,23 @@ int main(int argc, char *argv[])
 
                         for (j = 0; j < quante_comande; j++)
                         {
-                            if (coda_comande[j].stato == 'a')
+                            if (serv_coda_comande[j].stato == 'a')
                             { // le comande sono in priorita, la prima che trova in stato Attesa, la restituisce.
 
-                                len_HO = strlen(coda_comande[j].tav_num) + 1;
+                                len_HO = strlen(serv_coda_comande[j].tav_num) + 1;
                                 len_NO = htonl(len_HO);
                                 ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                 errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                                ret = send(i, coda_comande[j].tav_num, len_HO, 0); // mando codice tavolo
+                                ret = send(i, serv_coda_comande[j].tav_num, len_HO, 0); // mando codice tavolo
                                 errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                                ret = send(i, &coda_comande[j].id, sizeof(uint16_t), 0); // mando il messaggio
+                                ret = send(i, &serv_coda_comande[j].id, sizeof(uint16_t), 0); // mando il messaggio
                                 errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                                for (a = 0; a < coda_comande[j].id_comanda; a++) // Mando tutte le comande
+                                for (a = 0; a < serv_coda_comande[j].id_comanda; a++) // Mando tutte le comande
                                 {
-                                    sprintf(comando, "%s %d", coda_comande[j].desc[a], coda_comande[j].quantita[a]);
+                                    sprintf(comando, "%s %d", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
 
                                     len_HO = strlen(comando) + 1;
                                     len_NO = htonl(len_HO);
@@ -1246,20 +1246,20 @@ int main(int argc, char *argv[])
                                     ret = send(i, comando, len_HO, 0); // mando il messaggio
                                     errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                                 }
-                                coda_comande[j].stato = 'p';      // Adesso sarà in Preparazione
-                                coda_comande[j].kd_assegnato = i; // Socket del K.D. che ha preso la comanda
+                                serv_coda_comande[j].stato = 'p';      // Adesso sarà in Preparazione
+                                serv_coda_comande[j].kd_assegnato = i; // Socket del K.D. che ha preso la comanda
 
-                                sprintf(comando, "** Comanda %d in PREPARAZIONE **", coda_comande[j].id + 1);
+                                sprintf(comando, "** Comanda %d in PREPARAZIONE **", serv_coda_comande[j].id + 1);
                                 // AVVISO il T.D. che la comanda X e' stata presa in carico
                                 len_HO = strlen(comando) + 1;
                                 len_NO = htonl(len_HO);
-                                ret = send(coda_comande[j].td_assegnato, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
+                                ret = send(serv_coda_comande[j].td_assegnato, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                 if (ret < 0)
                                 {
                                     perror("Errore nell'invio del messaggio take");
                                     exit(1);
                                 }
-                                ret = send(coda_comande[j].td_assegnato, comando, len_HO, 0); // mando il messaggio
+                                ret = send(serv_coda_comande[j].td_assegnato, comando, len_HO, 0); // mando il messaggio
                                 if (ret < 0)
                                 {
                                     perror("Errore nell'invio del messaggio tak2");
@@ -1281,9 +1281,9 @@ int main(int argc, char *argv[])
                     {
                         for (j = 0; j < quante_comande; j++)
                         {
-                            if (coda_comande[j].kd_assegnato == i && coda_comande[j].stato == 'p')
+                            if (serv_coda_comande[j].kd_assegnato == i && serv_coda_comande[j].stato == 'p')
                             { // restituisco solo le comande del K.D. che ha eseguito il comando Show e che sono in preparazione, come da richiesta
-                                sprintf(comando, "** Comanda N.%d %s **", coda_comande[j].id + 1, coda_comande[j].tav_num);
+                                sprintf(comando, "** Comanda N.%d %s **", serv_coda_comande[j].id + 1, serv_coda_comande[j].tav_num);
                                 len_HO = strlen(comando) + 1;
                                 len_NO = htonl(len_HO);
                                 ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
@@ -1291,9 +1291,9 @@ int main(int argc, char *argv[])
                                 ret = send(i, comando, len_HO, 0); // mando il messaggio
                                 errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                                for (a = 0; a < coda_comande[j].id_comanda; a++)
+                                for (a = 0; a < serv_coda_comande[j].id_comanda; a++)
                                 {
-                                    sprintf(comando, "%s %d", coda_comande[j].desc[a], coda_comande[j].quantita[a]);
+                                    sprintf(comando, "%s %d", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
 
                                     len_HO = strlen(comando) + 1;
                                     len_NO = htonl(len_HO);
@@ -1327,57 +1327,57 @@ int main(int argc, char *argv[])
                         com--;
                         for (j = 0; j < quante_comande; j++)
                         {
-                            if (strcmp(coda_comande[j].tav_num, TavConto) == 0 && coda_comande[j].id == com)
+                            if (strcmp(serv_coda_comande[j].tav_num, TavConto) == 0 && serv_coda_comande[j].id == com)
                             { // trova la comanda scelta dal K.D. la mette nell'array delle comande servite, copiando i valori e modificando laddove necessario
-                                strcpy(comande_servite[quante_servite].tav_num, coda_comande[j].tav_num);
-                                comande_servite[quante_servite].id = coda_comande[j].id;
-                                comande_servite[quante_servite].stato = 's';
-                                comande_servite[quante_servite].kd_assegnato = coda_comande[j].kd_assegnato;
-                                comande_servite[quante_servite].td_assegnato = coda_comande[j].td_assegnato;
-                                comande_servite[quante_servite].id_comanda = coda_comande[j].id_comanda;
-                                for (a = 0; a < coda_comande[j].id_comanda; a++)
+                                strcpy(serv_comande_servite[quante_servite].tav_num, serv_coda_comande[j].tav_num);
+                                serv_comande_servite[quante_servite].id = serv_coda_comande[j].id;
+                                serv_comande_servite[quante_servite].stato = 's';
+                                serv_comande_servite[quante_servite].kd_assegnato = serv_coda_comande[j].kd_assegnato;
+                                serv_comande_servite[quante_servite].td_assegnato = serv_coda_comande[j].td_assegnato;
+                                serv_comande_servite[quante_servite].id_comanda = serv_coda_comande[j].id_comanda;
+                                for (a = 0; a < serv_coda_comande[j].id_comanda; a++)
                                 {
-                                    strcpy(comande_servite[quante_servite].desc[a], coda_comande[j].desc[a]);
-                                    comande_servite[quante_servite].quantita[a] = coda_comande[j].quantita[a];
+                                    strcpy(serv_comande_servite[quante_servite].desc[a], serv_coda_comande[j].desc[a]);
+                                    serv_comande_servite[quante_servite].quantita[a] = serv_coda_comande[j].quantita[a];
                                 }
 
                                 quante_comande--;
                                 // Scorro tutte le comande di una posizione.
                                 for (a = j; a < quante_comande; a++)
                                 {
-                                    strcpy(coda_comande[a].tav_num, coda_comande[a + 1].tav_num);
-                                    coda_comande[a].stato = coda_comande[a + 1].stato;
-                                    coda_comande[a].id = coda_comande[a + 1].id;
-                                    coda_comande[a].kd_assegnato = coda_comande[a + 1].kd_assegnato;
-                                    coda_comande[a].td_assegnato = coda_comande[a + 1].td_assegnato;
-                                    coda_comande[a].id_comanda = coda_comande[a + 1].id_comanda;
-                                    for (c = 0; c < coda_comande[a + 1].id_comanda; c++)
+                                    strcpy(serv_coda_comande[a].tav_num, serv_coda_comande[a + 1].tav_num);
+                                    serv_coda_comande[a].stato = serv_coda_comande[a + 1].stato;
+                                    serv_coda_comande[a].id = serv_coda_comande[a + 1].id;
+                                    serv_coda_comande[a].kd_assegnato = serv_coda_comande[a + 1].kd_assegnato;
+                                    serv_coda_comande[a].td_assegnato = serv_coda_comande[a + 1].td_assegnato;
+                                    serv_coda_comande[a].id_comanda = serv_coda_comande[a + 1].id_comanda;
+                                    for (c = 0; c < serv_coda_comande[a + 1].id_comanda; c++)
                                     {
-                                        strcpy(coda_comande[a].desc[c], coda_comande[a + 1].desc[c]);
-                                        coda_comande[a].quantita[c] = coda_comande[a + 1].quantita[c];
+                                        strcpy(serv_coda_comande[a].desc[c], serv_coda_comande[a + 1].desc[c]);
+                                        serv_coda_comande[a].quantita[c] = serv_coda_comande[a + 1].quantita[c];
                                     }
                                 }
 
-                                memset(coda_comande[quante_comande + 1].tav_num, 0, sizeof(coda_comande[quante_comande + 1].tav_num));
-                                memset(coda_comande[quante_comande + 1].desc, 0, sizeof(coda_comande[quante_comande + 1].desc));
-                                memset(coda_comande[quante_comande + 1].quantita, 0, sizeof(coda_comande[quante_comande + 1].quantita));
-                                coda_comande[quante_comande + 1].stato = 'x';
-                                coda_comande[quante_comande + 1].kd_assegnato = -1;
-                                coda_comande[quante_comande + 1].td_assegnato = -1;
-                                coda_comande[quante_comande + 1].id_comanda = 0;
-                                coda_comande[quante_comande + 1].id = -1;
+                                memset(serv_coda_comande[quante_comande + 1].tav_num, 0, sizeof(serv_coda_comande[quante_comande + 1].tav_num));
+                                memset(serv_coda_comande[quante_comande + 1].desc, 0, sizeof(serv_coda_comande[quante_comande + 1].desc));
+                                memset(serv_coda_comande[quante_comande + 1].quantita, 0, sizeof(serv_coda_comande[quante_comande + 1].quantita));
+                                serv_coda_comande[quante_comande + 1].stato = 'x';
+                                serv_coda_comande[quante_comande + 1].kd_assegnato = -1;
+                                serv_coda_comande[quante_comande + 1].td_assegnato = -1;
+                                serv_coda_comande[quante_comande + 1].id_comanda = 0;
+                                serv_coda_comande[quante_comande + 1].id = -1;
 
-                                sprintf(comando, "** Comanda %d in SERVIZIO **", comande_servite[quante_servite].id + 1);
+                                sprintf(comando, "** Comanda %d in SERVIZIO **", serv_comande_servite[quante_servite].id + 1);
                                 // avviso il T.D. che la comanda X e' in SERVIZIO
                                 len_HO = strlen(comando) + 1;
                                 len_NO = htonl(len_HO);
-                                ret = send(comande_servite[quante_servite].td_assegnato, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
+                                ret = send(serv_comande_servite[quante_servite].td_assegnato, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                 if (ret < 0)
                                 {
                                     perror("Errore nell'invio del messaggio take");
                                     exit(1);
                                 }
-                                ret = send(comande_servite[quante_servite].td_assegnato, comando, len_HO, 0); // mando il messaggio
+                                ret = send(serv_comande_servite[quante_servite].td_assegnato, comando, len_HO, 0); // mando il messaggio
                                 if (ret < 0)
                                 {
                                     perror("Errore nell'invio del messaggio tak2");

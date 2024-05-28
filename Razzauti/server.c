@@ -15,11 +15,12 @@
 #define MAX_TAVOLI 15 // numero massimo di tavoli nel ristorante
 #define BUFFER_SIZE 1024
 #define WELCOME_SERVER "\n*********************** AVVIO SERVER ***********************\n"\
-"* \t\t\t\t\tDigita un comando: \t\t\t\t\t*\n"\
-"* \t\t\t\t\t\t\t\t\t\t\t\t\t\t*\n"\
-"*  stat --> mostra lo stato delle comande ai vari tavoli \t*\n"\
-"*  stop --> termina il server \t\t\t\t\t\t\t*\n"\
-"* \t\t\t\t\t\t\t\t\t\t\t\t\t\t*\n"\
+"*                                                          *\n"\
+"*                  Digita un comando:                      *\n"\
+"*                                                          *\n"\
+"*  stat --> mostra lo stato delle comande ai vari tavoli   *\n"\
+"*  stop --> termina il server                              *\n"\
+"*                                                          *\n"\
 "************************************************************\n"
 
 #define MAX_PIATTI 10 // numero massimo di piatti nel menu

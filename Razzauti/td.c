@@ -430,7 +430,7 @@ int main(int argc, char *argv[]){
                 check_errori(ret, sockfd);
 
                 if (buffer[0] == 'S'){
-                    printf("Conto finale: \n");
+                    printf("\n******** Scontrino ********\n");
                     fflush(stdout);
                 }
                 else{
@@ -458,7 +458,8 @@ int main(int argc, char *argv[]){
                         fflush(stdout);
                     }
                 }
-                printf("Totale: %d Euro\n", prezzo);
+                printf("\n\tTotale: %d Euro\n", prezzo);
+                printf("\n***************************\n");
                 fflush(stdout);
                 close(sockfd);
                 exit(0);

@@ -26,12 +26,12 @@
 "*                                                           *\n"\
 "*************************************************************\n\n"
 #define HELPER "\n****************************** HELPER ******************************\n"\
-"Comandi:\n"\
+"Comandi:\n\n"\
 "menu    -> stampa il menu giornaliero\n"\
 "comanda -> invia una comanda in cucina\n"\
 "\t   NOTA: deve essere nel formato\n"\
 "\t\t {<piatto_1-quantita'_1>...<piatto_n-quantita'_n>}\n"\
-"conto   -> richiesta del conto al tavolo\n\n"\
+"conto   -> richiesta del conto al tavolo\n"\
 "***********************************************************************\n\n"
 
 

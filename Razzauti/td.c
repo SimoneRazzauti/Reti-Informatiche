@@ -15,8 +15,17 @@
 #define BUFFER_SIZE 1024 // dimensione massima del buffer
 #define WELCOME "Benvenuto.\n"
 #define WELCOME_TD1 "Inserisci il codice prenotazione: "
-#define WELCOME_TD2 "\n***************** BENVENUTO AL RISTORANTE *****************\n Digita un comando:\n1) help --> mostra i dettagli dei comandi\n2) menu --> mostra il menu dei piatti\n3) comanda --> invia una comanda\n4) conto --> chiede il conto\n\n"
-#define HELPER "Comandi:\nmenu -> stampa il menu\ncomanda -> invia una comanda in cucina\n\t   NOTA: deve essere nel formato\n \t   {<piatto_1-quantita'_1>...<piatto_n-quantita'_n>}\nconto -> richiesta del conto\n\n"
+#define WELCOME_TD2 "\n****************** BENVENUTO AL RISTORANTE ******************\n"\
+"*                                                           *\n"\
+"*  Digita un comando:                                       *\n"\
+"*                                                           *\n"\
+"*  1) help   --> mostra i dettagli dei comandi              *\n"\
+"*  2) menu   --> mostra il menu dei piatti                  *\n"\
+"*  3) comanda--> invia una comanda                          *\n"\
+"*  4) conto  --> chiede il conto                            *\n"\
+"*                                                           *\n"\
+"*************************************************************\n\n"
+#define HELPER "\nComandi:\nmenu -> stampa il menu giornaliero\ncomanda -> invia una comanda in cucina\n\t   NOTA: deve essere nel formato\n \t   {<piatto_1-quantita'_1>...<piatto_n-quantita'_n>}\nconto -> richiesta del conto al tavolo\n\n"
 
 #define MAX_WORDS 50 // numero massimo di parole che possono essere estratte dalla frase
 #define LEN_ID 2 // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)

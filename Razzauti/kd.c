@@ -13,8 +13,15 @@
 #include "strutture.h" // strutture
 
 #define BUFFER_SIZE 1024 // dimensione max del buffer
-#define WELCOME_KD "************** KITCHEN DEVICE **************\n"
-#define COMANDI "Digita un comando: \n\n1) take \t\t --> accetta una comanda \n2) show \t\t --> mostra le comande accettate (in preparazione) \n3) ready com. \t\t --> imposta lo stato della comanda \n"
+#define WELCOME_KD "\n****************** KITCHEN DEVICE ******************\n"\
+"*                                                  *\n"\
+"*  Digita un comando:                              *\n"\
+"*                                                  *\n"\
+"*  1) take --> accetta una comanda                 *\n"\
+"*  2) show --> mostra le comande accettate         *\n"\
+"*  3) ready com. --> cambia lo stato della comanda *\n"\
+"*                                                  *\n"\
+"****************************************************\n"
 
 #define MAX_WORDS 50 // numero massimo di parole che possono essere estratte dalla frase
 #define LEN_ID 2 // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)
@@ -96,7 +103,6 @@ int main(int argc, char *argv[]){
     }
 
     printf(WELCOME_KD); // stampo il benvenuto
-    printf(COMANDI); // stampo la lista dei comandi
     fflush(stdout);
 
     // CICLO PRINCIPALE

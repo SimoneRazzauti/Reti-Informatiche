@@ -107,7 +107,7 @@ void imposta_tavoli(int numPersone, char *pathFile, int i){
     fclose(file); // chiude il file
 }
 
-// Salva una nuova prenotazione 
+// Salva una nuova prenotazione su file nel path: penotazioni/"nome file".txt
 int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char *tav){
     // nel file prenotazione avro': codice tavolo GG-MM-AA HH cognome data_prenotazione
     // pathFile = txts/giorno.txt

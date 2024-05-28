@@ -30,8 +30,8 @@ int find_prenotazione(char *tableX, char *data, int ora, char *pathFile){
 
     // se il file è inesistente o si verifica un errore fase di apertura
     if (file == NULL){
-        printf("Errore nell'apertura del file in: find_prenotazione\n");
-        exit(1);
+        printf("Errore nell'apertura del file -> find_prenotazione\n");
+        exit(1); // esce dal programma in caso di errore
     }
 
     // legge le frasi dal file e salva nell array 
@@ -49,8 +49,7 @@ int find_prenotazione(char *tableX, char *data, int ora, char *pathFile){
 }
 
 // Funzione utile per avere la lista dei tavoli liberi. Leggo dal file nella cartella txts/tavoli.txt e con l'aiuto di find_prenotazione mi salvo SOLO i tavoli disponibili e che rispettano la quantita' di persone
-void check_tavoli_liberi(char *data, int ora, int NPersone, char *pathFile, int i)
-{
+void check_tavoli_liberi(char *data, int ora, int numPersone, char *pathFile, int i){
     char arraycopia[DESCRIZIONE]; // array per la lettura del file
     int n = 0;
 
@@ -58,19 +57,19 @@ void check_tavoli_liberi(char *data, int ora, int NPersone, char *pathFile, int 
 
     FILE *file = fopen("txts/tavoli.txt", "r"); // apre il file in modalita' lettura
     int quanti;
-    if (file == NULL)
-    {
-        printf("Errore nell'apertura del file check_tavoli_liberi\n");
+
+    // se il file è inesistente o si verifica un errore fase di apertura
+    if (file == NULL){
+        printf("Errore nell'apertura del file -> check_tavoli_liberi\n");
         exit(1); // esce dal programma in caso di errore
     }
+
     // legge le frasi dal file & non superando il numero MAX di tavoli consentiti nel ristorante
-    while (fgets(arraycopia, DESCRIZIONE, file) != NULL && n < MAX_TAVOLI)
-    {
+    while (fgets(arraycopia, DESCRIZIONE, file) != NULL && n < MAX_TAVOLI){
         sscanf(arraycopia, "%s %*s %d %*s", tavolino, &quanti);
-        if (NPersone <= quanti)
-        {
-            if (find_prenotazione(tavolino, data, ora, pathFile))
-            { // se NON e' gia' stato prenotato
+        if (numPersone <= quanti){
+            // se NON e' gia' stato prenotato il tavolo modifico le strutture dati con i tavoli proposti al client 
+            if (find_prenotazione(tavolino, data, ora, pathFile)){ 
                 sscanf(arraycopia, "%s %s %d %s", client_fds[i].tavoli_proposti[indicetavolo].tav, client_fds[i].tavoli_proposti[indicetavolo].sala,
                        &client_fds[i].tavoli_proposti[indicetavolo].posti, client_fds[i].tavoli_proposti[indicetavolo].descrizione);
                 indicetavolo++;
@@ -83,24 +82,23 @@ void check_tavoli_liberi(char *data, int ora, int NPersone, char *pathFile, int 
 }
 
 // Nel caso in cui non esiste il file nella cartella prenotazioni. Significa = 0 prenotazioni, quindi per semplificare restituisco tutti i tavoli, senza controllare prenotazioni.
-void imposta_tavoli(int NPersone, char *pathFile, int i)
-{
-    char arraycopia[DESCRIZIONE]; // array di passaggio per le informazioni
+void imposta_tavoli(int numPersone, char *pathFile, int i){
+    char arraycopia[DESCRIZIONE]; // array per la lettura del file
     int n = 0;
 
     FILE *file = fopen(pathFile, "r"); // apre il file in modalita' lettura
     int quanti;
-    if (file == NULL)
-    {
-        printf("Errore nell'apertura del file imposta_tavoli\n");
+
+    // se il file è inesistente o si verifica un errore fase di apertura
+    if (file == NULL){
+        printf("Errore nell'apertura del file -> imposta_tavoli\n");
         exit(1); // esce dal programma in caso di errore
     }
-    // legge le frasi dal file
-    while (fgets(arraycopia, DESCRIZIONE, file) != NULL && n < MAX_TAVOLI)
-    {
+
+    // legge le frasi dal file & non superando il numero MAX di tavoli consentiti nel ristorante
+    while (fgets(arraycopia, DESCRIZIONE, file) != NULL && n < MAX_TAVOLI){
         sscanf(arraycopia, "%*s %*s %d %*s", &quanti);
-        if (NPersone <= quanti)
-        {
+        if (numPersone <= quanti){
             sscanf(arraycopia, "%s %s %d %s", client_fds[i].tavoli_proposti[indicetavolo].tav, client_fds[i].tavoli_proposti[indicetavolo].sala,
                    &client_fds[i].tavoli_proposti[indicetavolo].posti, client_fds[i].tavoli_proposti[indicetavolo].descrizione);
             indicetavolo++;
@@ -118,7 +116,7 @@ int prenotazione_tavolo(char *pathFile, int GG, int MM, int AA, int HH, char *co
     // pathFile = prenotazioni/giorno.txt
 
     char arraycopia[DESCRIZIONE];
-    int giorno, mese, anno, ora;
+    int giorno, mese, anno, file
     char tavolo[10];
 
     time_t rawtime;
@@ -527,7 +525,7 @@ int main(int argc, char *argv[])
     char *id = "S\0";
     char *negazione = "N\0";
     char arraycopia[DESCRIZIONE];
-    uint16_t n_comande = 0;
+    uint16_t n_comande file
     uint16_t codice_id;
     char copia[5];
     char *stop;

@@ -25,14 +25,14 @@
 "*  4) conto  --> chiede il conto                            *\n"\
 "*                                                           *\n"\
 "*************************************************************\n\n"
-#define HELPER "\n*********************** HELPER ***********************\n"\
+#define HELPER "\n****************************** HELPER ******************************\n"\
 "Comandi:\n"\
 "menu    -> stampa il menu giornaliero\n"\
 "comanda -> invia una comanda in cucina\n"\
 "\t   NOTA: deve essere nel formato\n"\
 "\t\t {<piatto_1-quantita'_1>...<piatto_n-quantita'_n>}\n"\
 "conto   -> richiesta del conto al tavolo\n\n"\
-"*********************************************************\n\n"
+"***********************************************************************\n\n"
 
 
 #define MAX_WORDS 50 // numero massimo di parole che possono essere estratte dalla frase

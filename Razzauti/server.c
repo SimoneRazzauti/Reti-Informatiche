@@ -21,38 +21,35 @@
 "*                                                          *\n"\
 "************************************************************\n\n"
 
-// Cerca_prenotazione e' una funzione che mi serve per realizzare la lista da restituire al cliente che esegue la Find, utilizzata nella controlla_tavoli_liberi(...).
-// Se un tavolo e' occupato per la stessa data e ora, non viene inviato.
-
-int cerca_prenotazione(char *tavolinoX, char *data, int ora, char *percorsoFile)
-{
-    char arraycopia[DESCRIZIONE]; // array di passaggio per le informazioni
+// funzione che serve per realizzare la lista da restituire al cliente che esegue la 'find', se un tavolo è occupato per la stessa data e ora, non viene inviato.
+int cerca_prenotazione(char *tableX, char *data, int ora, char *pathFile){
+    char arraycopia[DESCRIZIONE]; // array per la lettura del file
     int GG, MM, AA, HH, giorno, mese, anno;
     char tavolino[5];
-    FILE *fileP = fopen(percorsoFile, "r"); // apre il file in modalita'  lettura
+    FILE *file = fopen(pathFile, "r"); // apre il file in modalità lettura
 
-    if (fileP == NULL)
-    {
+    // se il file è inesistente o si verifica un errore fase di apertura
+    if (file == NULL){
         printf("Errore nell'apertura del file cerca_prenotazione\n");
-        exit(1); // esce dal programma in caso di errore
+        exit(1);
     }
-    // legge le frasi dal file
-    while (fgets(arraycopia, DESCRIZIONE, fileP) != NULL)
-    {
+
+    // legge le frasi dal file e salva nell array 
+    while (fgets(arraycopia, DESCRIZIONE, file) != NULL){
         sscanf(arraycopia, "%*s %s %d-%d-%d %d %*s %*d-%*d-%*d", tavolino, &GG, &MM, &AA, &HH);
         sscanf(data, "%d-%d-%d", &giorno, &mese, &anno);
-        if ((strcmp(tavolino, tavolinoX) == 0) && GG == giorno && MM == mese && AA == anno && HH == ora)
-        { // se e' occupato
+        // se il tavolo passato alla funzione è occupato per lo stesso giorno, la stessa data e ora allora non viene inviato
+        if ((strcmp(tavolino, tableX) == 0) && GG == giorno && MM == mese && AA == anno && HH == ora){ 
             return 0;
         }
     }
 
-    fclose(fileP); // chiude il file
+    fclose(file); // chiudo il file
     return 1;
 }
 
 // Funzione utile per avere la lista dei tavoli liberi. Leggo dal file nella cartella tavoli/lista.txt e con l'aiuto di cerca_prenotazione mi salvo SOLO i tavoli disponibili e che rispettano la quantita' di persone
-void controlla_tavoli_liberi(char *data, int ora, int NPersone, char *percorsoFile, int i)
+void controlla_tavoli_liberi(char *data, int ora, int NPersone, char *pathFile, int i)
 {
     char arraycopia[DESCRIZIONE]; // array di passaggio per le informazioni
     int n = 0;
@@ -72,7 +69,7 @@ void controlla_tavoli_liberi(char *data, int ora, int NPersone, char *percorsoFi
         sscanf(arraycopia, "%s %*s %d %*s", tavolino, &quanti);
         if (NPersone <= quanti)
         {
-            if (cerca_prenotazione(tavolino, data, ora, percorsoFile))
+            if (cerca_prenotazione(tavolino, data, ora, pathFile))
             { // se NON e' gia' stato prenotato
                 sscanf(arraycopia, "%s %s %d %s", client_fds[i].tavoli_proposti[indicetavolo].tav, client_fds[i].tavoli_proposti[indicetavolo].sala,
                        &client_fds[i].tavoli_proposti[indicetavolo].posti, client_fds[i].tavoli_proposti[indicetavolo].descrizione);
@@ -86,12 +83,12 @@ void controlla_tavoli_liberi(char *data, int ora, int NPersone, char *percorsoFi
 }
 
 // Nel caso in cui non esiste il file nella cartella prenotazioni. Significa = 0 prenotazioni, quindi per semplificare restituisco tutti i tavoli, senza controllare prenotazioni.
-void imposta_tavoli(int NPersone, char *percorsoFile, int i)
+void imposta_tavoli(int NPersone, char *pathFile, int i)
 {
     char arraycopia[DESCRIZIONE]; // array di passaggio per le informazioni
     int n = 0;
 
-    FILE *file = fopen(percorsoFile, "r"); // apre il file in modalita' lettura
+    FILE *file = fopen(pathFile, "r"); // apre il file in modalita' lettura
     int quanti;
     if (file == NULL)
     {
@@ -115,10 +112,10 @@ void imposta_tavoli(int NPersone, char *percorsoFile, int i)
 }
 
 // Inserisce una prenotazione
-int prenotazione_tavolo(char *percorsoFile, int GG, int MM, int AA, int HH, char *cognome, char *tav)
+int prenotazione_tavolo(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char *tav)
 {
     // nel file prenotazione avro': codice tavolo GG-MM-AA HH cognome data_prenotazione
-    // percorsoFile = prenotazioni/giorno.txt
+    // pathFile = prenotazioni/giorno.txt
 
     char arraycopia[DESCRIZIONE];
     int giorno, mese, anno, ora;
@@ -129,9 +126,9 @@ int prenotazione_tavolo(char *percorsoFile, int GG, int MM, int AA, int HH, char
     FILE *destination_file;
 
     FILE *file;
-    if (access(percorsoFile, F_OK) == -1)
+    if (access(pathFile, F_OK) == -1)
     {                                                // il file non esiste
-        destination_file = fopen(percorsoFile, "w"); // creo il file se non esiste.
+        destination_file = fopen(pathFile, "w"); // creo il file se non esiste.
         if (destination_file == NULL)
         {
             printf("errore");
@@ -141,7 +138,7 @@ int prenotazione_tavolo(char *percorsoFile, int GG, int MM, int AA, int HH, char
     }
     else
     {
-        file = fopen(percorsoFile, "r"); // apre il file in modalita'  lettura
+        file = fopen(pathFile, "r"); // apre il file in modalita'  lettura
 
         if (file == NULL)
         {
@@ -163,7 +160,7 @@ int prenotazione_tavolo(char *percorsoFile, int GG, int MM, int AA, int HH, char
         fclose(file); // chiude il file
     }
 
-    file = fopen(percorsoFile, "a"); // se e' ancora libero, aggiungo la prenotazione al file e restituisco 1
+    file = fopen(pathFile, "a"); // se e' ancora libero, aggiungo la prenotazione al file e restituisco 1
     if (file == NULL)
     {
         perror("ERRORE nella scrittura del file 'prenotazioni.txt'");

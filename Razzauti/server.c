@@ -180,7 +180,6 @@ int autenticazione(char stringa[30]){
     char codice[30]; // codice della prenotazione sul file
     char data[30]; // contiene il nome del file da aprire
     int g, m, a; // servono a generare il nome del file da aprire
-    int n = 0; // indica la riga nel file in cui si deve modificare le informazioni
 
     // sostituisco il carattere \n dalla stringa passata alla funzione con il finestringa
     stringa[strcspn(stringa, "\n")] = '\0';
@@ -218,7 +217,6 @@ int autenticazione(char stringa[30]){
             fclose(file);
             return 1;
         }
-        n++;
     }
 
     fclose(file); // chiude il file

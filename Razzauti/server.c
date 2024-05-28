@@ -443,13 +443,13 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                                 ret = send(serv_coda_comande[b].td_assegnato, &len_N, sizeof(uint32_t), 0); // mando la dimensione
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio");
+                                    perror("Errore nell'invio del messaggio1");
                                     exit(1);
                                 }
                                 ret = send(serv_coda_comande[b].td_assegnato, comando, len_H, 0); // mando il messaggio
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio");
+                                    perror("Errore nell'invio del messaggio2");
                                     exit(1);
                                 }
                             }
@@ -490,13 +490,13 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                                 ret = send(serv_coda_comande[b].kd_assegnato, &len_N, sizeof(uint32_t), 0); // mando la dimensione
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio");
+                                    perror("Errore nell'invio del messaggio3");
                                     exit(1);
                                 }
                                 ret = send(serv_coda_comande[b].kd_assegnato, comando, len_H, 0); // mando il messaggio
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio");
+                                    perror("Errore nell'invio del messaggio4");
                                     exit(1);
                                 }
                             }
@@ -709,13 +709,13 @@ int main(int argc, char *argv[])
                                     ret = send(client_fds[j].socket, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                     if (ret < 0)
                                     {
-                                        perror("Errore nell'invio del messaggio chiusura CLIENT");
+                                        perror("Errore nell'invio del messaggio5 chiusura CLIENT");
                                         exit(1);
                                     }
                                     ret = send(client_fds[j].socket, stop, len_HO, 0); // mando il messaggio
                                     if (ret < 0)
                                     {
-                                        perror("Errore nell'invio del messaggio chiusura CLIENT2");
+                                        perror("Errore nell'invio del messaggio6 chiusura CLIENT2");
                                         exit(1);
                                     }
                                 }
@@ -729,13 +729,13 @@ int main(int argc, char *argv[])
                                     ret = send(array_kds[j], &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                     if (ret < 0)
                                     {
-                                        perror("Errore nell'invio del messaggio1");
+                                        perror("Errore nell'invio del messaggio7");
                                         exit(1);
                                     }
                                     ret = send(array_kds[j], stop, len_HO, 0); // mando il messaggio
                                     if (ret < 0)
                                     {
-                                        perror("Errore nell'invio del messaggio2");
+                                        perror("Errore nell'invio del messaggio8");
                                         exit(1);
                                     }
                                 }
@@ -749,13 +749,13 @@ int main(int argc, char *argv[])
                                     ret = send(array_tds[j], &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                     if (ret < 0)
                                     {
-                                        perror("Errore nell'invio del messaggio3");
+                                        perror("Errore nell'invio del messaggio9");
                                         exit(1);
                                     }
                                     ret = send(array_tds[j], stop, len_HO, 0); // mando il messaggio
                                     if (ret < 0)
                                     {
-                                        perror("Errore nell'invio del messaggio4");
+                                        perror("Errore nell'invio del messaggio10");
                                         exit(1);
                                     }
                                 }
@@ -948,13 +948,13 @@ int main(int argc, char *argv[])
                                 ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio5");
+                                    perror("Errore nell'invio del messaggio11");
                                     exit(1);
                                 }
                                 ret = send(i, buffer, len_HO, 0); // mando il messaggio
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio6");
+                                    perror("Errore nell'invio del messaggio12");
                                     exit(1);
                                 }
                                 c++;
@@ -1158,13 +1158,13 @@ int main(int argc, char *argv[])
                                 ret = send(array_kds[j], &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio");
+                                    perror("Errore nell'invio del messaggio13");
                                     exit(1);
                                 }
                                 ret = send(array_kds[j], comando, len_HO, 0); // mando il messaggio
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio");
+                                    perror("Errore nell'invio del messaggio14");
                                     exit(1);
                                 }
                             }
@@ -1236,13 +1236,13 @@ int main(int argc, char *argv[])
                                 ret = send(serv_coda_comande[j].td_assegnato, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio take");
+                                    perror("Errore nell'invio del messaggio15 take");
                                     exit(1);
                                 }
                                 ret = send(serv_coda_comande[j].td_assegnato, comando, len_HO, 0); // mando il messaggio
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio tak2");
+                                    perror("Errore nell'invio del messaggio16 tak2");
                                     exit(1);
                                 }
 
@@ -1354,13 +1354,13 @@ int main(int argc, char *argv[])
                                 ret = send(serv_comande_servite[quante_servite].td_assegnato, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio take");
+                                    perror("Errore nell'invio del messaggio17 take");
                                     exit(1);
                                 }
                                 ret = send(serv_comande_servite[quante_servite].td_assegnato, comando, len_HO, 0); // mando il messaggio
                                 if (ret < 0)
                                 {
-                                    perror("Errore nell'invio del messaggio tak2");
+                                    perror("Errore nell'invio del messaggio18 tak2");
                                     exit(1);
                                 }
 

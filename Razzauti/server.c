@@ -10,19 +10,27 @@
 #include <sys/time.h>
 #include <time.h>
 
-#define MAX_CLIENTS 10
-#define MAX_TAVOLI 15
+
+#define MAX_CLIENTS 10 // numero massimo di clienti connessi
+#define MAX_TAVOLI 15 // numero massimo di tavoli nel ristorante
 #define BUFFER_SIZE 1024
+#define WELCOME_SERVER "\n********************** AVVIO SERVER **********************\n"\
+"* \t\t\t\tDigita un comando: \t\t\t\t\t*\n"\
+"* \t\t\t\t\t\t\t\t\t\t\t*\n"\
+"* \tstat --> mostra lo stato delle comande ai vari tavoli\t*\n"\
+"* \tstop --> termina il server\t\t\t\t\t\t*\n"\
+"* \t\t\t\t\t\t\t\t\t\t\t*\n"\
+"*********************************************************\n"
 
-#define MAX_PIATTI 10
-#define MAX_KITCHENDEVICES 10
-#define MAX_COMANDE_IN_ATTESA 10
+#define MAX_PIATTI 10 // numero massimo di piatti nel menu
+#define MAX_KITCHENDEVICES 10 // numero massio di kitchen device connessi
+#define MAX_COMANDE_IN_ATTESA 10 // numero massimo di comande in coda di attesa
 
-#define LEN_ID 2
-#define LEN_COMANDO 5
+#define LEN_ID 2 // lunghezza codici fissati per identificare il tipo di client al server (client-kd-td)
+#define LEN_COMANDO 5 // lunghezza dei comandi da mandare ai vari client
 
-#define DESCRIZIONE 100
-#define MAX_SALA_DESC 20
+#define DESCRIZIONE 100 // descrizione del piatto
+#define MAX_SALA_DESC 20 // il numero massimo di caratteri per descrivere una sala
 
 int indicetavolo = 0; // indice di quanti tavoli sono stati proposti, utilizzato nelle funzioni
 
@@ -63,17 +71,6 @@ struct client
 
 struct client client_fds[MAX_CLIENTS]; // array di client attualmente connessi
 
-void comandi_disponibili()
-{
-    printf("\n*********************** BENVENUTO ***********************\n");
-    printf("*                  Digita un comando:                   *\n");
-    printf("*                                                       *\n");
-    printf("* stat --> mostra lo stato delle comande ai vari tavoli *\n");
-    printf("* stop --> termina il server                            *\n");
-    printf("*                                                       *\n");
-    printf("*********************************************************\n");
-    fflush(stdout);
-}
 
 // Cerca_prenotazione e' una funzione che mi serve per realizzare la lista da restituire al cliente che esegue la Find, utilizzata nella controlla_tavoli_liberi(...).
 // Se un tavolo e' occupato per la stessa data e ora, non viene inviato.
@@ -646,7 +643,8 @@ int main(int argc, char *argv[])
     FD_SET(0, &master);
     fdmax = sockfd;
 
-    comandi_disponibili();
+    printf(WELCOME_SERVER);
+    fflush(stdout);
     while (1)
     {
 

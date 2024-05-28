@@ -12,7 +12,7 @@
 #include "funzioni.c" // funzioni varie
 #include "strutture.h" // strutture
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 1024 // dimensione max del buffer
 #define WELCOME_KD "************** KITCHEN DEVICE **************\n"
 #define COMANDI "Digita un comando: \n\n1) take \t\t --> accetta una comanda \n2) show \t\t --> mostra le comande accettate (in preparazione) \n3) ready com. \t\t --> imposta lo stato della comanda \n"
 

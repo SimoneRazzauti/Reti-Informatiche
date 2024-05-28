@@ -180,6 +180,7 @@ int autenticazione(char stringa[30]){
     char codice[30]; // codice della prenotazione sul file
     char data[30]; // contiene il nome del file da aprire
     int g, m, a; // servono a generare il nome del file da aprire
+    int n = 0; // indica la riga nel file in cui si deve modificare le informazioni
 
     // sostituisco il carattere \n dalla stringa passata alla funzione con il finestringa
     stringa[strcspn(stringa, "\n")] = '\0';
@@ -190,7 +191,6 @@ int autenticazione(char stringa[30]){
 
     strcat(data, ".txt\0"); // aggiunge l'estensione es: 4-6-2024.txt
     strcat(nomeFile, data); // percorso assoluto del file da aprire es: prenotazioni/4-6-2024.txt
-    int n = 0;
     FILE *file = fopen(nomeFile, "r+"); // "r+" -> indica di aprire il file in modalità di lettura e scrittura simultanea. il file può essere sia letto che scritto contemporaneamente. Se il file specificato non esiste, verrà creato un nuovo file.
     
     // gestisco l'errore della fopen

@@ -943,7 +943,7 @@ int main(int argc, char *argv[])
                         sscanf(buffer, "%d %d-%d-%d-%d %d %s", &tavoloScelto, &nPersone, &giorno, &mese, &anno, &ora, cognome);
                         sprintf(data, "%d-%d-%d", giorno, mese, anno);
 
-                        strcpy(nomeFile, "txts/");
+                        strcpy(nomeFile, "txts/prenotazioni");
                         char dataV[15];
                         strcpy(dataV, data);
                         strcat(dataV, ".txt");   // aggiunge l'estensione

@@ -145,9 +145,8 @@ int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char 
         while (fgets(arraycopia, DESCRIZIONE, file) != NULL){
             sscanf(arraycopia, "%*s %s %d-%d-%d %d %*s %*d-%*d-%*d", tavolo, &giorno, &mese, &anno, &ora);
 
-            if ((strcmp(tavolo, tav) == 0) && GG == giorno && MM == mese && AA == anno && HH == ora)
-            { // se e' stato prenotato nel frattempo, restituisco 0
-
+            // se e' stato prenotato nel frattempo, restituisco 0
+            if ((strcmp(tavolo, tav) == 0) && GG == giorno && MM == mese && AA == anno && HH == ora){ 
                 fclose(file);
                 return 0;
             }
@@ -155,10 +154,10 @@ int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char 
         fclose(file); // chiude il file
     }
 
-    file = fopen(pathFile, "a"); // se e' ancora libero, aggiungo la prenotazione al file e restituisco 1
-    if (file == NULL)
-    {
-        perror("ERRORE nella scrittura del file 'prenotazioni.txt'");
+    // se e' ancora libero, aggiungo la prenotazione al file e restituisco 1
+    file = fopen(pathFile, "a"); 
+    if (file == NULL){
+        perror("ERRORE nella scrittura del file -> prenotazioni.txt");
         printf("ARRESTO IN CORSO...\n");
         fflush(stdout);
         exit(1);
@@ -169,6 +168,7 @@ int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char 
 
     time(&rawtime);
     timeinfo = localtime(&rawtime);
+    // salvo nel file tutti i dati della prenotazione
     fprintf(file, "%s %s %d-%d-%d %d %s %d-%d-%d\n", codiceID, tav, GG, MM, AA, HH, cognome, timeinfo->tm_mday, timeinfo->tm_mon + 1, (timeinfo->tm_year) % 100);
     fclose(file);
     return 1;
@@ -943,7 +943,7 @@ int main(int argc, char *argv[])
                         sscanf(buffer, "%d %d-%d-%d-%d %d %s", &tavoloScelto, &nPersone, &giorno, &mese, &anno, &ora, cognome);
                         sprintf(data, "%d-%d-%d", giorno, mese, anno);
 
-                        strcpy(nomeFile, "txts/prenotazioni/");
+                        strcpy(nomeFile, "prenotazioni/");
                         char dataV[15];
                         strcpy(dataV, data);
                         strcat(dataV, ".txt");   // aggiunge l'estensione

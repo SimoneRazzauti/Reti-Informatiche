@@ -108,15 +108,16 @@ void imposta_tavoli(int numPersone, char *pathFile, int i){
 }
 
 // Inserisce una prenotazione
-int prenotazione_tavolo(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char *tav)
+int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char *tav)
 {
     // nel file prenotazione avro': codice tavolo GG-MM-AA HH cognome data_prenotazione
     // pathFile = prenotazioni/giorno.txt
 
-    char arraycopia[DESCRIZIONE];
+    char arraycopia[DESCRIZIONE]; // array per la lettura del file
     int giorno, mese, anno, ora;
     char tavolo[10];
 
+    // struttura per il tempo corrente
     time_t rawtime;
     struct tm *timeinfo;
     FILE *destination_file;
@@ -944,7 +945,7 @@ int main(int argc, char *argv[])
                         sscanf(buffer, "%d %d-%d-%d-%d %d %s", &tavoloScelto, &nPersone, &giorno, &mese, &anno, &ora, cognome);
                         sprintf(data, "%d-%d-%d", giorno, mese, anno);
 
-                        strcpy(nomeFile, "prenotazioni/");
+                        strcpy(nomeFile, "txts/");
                         char dataV[15];
                         strcpy(dataV, data);
                         strcat(dataV, ".txt");   // aggiunge l'estensione
@@ -952,7 +953,7 @@ int main(int argc, char *argv[])
 
                         tavoloScelto--;
                         // controlla se puo' aggiungere la prenotazione
-                        if (prenotazione_tavolo(nomeFile, giorno, mese, anno, ora, cognome, client_fds[i].tavoli_proposti[tavoloScelto].tav))
+                        if (prenota(nomeFile, giorno, mese, anno, ora, cognome, client_fds[i].tavoli_proposti[tavoloScelto].tav))
                         { // andata a buon fine
                             printf("AVVISO! Nuova prenotazione per: \nGiorno %d, Mese %d, Anno %d, Ora %d\n", giorno, mese, anno, ora);
                             sprintf(codPrenotazione, "%s-%s-%d", client_fds[i].tavoli_proposti[tavoloScelto].tav, data, ora);

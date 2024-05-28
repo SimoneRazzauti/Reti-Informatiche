@@ -168,7 +168,7 @@ int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char 
 
     time(&rawtime);
     timeinfo = localtime(&rawtime);
-    // salvo nel file tutti i dati della prenotazione
+    // salvo nel file tutti i dati della prenotazione con il timestamp della richiesta di prenotazione
     fprintf(file, "%s %s %d-%d-%d %d %s %d-%d-%d\n", codiceID, tav, GG, MM, AA, HH, cognome, timeinfo->tm_mday, timeinfo->tm_mon + 1, (timeinfo->tm_year) % 100);
     fclose(file);
     return 1;

@@ -354,7 +354,7 @@ void stat_all(){
 }
 
 // Gestisce la recv/send ed errori. (ret, sockfd, fdmax, n_table_connessi, n_kitchen_connessi, n_clients_connessi, *master)
-void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n_clients, fd_set &master){
+void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n_clients, fd_set *master){
     char comando[BUFFER_SIZE]; // Buffer per memorizzare i messaggi
     int j, a, b, c, check; // Variabili ausiliarie per i loop
     check = 0; // Variabile di controllo
@@ -383,7 +383,7 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                     close(i);
                     n_clients--;
                     client_fds[j].socket = -1;
-                    FD_CLR(i, &master);
+                    FD_CLR(i, master);
                     print("Un client si è disconnesso\n");
                     break;
                 }
@@ -425,7 +425,7 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                     close(i);
                     n_kitchen--;
                     array_kds[j] = -1;
-                    FD_CLR(i, &master);
+                    FD_CLR(i, master);
                     break;
                 }
             }
@@ -490,7 +490,7 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                     close(i);
                     n_table--;
                     array_tds[j] = -1;
-                    FD_CLR(i, &master);
+                    FD_CLR(i, master);
                     break;
                 }
             }

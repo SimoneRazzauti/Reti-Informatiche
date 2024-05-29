@@ -308,7 +308,7 @@ void stat_table(char tavolino[5]){
         printf("\n");
     }
     if (check == 0)
-        printf("NON CI SONO COMANDE PER IL TAVOLO SCELTO\n");
+        printf("NON CI SONO COMANDE PER IL TAVOLO SCELTO");
 
     printf("\n\n");
 
@@ -734,7 +734,7 @@ int main(int argc, char *argv[])
 
                     else
                     {
-                        printf("ERRORE: comando non valido.\n");
+                        printf("ERRORE: comando non valido.\n\n");
                         fflush(stdout);
                     }
                 }

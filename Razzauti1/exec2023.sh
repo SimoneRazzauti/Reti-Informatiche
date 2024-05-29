@@ -30,10 +30,11 @@
   gnome-terminal -x sh -c "./cli 7100; exec bash"
 
 # 2.3 esecuzione di 3 table device sulle porte {5001,...,5003}
-  for port in {5001..5003}
-  do
-     gnome-terminal -x sh -c "./td $port; exec bash"
-  done
+#  for port in {5001..5003}
+#  do
+     gnome-terminal -x sh -c "./td 5001; exec bash"
+     gnome-terminal -x sh -c "./td 5002; exec bash"
+#  done
 
 # 2.4 esecuzione di 2 kitchen device sulle porte 6001 e 6002
 	gnome-terminal -x sh -c "./kd 6000; exec bash"

@@ -1,8 +1,0 @@
-A1 - 7 Euro - Antipasto di terra (1ps)
-A2 - 8 Euro - Antipasto di mare (1ps)
-P1 - 10 Euro - Spaghetti allo scoglio 
-P2 - 6 Euro - Pennette alla norma
-S1 - 20 Euro - Fritto misto di mare 
-S2 - 25 Euro - Filetto di manzo
-D1 - 5 Euro - Cheesecake con topping
-D2 - 5 Euro - Panna cotta

@@ -1031,11 +1031,11 @@ int main(int argc, char *argv[])
                     }
                     else if (strncmp(buffer, "menu", strlen("menu")) == 0)
                     {
-                        fp = fopen("menu.txt", "r"); // apre il file in modalita'  lettura
+                        fp = fopen("txts/menu.txt", "r"); // apre il file in modalita'  lettura
 
                         if (fp == NULL)
                         {
-                            printf("Errore nell'apertura del file menu.txt \n");
+                            printf("Errore nell'apertura del file -> menu.txt \n");
                             exit(1); // esce dal programma in caso di errore
                         }
 

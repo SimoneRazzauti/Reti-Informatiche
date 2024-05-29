@@ -353,35 +353,30 @@ void stat_all(){
     return;
 }
 
-// gestisce la recv/send ed errori.
-void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n_clients, fd_set *master)
-{
+// Gestisce la recv/send ed errori.
+void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n_clients, fd_set *master){
 
-    char comando[BUFFER_SIZE];
-    int j, a, b, c, check;
-    check = 0;
-    uint32_t len_H; // lunghezza del messaggio espressa in host order
-    uint32_t len_N; // lunghezza del messaggio espressa in network order
+    char comando[BUFFER_SIZE]; // Buffer per memorizzare i messaggi
+    int j, a, b, c, check; // Variabili ausiliarie per i loop
+    check = 0; // Variabile di controllo
+    uint32_t len_H; // Lunghezza del messaggio in host order
+    uint32_t len_N; // Lunghezza del messaggio in network order
 
-    if (ret < 0)
-    {
+    if (ret < 0){
+        // Errore nella ricezione dei dati
         perror("Errore nella ricezione dei dati X");
         exit(1);
         return;
-    }
-    else if (ret == -1)
-    { // nel caso in cui c'e' stato un errore, lo stampo a video
+    } else if (ret == -1){
+        // Errore nella comunicazione con un socket remoto
         perror("ERRORE nella comunicazione con un socket remoto");
         return;
-    }
-    else if (ret == 0) // da capire chi ha chiuso e abbassare il numero
-    {
-        if (fdmax != 0)
-        {
-            for (j = 0; j < n_clients; j++)
-            {
-                if (client_fds[j].socket == i)
-                {
+    } else if (ret == 0){
+        // Il peer ha chiuso la connessione
+        if (fdmax != 0){
+            // Loop per gestire la chiusura della connessione del client
+            for (j = 0; j < n_clients; j++){
+                if (client_fds[j].socket == i){
                     // Chiusura della connessione con il client
                     fflush(stdout);
                     close(i);
@@ -391,41 +386,35 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                     break;
                 }
             }
-            for (j = 0; j < n_kitchen; j++)
-            {
-                if (array_kds[j] == i)
-                {
-                    // Chiusura della connessione con il k. device
-
-                    for (b = 0; b < quante_comande; b++)
-                    {
-                        if (serv_coda_comande[b].kd_assegnato == i)
-                        {
-                            if (serv_coda_comande[b].td_assegnato > 0)
-                            { // Avviso i T.D. del K. Device che ha abbandonato la cucina.
+            // Loop per gestire la chiusura della connessione del kitchen device
+            for (j = 0; j < n_kitchen; j++){
+                if (array_kds[j] == i){
+                    // Chiusura della connessione con il kitchen device
+                    for (b = 0; b < quante_comande; b++){
+                        if (serv_coda_comande[b].kd_assegnato == i){
+                            if (serv_coda_comande[b].td_assegnato > 0){
+                                // Avviso i table devices che il kitchen device ha abbandonato la cucina
                                 strcpy(comando, "** Kitchen Device ha smesso di lavorare **\n");
                                 len_H = strlen(comando) + 1;
                                 len_N = htonl(len_H);
-                                ret = send(serv_coda_comande[b].td_assegnato, &len_N, sizeof(uint32_t), 0); // mando la dimensione
-                                if (ret < 0)
-                                {
+                                ret = send(serv_coda_comande[b].td_assegnato, &len_N, sizeof(uint32_t), 0); // Mando la dimensione
+                                if (ret < 0){
                                     perror("Errore nell'invio del messaggio1");
                                     exit(1);
                                 }
-                                ret = send(serv_coda_comande[b].td_assegnato, comando, len_H, 0); // mando il messaggio
-                                if (ret < 0)
-                                {
+                                ret = send(serv_coda_comande[b].td_assegnato, comando, len_H, 0); // Mando il messaggio
+                                if (ret < 0){
                                     perror("Errore nell'invio del messaggio2");
                                     exit(1);
                                 }
                             }
-                            serv_coda_comande[b].stato = 'a'; // Rimetto la comanda in Attesa che qualche altro K. Device la prenda e tolgo il valore del suo socket dall'array
+                            // Rimetto la comanda in attesa che qualche altro kitchen device la prenda
+                            serv_coda_comande[b].stato = 'a';
                             serv_coda_comande[b].kd_assegnato = -1;
                             check = 1;
                         }
                     }
-                    if (check == 1)
-                    {
+                    if (check == 1){
                         printf("Un Kitchen Device ha abbandonato il ristorante.\n\n");
                     }
 
@@ -437,47 +426,40 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                     break;
                 }
             }
-            for (j = 0; j < n_table; j++)
-            {
-                if (array_tds[j] == i)
-                {
-                    // Chiusura della connessione t. device
-                    for (b = 0; b < quante_comande; b++)
-                    {
-                        if (serv_coda_comande[b].td_assegnato == i)
-                        {
+            // Loop per gestire la chiusura della connessione del table device
+            for (j = 0; j < n_table; j++){
+                if (array_tds[j] == i){
+                    // Chiusura della connessione del table device
+                    for (b = 0; b < quante_comande; b++){
+                        if (serv_coda_comande[b].td_assegnato == i){
                             quante_comande--;
-                            if (serv_coda_comande[b].kd_assegnato > 0)
-                            { // Avviso TUTTI i K.D. che il cliente ha lasciato il ristorante.
+                            if (serv_coda_comande[b].kd_assegnato > 0){
+                                // Avviso TUTTI i kitchen devices che il cliente ha lasciato il ristorante
                                 sprintf(comando, "** Cliente del tavolo %s ha lasciato il ristorante. **\n", serv_coda_comande[b].tav_num);
 
                                 len_H = strlen(comando) + 1;
                                 len_N = htonl(len_H);
-                                ret = send(serv_coda_comande[b].kd_assegnato, &len_N, sizeof(uint32_t), 0); // mando la dimensione
-                                if (ret < 0)
-                                {
+                                ret = send(serv_coda_comande[b].kd_assegnato, &len_N, sizeof(uint32_t), 0); // Mando la dimensione
+                                if (ret < 0){
                                     perror("Errore nell'invio del messaggio3");
                                     exit(1);
                                 }
-                                ret = send(serv_coda_comande[b].kd_assegnato, comando, len_H, 0); // mando il messaggio
-                                if (ret < 0)
-                                {
+                                ret = send(serv_coda_comande[b].kd_assegnato, comando, len_H, 0); // Mando il messaggio
+                                if (ret < 0){
                                     perror("Errore nell'invio del messaggio4");
                                     exit(1);
                                 }
                             }
 
-                            // Rimuovo tutte le sue comande permettendo di poter fare lo STOP del server o di non far prendere al K.D. comande errate.
-                            for (a = b; a < quante_comande; a++)
-                            {
+                            // Rimuovo tutte le sue comande permettendo di poter fare lo STOP del server o di non far prendere al kitchen device comande errate
+                            for (a = b; a < quante_comande; a++){
                                 strcpy(serv_coda_comande[a].tav_num, serv_coda_comande[a + 1].tav_num);
                                 serv_coda_comande[a].stato = serv_coda_comande[a + 1].stato;
                                 serv_coda_comande[a].id = serv_coda_comande[a + 1].id;
                                 serv_coda_comande[a].kd_assegnato = serv_coda_comande[a + 1].kd_assegnato;
                                 serv_coda_comande[a].td_assegnato = serv_coda_comande[a + 1].td_assegnato;
                                 serv_coda_comande[a].id_comanda = serv_coda_comande[a + 1].id_comanda;
-                                for (c = 0; c < serv_coda_comande[a + 1].id_comanda; c++)
-                                {
+                                for (c = 0; c < serv_coda_comande[a + 1].id_comanda; c++){
                                     strcpy(serv_coda_comande[a].desc[c], serv_coda_comande[a + 1].desc[c]);
                                     serv_coda_comande[a].quantita[c] = serv_coda_comande[a + 1].quantita[c];
                                 }
@@ -491,12 +473,11 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                             serv_coda_comande[quante_comande + 1].td_assegnato = -1;
                             serv_coda_comande[quante_comande + 1].id_comanda = 0;
                             serv_coda_comande[quante_comande + 1].id = -1;
-                            b--; // se l'ho trovato, sposto tutto di 1 potrei perdermi una comanda se non torno indietro
+                            b--; // Se l'ho trovato, sposto tutto di 1 potrei perdermi una comanda se non torno indietro
                             check = 1;
                         }
                     }
-                    if (check == 1)
-                    {
+                    if (check == 1){
                         printf("Un Table Device ha abbandonato il ristorante. Comand* annullat*.\n\n");
                     }
 
@@ -512,6 +493,8 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
     }
     return;
 }
+
+
 
 int main(int argc, char *argv[])
 {

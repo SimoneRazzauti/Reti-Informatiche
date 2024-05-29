@@ -291,7 +291,6 @@ void stat_table(char tavolino[5]){
         }
         // aggiorno check perchè ho trovato almeno una comanda
         check = 1;
-        printf("\n");
     }
 
     for (j = 0; j < quante_servite; j++){
@@ -305,11 +304,11 @@ void stat_table(char tavolino[5]){
         }
         // aggiorno check perchè ho trovato almeno una comanda
         check = 1;
-        printf("\n");
     }
     if (check == 0)
         printf("NON CI SONO COMANDE PER IL TAVOLO SCELTO");
 
+    check = 0;
     printf("\n\n");
     return;
 }

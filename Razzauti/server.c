@@ -353,17 +353,16 @@ void stat_all(){
     return;
 }
 
-// Gestisce la recv/send ed errori.
+// Gestisce la recv/send ed errori. (ret, sockfd, fdmax, n_table_connessi, n_kitchen_connessi, n_clients_connessi, *master)
 void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n_clients, fd_set *master){
-
     char comando[BUFFER_SIZE]; // Buffer per memorizzare i messaggi
     int j, a, b, c, check; // Variabili ausiliarie per i loop
     check = 0; // Variabile di controllo
     uint32_t len_H; // Lunghezza del messaggio in host order
     uint32_t len_N; // Lunghezza del messaggio in network order
 
+    // Errore nella ricezione dei dati
     if (ret < 0){
-        // Errore nella ricezione dei dati
         perror("Errore nella ricezione dei dati X");
         exit(1);
         return;
@@ -372,8 +371,10 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
         perror("ERRORE nella comunicazione con un socket remoto");
         return;
     } else if (ret == 0){
-        // Il peer ha chiuso la connessione
+        // Il peer ha chiuso la connessione -> c'è da capire chi ha chiuso la connessione
+        // Se ci sono descrittori di socket attivi
         if (fdmax != 0){
+
             // Loop per gestire la chiusura della connessione del client
             for (j = 0; j < n_clients; j++){
                 if (client_fds[j].socket == i){
@@ -382,10 +383,12 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                     close(i);
                     n_clients--;
                     client_fds[j].socket = -1;
-                    FD_CLR(i, master);
+                    FD_CLR(i, &master);
+                    print("Un client si è disconnesso\n");
                     break;
                 }
             }
+
             // Loop per gestire la chiusura della connessione del kitchen device
             for (j = 0; j < n_kitchen; j++){
                 if (array_kds[j] == i){
@@ -399,12 +402,12 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                                 len_N = htonl(len_H);
                                 ret = send(serv_coda_comande[b].td_assegnato, &len_N, sizeof(uint32_t), 0); // Mando la dimensione
                                 if (ret < 0){
-                                    perror("Errore nell'invio del messaggio1");
+                                    perror("Errore nell'invio del messaggio 1");
                                     exit(1);
                                 }
                                 ret = send(serv_coda_comande[b].td_assegnato, comando, len_H, 0); // Mando il messaggio
                                 if (ret < 0){
-                                    perror("Errore nell'invio del messaggio2");
+                                    perror("Errore nell'invio del messaggio 2");
                                     exit(1);
                                 }
                             }
@@ -422,10 +425,11 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                     close(i);
                     n_kitchen--;
                     array_kds[j] = -1;
-                    FD_CLR(i, master);
+                    FD_CLR(i, &master);
                     break;
                 }
             }
+            
             // Loop per gestire la chiusura della connessione del table device
             for (j = 0; j < n_table; j++){
                 if (array_tds[j] == i){
@@ -441,12 +445,12 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                                 len_N = htonl(len_H);
                                 ret = send(serv_coda_comande[b].kd_assegnato, &len_N, sizeof(uint32_t), 0); // Mando la dimensione
                                 if (ret < 0){
-                                    perror("Errore nell'invio del messaggio3");
+                                    perror("Errore nell'invio del messaggio 3");
                                     exit(1);
                                 }
                                 ret = send(serv_coda_comande[b].kd_assegnato, comando, len_H, 0); // Mando il messaggio
                                 if (ret < 0){
-                                    perror("Errore nell'invio del messaggio4");
+                                    perror("Errore nell'invio del messaggio 4");
                                     exit(1);
                                 }
                             }
@@ -465,6 +469,7 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                                 }
                             }
 
+                            // resetto i campi della struttura comanda_server
                             memset(serv_coda_comande[quante_comande + 1].tav_num, 0, sizeof(serv_coda_comande[quante_comande + 1].tav_num));
                             memset(serv_coda_comande[quante_comande + 1].desc, 0, sizeof(serv_coda_comande[quante_comande + 1].desc));
                             memset(serv_coda_comande[quante_comande + 1].quantita, 0, sizeof(serv_coda_comande[quante_comande + 1].quantita));
@@ -485,7 +490,7 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                     close(i);
                     n_table--;
                     array_tds[j] = -1;
-                    FD_CLR(i, master);
+                    FD_CLR(i, &master);
                     break;
                 }
             }

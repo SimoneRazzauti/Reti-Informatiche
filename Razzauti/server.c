@@ -720,9 +720,7 @@ int main(int argc, char *argv[]){
                 }
 
                 // CASO 2) PRONTO IL LISTENER
-                else if (i == sockfd){ 
-                    // printf("\n");
-                    fflush(stdout);
+                else if (i == sockfd){
                     socklen_t cli_len = sizeof(cli_addr);
                     newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &cli_len);
                     if (newsockfd < 0)

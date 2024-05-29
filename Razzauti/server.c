@@ -289,10 +289,10 @@ void stat_table(char tavolino[5]){
             for (a = 0; a < serv_coda_comande[j].id_comanda; a++){
                 printf("Piatto scelto: %s x %d\n", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
             }
+            // aggiorno check perchè ho trovato almeno una comanda
+            check = 1;
+            printf("\n");
         }
-        // aggiorno check perchè ho trovato almeno una comanda
-        check = 1;
-        printf("\n");
     }
 
     for (j = 0; j < quante_servite; j++){
@@ -303,10 +303,10 @@ void stat_table(char tavolino[5]){
             for (a = 0; a < serv_comande_servite[j].id_comanda; a++){
                 printf("Piatto scelto: %s x %d\n", serv_comande_servite[j].desc[a], serv_comande_servite[j].quantita[a]);
             }
+            // aggiorno check perchè ho trovato almeno una comanda
+            check = 1;
+            printf("\n");
         }
-        // aggiorno check perchè ho trovato almeno una comanda
-        check = 1;
-        printf("\n");
     }
 
     if (check == 0)
@@ -657,7 +657,8 @@ int main(int argc, char *argv[])
                         {
                             if (serv_coda_comande[j].stato == 'p' || serv_coda_comande[j].stato == 'a')
                             {
-                                printf("**ERRORE: Ci sono comande in preparazione o in attesa. RIPROVARE dopo. ** \n");
+                                printf("**ERRORE: Ci sono comande in preparazione o in attesa. RIPROVARE dopo. ** \n\n");
+                                // TO DO: si potrebbe richiamare la funzione stat_char(a) e stat_char(p)
                                 ch = 1;
                                 break;
                             }

@@ -14,7 +14,7 @@
 #define MAX_COMANDE_IN_ATTESA 10 // numero massimo di comande in coda di attes
 #define DESCRIZIONE 100 // descrizione del piatto
 #define MAX_CLIENTS 10 // numero massimo di clienti connessi
-#define MAX_TAVOLI 15 // numero massimo di tavoli nel ristorante
+#define MAX_TAVOLI 10 // numero massimo di tavoli nel ristorante
 #define MAX_SALA_DESC 20 // il numero massimo di caratteri per descrivere una sala
 #define MAX_KITCHENDEVICES 10 // numero massio di kitchen device connessi
 #define BUFFER_SIZE 1024 // lunghezza del buffer di comunicazione client-server

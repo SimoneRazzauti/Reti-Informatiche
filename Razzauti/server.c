@@ -535,9 +535,8 @@ int main(int argc, char *argv[]){
 
     // Creazione del socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
-    {
-        perror("Errore nella creazione del socket");
+    if (sockfd < 0){
+        perror("Errore nella creazione del socket:");
         exit(1);
     }
 
@@ -555,16 +554,14 @@ int main(int argc, char *argv[]){
     server_addr.sin_port = porta;
 
     // Binding del socket all'indirizzo del server
-    if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
-    {
-        perror("Errore nel binding del socket");
+    if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0){
+        perror("Errore nel BIND del socket:");
         exit(1);
     }
 
     // Inizio dell'ascolto delle connessioni in ingresso
-    if (listen(sockfd, MAX_CLIENTS) < 0)
-    {
-        perror("Errore nell'avvio dell'ascolto delle connessioni");
+    if (listen(sockfd, MAX_CLIENTS) < 0){
+        perror("Errore nella LISTEN del socket:");
         exit(1);
     }
 
@@ -572,79 +569,81 @@ int main(int argc, char *argv[]){
     FD_ZERO(&master);
     FD_ZERO(&read_fds);
 
+	// Aggiungo il socket di ascolto 'listener' e 'stdin' (0) ai socket monitorati
     FD_SET(sockfd, &master);
     FD_SET(0, &master);
     fdmax = sockfd;
 
+	// Tengo traccia del nuovo fdmax
     printf(WELCOME_SERVER);
     fflush(stdout);
-    while (1)
-    {
-
-        memset(comando, 0, sizeof(comando)); // metto a 0 comando, senno' se si preme semplicemente invio senza scrivere nulla, rimane l'ultima cosa ci era finita dentro
-
+    printf("1");
+    while (1){
+        memset(comando, 0, BUFFER_SIZE); // resetto il buffer comando
+        // copio il master, la select agisce sul read_fds lasciando solo i socket pronti
         read_fds = master;
         ret = select(fdmax + 1, &read_fds, NULL, NULL, NULL);
-        if (ret < 0)
-        {
-            perror("ERRORE SELECT:");
+        if (ret < 0){
+            perror("Errore nella SELECT:");
             exit(1);
         }
-
-        for (i = 0; i <= fdmax; i++)
-        {
-            if (FD_ISSET(i, &read_fds))
-            {
-                if (i == 0)
-                { // PRONTO STDIN
-                    memset(buffer, 0, sizeof(buffer));
+        // scorro tutti i descrittori pronti, ci sono due casi 1) pronto il socket stdin 2) pronto il socket di ascolto
+        for (i = 0; i <= fdmax; i++){
+            if (FD_ISSET(i, &read_fds)){
+                // CASO 1) PRONTO STDIN
+                if (i == 0){
+                    // resetto i buffer
+                    memset(buffer, 0, BUFFER_SIZE);
                     memset(copia, 0, sizeof(copia));
 
                     fgets(buffer, BUFFER_SIZE, stdin);
+                    // comando = {stat, stop} copia = {p, s, T..,}
                     sscanf(buffer, "%s %s", comando, copia);
                     int nT = 0;
-                    if (strcmp(comando, "stat") == 0)
-                    {
-                        if (strlen(buffer) > 5)
-                        {                                                                                 // e' stato inserito qualcosa dopo stat
-                            if (copia[0] != 'a' && copia[0] != 'p' && copia[0] != 's' && copia[0] != 'T') // se dice lo stato
-                            {                                                                             // vedo se lo stato indicato e' corretto
-                                printf("ERRORE: stato non valido.\nSi accettano solo lettere 'a' = attesa | 'p' = preparazione | 's' = servizio | num.Tavolo | Nessuna lettera\n\n");
+
+                    // gestisco il comando stat -> può essere nel formato stat -p, -s, -TXX, nessun argomento
+                    if (strcmp(comando, "stat") == 0){
+                        if (strlen(buffer) > 5){ // stat con argomento
+                            // controllo che sia corretto (la prima lettera di copia[] deve essere 'p' o 's' o 'a' o 'T')
+                            if (copia[0] != 'a' && copia[0] != 'p' && copia[0] != 's' && copia[0] != 'T'){                                                                             
+                                printf("Errore: stato non valido.\nSi accettano solo lettere 'a' = attesa | 'p' = preparazione | 's' = servizio | num.Tavolo | *vuoto*\n\n");
                                 fflush(stdout);
                                 continue;
                             }
-                            else if (copia[0] == 'a' || copia[0] == 'p' || copia[0] == 's')
-                            {
+                            // se ho chiesto la stat delle comande in un certo stato
+                            else if (copia[0] == 'a' || copia[0] == 'p' || copia[0] == 's'){
+                                // stampa
                                 stat_char(copia[0]);
                             }
-                            else if (sscanf(copia, "T%d", &nT) == 1)
-                            { // se dice il tavolo
-                                if (nT < 1 || nT > MAX_TAVOLI)
-                                { // vedo il numero del tavolo e' valido
-                                    printf("ERRORE: numero del tavolo non valido.\n");
+                            // se chiedo la stat di un tavolo
+                            else if (sscanf(copia, "T%d", &nT) == 1){ 
+                                // controllo che il tavolo sia corretto
+                                if (nT < 1 || nT > MAX_TAVOLI){
+                                    printf("Errore: tavolo inesistente.\n");
                                     fflush(stdout);
                                     continue;
                                 }
-                                stat_table(copia);
                                 // stampa
+                                stat_table(copia);
                             }
-                        }
-                        else
-                        { // tutto
+                        }else{   
+                            // stampa tutti i tavoli
                             stat_all();
                         }
                         fflush(stdout);
                     }
 
-                    else if (strcmp(comando, "stop") == 0)
-                    {
-                        ch = 0; // controllo check
-                        for (j = 0; j < quante_comande; j++)
-                        {
-                            if (serv_coda_comande[j].stato == 'p' || serv_coda_comande[j].stato == 'a')
-                            {
-                                printf("**ERRORE: Ci sono comande in preparazione o in attesa. RIPROVARE dopo. ** \n\n");
-                                // TO DO: si potrebbe richiamare la funzione stat_char(a) e stat_char(p)
+                    // se ho digitato il comando stop
+                    else if (strcmp(comando, "stop") == 0){
+                        ch = 0; // controllo che non ci siano comande attive
+
+                        // scorro tutte le comande in corso, tranne quelle già servite
+                        for (j = 0; j < quante_comande; j++){
+                            if (serv_coda_comande[j].stato == 'p' || serv_coda_comande[j].stato == 'a'){
+                                printf("**ATTENZIONE: Ci sono comande in preparazione o in attesa. ATTENDERE. ** \n\n");
+                                stat_char('a');
+                                stat_char('p');
+                                fflush(stdout);
                                 ch = 1;
                                 break;
                             }
@@ -717,18 +716,15 @@ int main(int argc, char *argv[]){
                             exit(0);
                             close(sockfd);
                         }
-
                         fflush(stdout);
-                    }
-
-                    else
-                    {
-                        printf("ERRORE: comando non valido.\n\n");
+                    }else{ // ho digitato un comando non consentito
+                        printf("Errore: comando non valido.\n\n");
                         fflush(stdout);
                     }
                 }
-                else if (i == sockfd)
-                { // PRONTO DESCRITTORE SOCKET DI ASCOLTO
+
+                // CASO 2) PRONTO IL LISTENER
+                else if (i == sockfd){ 
                     printf("\n");
                     fflush(stdout);
                     socklen_t cli_len = sizeof(cli_addr);

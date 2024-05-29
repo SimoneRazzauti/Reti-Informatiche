@@ -500,7 +500,8 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
 }
 
 int main(int argc, char *argv[]){
-    int sockfd, fdmax, n_table, n_clients, n_kitchen, ch, check, c, com, newsockfd;
+    int sockfd, ch, check, c, com, newsockfd;
+    int n_table = 0, n_client = 0, n_kitchen = 0;
     int i, j, ret, a;
     int n, tavoloScelto;
     struct sockaddr_in server_addr, cli_addr;
@@ -508,20 +509,20 @@ int main(int argc, char *argv[]){
     in_port_t porta = htons(atoi(argv[1])); // utilizzo della funzione atoi per convertire la stringa rappresentante il numero di porta inserito dall'utente da terminale in un intero
     char buffer[BUFFER_SIZE]; // buffer di comunicazione
     char comando[BUFFER_SIZE]; // buffer per i comandi 
+    
+    // variabili per la select
+    int fdmax;
     fd_set master;
     fd_set read_fds;
-    char *id = "S\0";
-    char *negazione = "N\0";
-    char arraycopia[DESCRIZIONE];
+
+    char *id = "S\0"; // identificatore processo Server
+    char *negazione = "N\0"; // codice per inviare risposte negative ai client
+    char arraycopia[DESCRIZIONE]; // buffer di copia dei dati estratti
     uint16_t n_comande = 0;
     uint16_t codice_id;
     char copia[5];
     char *stop;
     char *conferma;
-
-    n_table = 0;
-    n_clients = 0;
-    n_kitchen = 0;
 
     int giorno, mese, anno, ora, nPersone;
     char data[20];

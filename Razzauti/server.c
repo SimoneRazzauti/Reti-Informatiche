@@ -239,9 +239,10 @@ void stat_char(char lettera){
             for (a = 0; a < serv_comande_servite[j].id_comanda; a++){
                 printf("Piatto scelto: %s x %d\n", serv_comande_servite[j].desc[a], serv_comande_servite[j].quantita[a]);
             }
+            printf("\n");
         }
-        printf("\n\n");
-    }else if(lettera == 'a' || lettera == 'p'){ // la lettera è 'a' o 'p'
+    }
+    else if(lettera == 'a' || lettera == 'p'){ // la lettera è 'a' o 'p'
         // quante omande è il contatore per le comande che non sono ancora in servizio
         for (j = 0; j < quante_comande; j++){
             // CASO 2: stampo le comande in attesa scorrendo l'array delle comande gestite ma non ancora servite (serv_coda_comande)
@@ -262,12 +263,13 @@ void stat_char(char lettera){
                     printf("Piatto scelto: %s x %d\n", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
                 }
             }
+            printf("\n");
         }
         if (check == 0){
-            printf("NON CI SONO COMANDE\n");
+            printf("NON CI SONO COMANDE");
         }
-        printf("\n\n");
     }
+    printf("\n\n");
     return;
 }
 

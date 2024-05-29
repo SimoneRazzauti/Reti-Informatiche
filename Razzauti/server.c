@@ -555,13 +555,13 @@ int main(int argc, char *argv[]){
 
     // Binding del socket all'indirizzo del server
     if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0){
-        perror("Errore nel binding del socket");
+        perror("Errore nel BIND del socket");
         exit(1);
     }
 
     // Inizio dell'ascolto delle connessioni in ingresso
     if (listen(sockfd, MAX_CLIENTS) < 0){
-        perror("Errore nella listen del socket");
+        perror("Errore nella LISTEN del socket:");
         exit(1);
     }
 
@@ -580,19 +580,18 @@ int main(int argc, char *argv[]){
     fflush(stdout);
     while (1){
         memset(comando, 0, BUFFER_SIZE); // pulisco il buffer comando
-
+        
+        // faccio una copia dei descrittori di socket da monitorare, la select agirà su read_fds
         read_fds = master;
         ret = select(fdmax + 1, &read_fds, NULL, NULL, NULL);
-        if (ret < 0)
-        {
-            perror("ERRORE SELECT:");
+        if (ret < 0){
+            perror("Errore nella SELECT:");
             exit(1);
         }
 
-        for (i = 0; i <= fdmax; i++)
-        {
-            if (FD_ISSET(i, &read_fds))
-            {
+        // scorro tutti i descrittori di socket pronti, ho due casi: 1) pronto socket stdin 2) pronto il listener
+        for (i = 0; i <= fdmax; i++){
+            if (FD_ISSET(i, &read_fds)){
                 if (i == 0)
                 { // PRONTO STDIN
                     memset(buffer, 0, sizeof(buffer));

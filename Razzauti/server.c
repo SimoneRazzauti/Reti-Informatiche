@@ -253,6 +253,7 @@ void stat_char(char lettera){
                 for (a = 0; a < serv_coda_comande[j].id_comanda; a++){
                     printf("Piatto scelto: %s x %d\n", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
                 }
+                printf("\n");
             }
             // CASO 3: stampo le comande in preparazione scorrendo l'array delle comande gestite ma non ancora servite (serv_coda_comande)
             else if (serv_coda_comande[j].stato == lettera && lettera == 'p'){
@@ -262,8 +263,8 @@ void stat_char(char lettera){
                 for (a = 0; a < serv_coda_comande[j].id_comanda; a++){
                     printf("Piatto scelto: %s x %d\n", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
                 }
+                printf("\n");
             }
-            printf("\n");
         }
         if (check == 0){
             printf("NON CI SONO COMANDE\n");

@@ -268,7 +268,7 @@ void stat_char(char lettera){
         }
         printf("\n");
     }else{
-        printf("LETTERA INSERITA NON VALIDA, PROVA CON 'a': PER COMANDE IN ATTESA | 'p': PER COMANDE IN PREPARAZIONE | 's': PER COMANDE IN SERVIZIO\n")
+        printf("LETTERA INSERITA NON VALIDA, PROVA CON 'a': PER COMANDE IN ATTESA | 'p': PER COMANDE IN PREPARAZIONE | 's': PER COMANDE IN SERVIZIO\n");
         fflush(stdout);
     }
 

@@ -936,7 +936,7 @@ int main(int argc, char *argv[]){
                             ret = send(i, codPrenotazione, len_HO, 0); // mando il messaggio
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }else{
-                            // occupato nel frattempo
+                            // occupato nel frattempo (mutua esclusione)
                             printf("NO\n\n");
                             conferma = "NO\0";
                             len_HO = strlen(conferma);

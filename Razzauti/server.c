@@ -308,6 +308,7 @@ void stat_table(char tavolino[5]){
     if (check == 0)
         printf("NON CI SONO COMANDE PER IL TAVOLO SCELTO");
 
+    // resetto check all'uscita della funzione
     check = 0;
     printf("\n\n");
     return;

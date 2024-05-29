@@ -266,10 +266,10 @@ void stat_char(char lettera){
             printf("\n");
         }
         if (check == 0){
-            printf("NON CI SONO COMANDE");
+            printf("NON CI SONO COMANDE\n");
         }
     }
-    printf("\n\n");
+    printf("\n");
     return;
 }
 
@@ -291,6 +291,7 @@ void stat_table(char tavolino[5]){
         }
         // aggiorno check perchè ho trovato almeno una comanda
         check = 1;
+        printf("\n");
     }
 
     for (j = 0; j < quante_servite; j++){
@@ -304,13 +305,13 @@ void stat_table(char tavolino[5]){
         }
         // aggiorno check perchè ho trovato almeno una comanda
         check = 1;
+        printf("\n");
     }
-    if (check == 0)
-        printf("NON CI SONO COMANDE PER IL TAVOLO SCELTO");
 
-    // resetto check all'uscita della funzione
-    check = 0;
-    printf("\n\n");
+    if (check == 0)
+        printf("NON CI SONO COMANDE PER IL TAVOLO SCELTO\n");
+
+    printf("\n");
     return;
 }
 
@@ -347,7 +348,7 @@ void stat_all(){
     if (check == 0)
         printf("NON CI SONO COMANDE OGGI\n");
 
-    printf("\n\n");
+    printf("\n");
     return;
 }
 

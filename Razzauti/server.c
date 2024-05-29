@@ -800,14 +800,13 @@ int main(int argc, char *argv[]){
                 }
 
                 // CASO 3) PRONTO SOCKET CONNESSO
-                else {
+                else{
                     memset(buffer, 0, BUFFER_SIZE);
                     n = recv(i, buffer, LEN_COMANDO, 0); // riceve il codice
                     errori_ritorno(n, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                    if (strncmp(buffer, "find", strlen("find")) == 0)
-                    {
-
+                    // COMANDO "find" del CLIENT
+                    if (strncmp(buffer, "find", strlen("find")) == 0){
                         // ricevo lunghezza messaggio
                         ret = recv(i, &len_NO, sizeof(uint32_t), 0);
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
@@ -817,9 +816,9 @@ int main(int argc, char *argv[]){
                         ret = recv(i, buffer, len_HO, 0);
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                        // ricevo
+                        // ricevo il messaggio
 
-                        printf("\nUn cliente sta cercando di prenotare...\n");
+                        printf("\nUn cliente sta cercando di prenotare...\n\n");
                         sscanf(buffer, "%d-%d-%d-%d %d %s", &nPersone, &giorno, &mese, &anno, &ora, cognome);
                         sprintf(data, "%d-%d-%d", giorno, mese, anno);
                         strcpy(nomeFile, "prenotazioni/");
@@ -828,19 +827,15 @@ int main(int argc, char *argv[]){
                         strcat(dataV, ".txt");   // aggiunge l'estensione
                         strcat(nomeFile, dataV); // nome del file data da cercare
 
-                        if ((fp = fopen(nomeFile, "r")))
-                        {
+                        if ((fp = fopen(nomeFile, "r"))){
                             // il file esiste, quindi non sono presenti tutti i tavoli ipoteticamente c'e' stata una prenotazione
-                            //
-                            // faccio le varie cose
                             fclose(fp);
 
                             indicetavolo = 0;
                             check_tavoli_liberi(data, ora, nPersone, nomeFile, i); // metto i tavoli disonibili in un array
 
                             c = 1;
-                            for (a = 0; a < indicetavolo; a++)
-                            {
+                            for (a = 0; a < indicetavolo; a++){
                                 memset(buffer, 0, sizeof(buffer));
                                 sprintf(buffer, "%d) %s %s %s", c, client_fds[i].tavoli_proposti[a].tav,
                                         client_fds[i].tavoli_proposti[a].sala, client_fds[i].tavoli_proposti[a].descrizione);
@@ -862,9 +857,7 @@ int main(int argc, char *argv[]){
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                             ret = send(i, stop, len_HO, 0);
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
-                        }
-                        else
-                        {
+                        }else{
                             // genero il file con tutti i tavoli
                             // passo tutti i tavoli perche' non c'erano prenotazioni
                             indicetavolo = 0;
@@ -872,8 +865,7 @@ int main(int argc, char *argv[]){
 
                             c = 1;
                             stop = "STOP\0";
-                            for (a = 0; a < indicetavolo; a++)
-                            {
+                            for (a = 0; a < indicetavolo; a++){
                                 memset(buffer, 0, sizeof(buffer));
                                 sprintf(buffer, "%d) %s %s %s", c, client_fds[i].tavoli_proposti[a].tav,
                                         client_fds[i].tavoli_proposti[a].sala, client_fds[i].tavoli_proposti[a].descrizione);
@@ -881,14 +873,12 @@ int main(int argc, char *argv[]){
                                 len_HO = strlen(buffer) + 1;
                                 len_NO = htonl(len_HO);
                                 ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                                if (ret < 0)
-                                {
+                                if (ret < 0){
                                     perror("Errore nell'invio del messaggio11");
                                     exit(1);
                                 }
                                 ret = send(i, buffer, len_HO, 0); // mando il messaggio
-                                if (ret < 0)
-                                {
+                                if (ret < 0){
                                     perror("Errore nell'invio del messaggio12");
                                     exit(1);
                                 }
@@ -903,8 +893,8 @@ int main(int argc, char *argv[]){
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                     }
-                    else if (strncmp(buffer, "book", strlen("book")) == 0)
-                    {
+                    // COMANDO "book" del CLIENT
+                    else if (strncmp(buffer, "book", strlen("book")) == 0){
                         tavoloScelto = 0;
                         // ricevo lunghezza messaggio
                         ret = recv(i, &len_NO, sizeof(uint32_t), 0);
@@ -926,8 +916,8 @@ int main(int argc, char *argv[]){
 
                         tavoloScelto--;
                         // controlla se puo' aggiungere la prenotazione
-                        if (prenota(nomeFile, giorno, mese, anno, ora, cognome, client_fds[i].tavoli_proposti[tavoloScelto].tav))
-                        { // andata a buon fine
+                        if (prenota(nomeFile, giorno, mese, anno, ora, cognome, client_fds[i].tavoli_proposti[tavoloScelto].tav)){ 
+                            // andata a buon fine
                             printf("AVVISO! Nuova prenotazione per: \nGiorno %d, Mese %d, Anno %d, Ora %d\n", giorno, mese, anno, ora);
                             sprintf(codPrenotazione, "%s-%s-%d", client_fds[i].tavoli_proposti[tavoloScelto].tav, data, ora);
 
@@ -945,9 +935,8 @@ int main(int argc, char *argv[]){
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                             ret = send(i, codPrenotazione, len_HO, 0); // mando il messaggio
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
-                        }
-                        else
-                        { // occupato nel frattempo
+                        }else{
+                            // occupato nel frattempo
                             printf("NO\n\n");
                             conferma = "NO\0";
                             len_HO = strlen(conferma);
@@ -958,8 +947,8 @@ int main(int argc, char *argv[]){
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                     }
-                    else if (strncmp(buffer, "code", strlen("code")) == 0)
-                    {
+                    // CHECK-IN del TD
+                    else if (strncmp(buffer, "code", strlen("code")) == 0){
                         ret = recv(i, &len_NO, sizeof(uint32_t), 0);
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         len_HO = ntohl(len_NO);
@@ -968,29 +957,22 @@ int main(int argc, char *argv[]){
                         ret = recv(i, buffer, len_HO, 0);
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                        if (check_in_td(buffer))
-                        {
-                            printf("Nuovo t. %d device arrivato al ristorante.\n", i);
+                        if (check_in_td(buffer)){
+                            printf("Nuovo t. %d device arrivato al ristorante.\n\n", i);
 
                             memset(copia, 0, sizeof(copia));
-                            if (buffer[2] == '-')
-                            { // tavolo da 0-9
+                            if (buffer[2] == '-'){ // tavolo da 0-9
                                 sscanf(buffer, "%2s", copia);
                             }
-                            else if (buffer[3] == '-')
-                            { // tavolo da 10-99
+                            else if (buffer[3] == '-'){ // tavolo da 10-99
                                 sscanf(buffer, "%3s", copia);
                             }
-                            if (send(i, (void *)id, LEN_ID, 0) < 0)
-                            {
+                            if (send(i, (void *)id, LEN_ID, 0) < 0){
                                 perror("Errore nella ricezione del messaggio\n");
                                 exit(1);
                             }
-                        }
-                        else
-                        {
-                            if (send(i, (void *)negazione, LEN_ID, 0) < 0)
-                            {
+                        }else{
+                            if (send(i, (void *)negazione, LEN_ID, 0) < 0){
                                 perror("Errore nella ricezione del messaggio\n");
                                 exit(1);
                             }
@@ -998,19 +980,17 @@ int main(int argc, char *argv[]){
 
                         sscanf(buffer, "%s-%d-%d-%d", comando, &giorno, &mese, &anno);
                     }
-                    else if (strncmp(buffer, "menu", strlen("menu")) == 0)
-                    {
+                    // COMANDO "menu" del TD
+                    else if (strncmp(buffer, "menu", strlen("menu")) == 0){
                         fp = fopen("txts/menu.txt", "r"); // apre il file in modalita'  lettura
 
-                        if (fp == NULL)
-                        {
+                        if (fp == NULL){
                             printf("Errore nell'apertura del file -> menu.txt \n");
                             exit(1); // esce dal programma in caso di errore
                         }
 
                         // legge le frasi dal file -> Spedisco al T.D.
-                        while (fgets(arraycopia, DESCRIZIONE, fp) != NULL)
-                        {
+                        while (fgets(arraycopia, DESCRIZIONE, fp) != NULL){
                             len_HO = strlen(arraycopia) + 1;
                             len_NO = htonl(len_HO);
                             ret = send(i, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
@@ -1029,16 +1009,14 @@ int main(int argc, char *argv[]){
                         ret = send(i, stop, len_HO, 0);
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                     }
-                    else if (strncmp(buffer, "comm", strlen("comm")) == 0)
-                    {
+                    // COMANDO "comanda" da TD
+                    else if (strncmp(buffer, "comm", strlen("comm")) == 0){
 
-                        if (recv(i, &n_comande, sizeof(uint16_t), 0) < 0)
-                        { // quante comande ho ricevuto nell'priorita
+                        if (recv(i, &n_comande, sizeof(uint16_t), 0) < 0){ // quante comande ho ricevuto nell'priorita
                             perror("recv failed");
                             exit(EXIT_FAILURE);
                         }
-                        if (recv(i, &codice_id, sizeof(uint16_t), 0) < 0)
-                        { // quante comande ho avuto in totale
+                        if (recv(i, &codice_id, sizeof(uint16_t), 0) < 0){ // quante comande ho avuto in totale
                             perror("recv failed");
                             exit(EXIT_FAILURE);
                         }
@@ -1049,25 +1027,19 @@ int main(int argc, char *argv[]){
                         ret = recv(i, copia, len_HO, 0);
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                        if (quante_comande >= MAX_COMANDE_IN_ATTESA)
-                        {
-                            if (send(i, (void *)negazione, LEN_ID, 0) == -1)
-                            {
+                        if (quante_comande >= MAX_COMANDE_IN_ATTESA){
+                            if (send(i, (void *)negazione, LEN_ID, 0) == -1){
                                 perror("Errore nella spedizione al server");
                                 exit(1);
                             }
-                        }
-                        else
-                        {
-                            if (send(i, (void *)id, LEN_ID, 0) == -1)
-                            {
+                        }else{
+                            if (send(i, (void *)id, LEN_ID, 0) == -1){
                                 perror("Errore nella spedizione al server");
                                 exit(1);
                             }
                         }
 
-                        for (j = 0; j < n_comande - 1; j++)
-                        {
+                        for (j = 0; j < n_comande - 1; j++){
                             ret = recv(i, &len_NO, sizeof(uint32_t), 0);
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                             len_HO = ntohl(len_NO);
@@ -1083,7 +1055,7 @@ int main(int argc, char *argv[]){
                         serv_coda_comande[quante_comande].id = codice_id;
 
                         quante_comande++;
-                        strcpy(comando, "** Nuova comanda **"); // Mando l'avviso a tutti i K.D. connessi
+                        strcpy(comando, "** Nuova comanda ricevuta **"); // Mando l'avviso a tutti i K.D. connessi
                         for (j = 0; j <= fdmax; j++)
                         { // escludo lo 0
                             if (array_kds[j] != -1)
@@ -1105,8 +1077,8 @@ int main(int argc, char *argv[]){
                             }
                         }
                     }
-                    else if (strncmp(buffer, "cont", strlen("cont")) == 0)
-                    {
+                    // COMANDA "conto" del TD
+                    else if (strncmp(buffer, "cont", strlen("cont")) == 0){
                         ret = recv(i, &len_NO, sizeof(uint32_t), 0);
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         len_HO = ntohl(len_NO);
@@ -1114,10 +1086,10 @@ int main(int argc, char *argv[]){
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
                         check = 0;
-                        for (j = 0; j < quante_comande; j++)
-                        {
-                            if (strcmp(serv_coda_comande[j].tav_num, TavConto) == 0 && (serv_coda_comande[j].stato == 'p' || serv_coda_comande[j].stato == 'a')) // c'e' sempre qualche ordinazione
-                            {                                                                                                                     // Se ci sono sempre comande in Preparazione o in Attesa non può confermare il conto. (Il conto viene calcolato poi direttamente dal T.D. per alleggerire il carico del server)
+                        for (j = 0; j < quante_comande; j++){
+                            // c'e' sempre qualche ordinazione
+                            if (strcmp(serv_coda_comande[j].tav_num, TavConto) == 0 && (serv_coda_comande[j].stato == 'p' || serv_coda_comande[j].stato == 'a')){                                                                                                                     
+                                // Se ci sono sempre comande in Preparazione o in Attesa non può confermare il conto. (Il conto viene calcolato poi direttamente dal T.D. per alleggerire il carico del server)
                                 ret = send(i, (void *)negazione, LEN_ID, 0);
                                 errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                                 check = 1;
@@ -1125,19 +1097,16 @@ int main(int argc, char *argv[]){
                             }
                         }
 
-                        if (check == 0)
-                        {
+                        if (check == 0){
                             ret = send(i, (void *)id, LEN_ID, 0);
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
                     }
-                    else if (strncmp(buffer, "take", strlen("take")) == 0)
-                    {
-
-                        for (j = 0; j < quante_comande; j++)
-                        {
-                            if (serv_coda_comande[j].stato == 'a')
-                            { // le comande sono in priorita, la prima che trova in stato Attesa, la restituisce.
+                    // COMANDO "take" del KD
+                    else if (strncmp(buffer, "take", strlen("take")) == 0){
+                        for (j = 0; j < quante_comande; j++){
+                            if (serv_coda_comande[j].stato == 'a'){ 
+                                // le comande sono in priorita, la prima che trova in stato Attesa, la restituisce.
 
                                 len_HO = strlen(serv_coda_comande[j].tav_num) + 1;
                                 len_NO = htonl(len_HO);
@@ -1150,8 +1119,8 @@ int main(int argc, char *argv[]){
                                 ret = send(i, &serv_coda_comande[j].id, sizeof(uint16_t), 0); // mando il messaggio
                                 errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                                for (a = 0; a < serv_coda_comande[j].id_comanda; a++) // Mando tutte le comande
-                                {
+                                // Mando tutte le comande
+                                for (a = 0; a < serv_coda_comande[j].id_comanda; a++){
                                     sprintf(comando, "%s %d", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
 
                                     len_HO = strlen(comando) + 1;
@@ -1169,14 +1138,12 @@ int main(int argc, char *argv[]){
                                 len_HO = strlen(comando) + 1;
                                 len_NO = htonl(len_HO);
                                 ret = send(serv_coda_comande[j].td_assegnato, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                                if (ret < 0)
-                                {
+                                if (ret < 0){
                                     perror("Errore nell'invio del messaggio15 take");
                                     exit(1);
                                 }
                                 ret = send(serv_coda_comande[j].td_assegnato, comando, len_HO, 0); // mando il messaggio
-                                if (ret < 0)
-                                {
+                                if (ret < 0){
                                     perror("Errore nell'invio del messaggio16 tak2");
                                     exit(1);
                                 }
@@ -1192,12 +1159,11 @@ int main(int argc, char *argv[]){
                         ret = send(i, stop, len_HO, 0);
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                     }
-                    else if (strncmp(buffer, "show", strlen("show")) == 0)
-                    {
-                        for (j = 0; j < quante_comande; j++)
-                        {
-                            if (serv_coda_comande[j].kd_assegnato == i && serv_coda_comande[j].stato == 'p')
-                            { // restituisco solo le comande del K.D. che ha eseguito il comando Show e che sono in preparazione, come da richiesta
+                    // COMANDO "show" del KD
+                    else if (strncmp(buffer, "show", strlen("show")) == 0){
+                        for (j = 0; j < quante_comande; j++){
+                            if (serv_coda_comande[j].kd_assegnato == i && serv_coda_comande[j].stato == 'p'){ 
+                                // restituisco solo le comande del K.D. che ha eseguito il comando Show e che sono in preparazione, come da richiesta
                                 sprintf(comando, "** Comanda N.%d %s **", serv_coda_comande[j].id + 1, serv_coda_comande[j].tav_num);
                                 len_HO = strlen(comando) + 1;
                                 len_NO = htonl(len_HO);
@@ -1206,8 +1172,7 @@ int main(int argc, char *argv[]){
                                 ret = send(i, comando, len_HO, 0); // mando il messaggio
                                 errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                                for (a = 0; a < serv_coda_comande[j].id_comanda; a++)
-                                {
+                                for (a = 0; a < serv_coda_comande[j].id_comanda; a++){
                                     sprintf(comando, "%s %d", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
 
                                     len_HO = strlen(comando) + 1;
@@ -1228,8 +1193,7 @@ int main(int argc, char *argv[]){
                         ret = send(i, stop, len_HO, 0);
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                     }
-                    else if (strncmp(buffer, "read", strlen("read")) == 0)
-                    {
+                    else if (strncmp(buffer, "read", strlen("read")) == 0){
                         check = 0;
 
                         ret = recv(i, &len_NO, sizeof(uint32_t), 0);
@@ -1240,34 +1204,30 @@ int main(int argc, char *argv[]){
 
                         sscanf(buffer, "com%d-%s", &com, TavConto);
                         com--;
-                        for (j = 0; j < quante_comande; j++)
-                        {
-                            if (strcmp(serv_coda_comande[j].tav_num, TavConto) == 0 && serv_coda_comande[j].id == com)
-                            { // trova la comanda scelta dal K.D. la mette nell'array delle comande servite, copiando i valori e modificando laddove necessario
+                        for (j = 0; j < quante_comande; j++){
+                            if (strcmp(serv_coda_comande[j].tav_num, TavConto) == 0 && serv_coda_comande[j].id == com){ 
+                                // trova la comanda scelta dal K.D. la mette nell'array delle comande servite, copiando i valori e modificando laddove necessario
                                 strcpy(serv_comande_servite[quante_servite].tav_num, serv_coda_comande[j].tav_num);
                                 serv_comande_servite[quante_servite].id = serv_coda_comande[j].id;
                                 serv_comande_servite[quante_servite].stato = 's';
                                 serv_comande_servite[quante_servite].kd_assegnato = serv_coda_comande[j].kd_assegnato;
                                 serv_comande_servite[quante_servite].td_assegnato = serv_coda_comande[j].td_assegnato;
                                 serv_comande_servite[quante_servite].id_comanda = serv_coda_comande[j].id_comanda;
-                                for (a = 0; a < serv_coda_comande[j].id_comanda; a++)
-                                {
+                                for (a = 0; a < serv_coda_comande[j].id_comanda; a++){
                                     strcpy(serv_comande_servite[quante_servite].desc[a], serv_coda_comande[j].desc[a]);
                                     serv_comande_servite[quante_servite].quantita[a] = serv_coda_comande[j].quantita[a];
                                 }
 
                                 quante_comande--;
                                 // Scorro tutte le comande di una posizione.
-                                for (a = j; a < quante_comande; a++)
-                                {
+                                for (a = j; a < quante_comande; a++){
                                     strcpy(serv_coda_comande[a].tav_num, serv_coda_comande[a + 1].tav_num);
                                     serv_coda_comande[a].stato = serv_coda_comande[a + 1].stato;
                                     serv_coda_comande[a].id = serv_coda_comande[a + 1].id;
                                     serv_coda_comande[a].kd_assegnato = serv_coda_comande[a + 1].kd_assegnato;
                                     serv_coda_comande[a].td_assegnato = serv_coda_comande[a + 1].td_assegnato;
                                     serv_coda_comande[a].id_comanda = serv_coda_comande[a + 1].id_comanda;
-                                    for (c = 0; c < serv_coda_comande[a + 1].id_comanda; c++)
-                                    {
+                                    for (c = 0; c < serv_coda_comande[a + 1].id_comanda; c++){
                                         strcpy(serv_coda_comande[a].desc[c], serv_coda_comande[a + 1].desc[c]);
                                         serv_coda_comande[a].quantita[c] = serv_coda_comande[a + 1].quantita[c];
                                     }
@@ -1287,14 +1247,12 @@ int main(int argc, char *argv[]){
                                 len_HO = strlen(comando) + 1;
                                 len_NO = htonl(len_HO);
                                 ret = send(serv_comande_servite[quante_servite].td_assegnato, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                                if (ret < 0)
-                                {
+                                if (ret < 0){
                                     perror("Errore nell'invio del messaggio17 take");
                                     exit(1);
                                 }
                                 ret = send(serv_comande_servite[quante_servite].td_assegnato, comando, len_HO, 0); // mando il messaggio
-                                if (ret < 0)
-                                {
+                                if (ret < 0){
                                     perror("Errore nell'invio del messaggio18 tak2");
                                     exit(1);
                                 }
@@ -1304,14 +1262,12 @@ int main(int argc, char *argv[]){
                                 break;
                             }
                         }
-                        if (check == 1)
-                        {
+                        if (check == 1){
                             printf("Comanda in servizio! \n\n");
                             ret = send(i, (void *)id, LEN_ID, 0);
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }
-                        else if (check == 0)
-                        {
+                        else if (check == 0){
                             ret = send(i, (void *)negazione, LEN_ID, 0);
                             errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
                         }

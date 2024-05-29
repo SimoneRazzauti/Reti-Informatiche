@@ -500,8 +500,7 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
 }
 
 int main(int argc, char *argv[]){
-    int sockfd, ch, check, c, com, newsockfd;
-    int n_table, n_clients, n_kitchen = 0;
+    int sockfd, fdmax, n_table, n_clients, n_kitchen, ch, check, c, com, newsockfd;
     int i, j, ret, a;
     int n, tavoloScelto;
     struct sockaddr_in server_addr, cli_addr;
@@ -509,20 +508,20 @@ int main(int argc, char *argv[]){
     in_port_t porta = htons(atoi(argv[1])); // utilizzo della funzione atoi per convertire la stringa rappresentante il numero di porta inserito dall'utente da terminale in un intero
     char buffer[BUFFER_SIZE]; // buffer di comunicazione
     char comando[BUFFER_SIZE]; // buffer per i comandi 
-    
-    // variabili per la select
-    int fdmax;
     fd_set master;
     fd_set read_fds;
-
-    char *id = "S\0"; // identificatore processo Server
-    char *negazione = "N\0"; // codice per inviare risposte negative ai client
-    char arraycopia[DESCRIZIONE]; // buffer di copia dei dati estratti
+    char *id = "S\0";
+    char *negazione = "N\0";
+    char arraycopia[DESCRIZIONE];
     uint16_t n_comande = 0;
     uint16_t codice_id;
     char copia[5];
     char *stop;
     char *conferma;
+
+    n_table = 0;
+    n_clients = 0;
+    n_kitchen = 0;
 
     int giorno, mese, anno, ora, nPersone;
     char data[20];
@@ -535,7 +534,8 @@ int main(int argc, char *argv[]){
 
     // Creazione del socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0){
+    if (sockfd < 0)
+    {
         perror("Errore nella creazione del socket");
         exit(1);
     }
@@ -550,18 +550,20 @@ int main(int argc, char *argv[]){
     // Inizializzazione della struttura dell'indirizzo del server
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = porta;
     server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = porta;
 
     // Binding del socket all'indirizzo del server
-    if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0){
-        perror("Errore nel BIND del socket");
+    if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+    {
+        perror("Errore nel binding del socket");
         exit(1);
     }
 
     // Inizio dell'ascolto delle connessioni in ingresso
-    if (listen(sockfd, MAX_CLIENTS) < 0){
-        perror("Errore nella LISTEN del socket:");
+    if (listen(sockfd, MAX_CLIENTS) < 0)
+    {
+        perror("Errore nell'avvio dell'ascolto delle connessioni");
         exit(1);
     }
 
@@ -569,29 +571,29 @@ int main(int argc, char *argv[]){
     FD_ZERO(&master);
     FD_ZERO(&read_fds);
 
-	// Aggiungo il socket di ascolto 'listener' e 'stdin' (0) ai socket monitorati
     FD_SET(sockfd, &master);
     FD_SET(0, &master);
-
-	// Tengo traccia del nuovo fdmax
     fdmax = sockfd;
 
     printf(WELCOME_SERVER);
     fflush(stdout);
-    while (1){
-        memset(comando, 0, BUFFER_SIZE); // pulisco il buffer comando
-        
-        // faccio una copia dei descrittori di socket da monitorare, la select agirà su read_fds
+    while (1)
+    {
+
+        memset(comando, 0, sizeof(comando)); // metto a 0 comando, senno' se si preme semplicemente invio senza scrivere nulla, rimane l'ultima cosa ci era finita dentro
+
         read_fds = master;
         ret = select(fdmax + 1, &read_fds, NULL, NULL, NULL);
-        if (ret < 0){
-            perror("Errore nella SELECT:");
+        if (ret < 0)
+        {
+            perror("ERRORE SELECT:");
             exit(1);
         }
 
-        // scorro tutti i descrittori di socket pronti, ho due casi: 1) pronto socket stdin 2) pronto il listener
-        for (i = 0; i <= fdmax; i++){
-            if (FD_ISSET(i, &read_fds)){
+        for (i = 0; i <= fdmax; i++)
+        {
+            if (FD_ISSET(i, &read_fds))
+            {
                 if (i == 0)
                 { // PRONTO STDIN
                     memset(buffer, 0, sizeof(buffer));

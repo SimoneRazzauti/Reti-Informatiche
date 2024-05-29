@@ -384,7 +384,7 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                     n_clients--;
                     client_fds[j].socket = -1;
                     FD_CLR(i, master);
-                    printf("Un client si è disconnesso\n");
+                    printf("Un cliente si è disconnesso\n");
                     break;
                 }
             }

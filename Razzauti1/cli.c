@@ -193,6 +193,8 @@ int main(int argc, char *argv[]){
                     sleep(1);
 
                     tavoliDisp = 0;
+                    
+                    printf("I tavoli disponibili che soddisfano la tua richiesta sono:\n");
                     for (;;){
                         // ricevo la lunghezza del messaggio
                         ret = recv(sockfd, &len_NO, sizeof(uint32_t), 0);

@@ -223,6 +223,8 @@ int autenticazione(char stringa[30]){
     return 0;
 }
 
+// RIPARTIRE DA QUI
+
 // Comando stat del server in base alla lettera inserita (a, p, s)
 void stampa_stat_lettera(char lettera)
 {

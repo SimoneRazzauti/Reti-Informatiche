@@ -501,7 +501,7 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
 
 int main(int argc, char *argv[]){
     int sockfd, ch, check, c, com, newsockfd;
-    int n_table = 0, n_client = 0, n_kitchen = 0;
+    int n_table = 0, n_clients = 0, n_kitchen = 0;
     int i, j, ret, a;
     int n, tavoloScelto;
     struct sockaddr_in server_addr, cli_addr;

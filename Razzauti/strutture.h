@@ -67,8 +67,8 @@ struct comanda_server serv_coda_comande[MAX_COMANDE_IN_ATTESA];    // coda di co
 struct comanda_server serv_comande_servite[MAX_COMANDE_IN_ATTESA]; // coda di comande in servizio
 
 // per lo stato del server
-int quante_comande = 0; // contatore di quante comande ci sono in coda
-int quante_servite = 0; // contatore di quante comnde sono in stato servito
+int quante_comande = 0; // contatore di quante comande sono in stato d'attesa o di preparazione
+int quante_servite = 0; // contatore di quante comande sono in stato servito
 
 int indicetavolo = 0; // indice di quanti tavoli sono stati proposti, utilizzato nelle funzioni
 int array_tds[MAX_TAVOLI]; // contiene i sockfd dei socket di comunicazione usati per comunicare con i table device

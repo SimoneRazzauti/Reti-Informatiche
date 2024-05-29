@@ -223,57 +223,55 @@ int autenticazione(char stringa[30]){
     return 0;
 }
 
-// RIPARTIRE DA QUI
+// Comando stat del server in base alla lettera inserita (a, p, s) stampo: 's' = in servizio, 'a' = comande in attesa, 'p' = comande in preparazione
+void stat_char(char lettera){
+    int a, j, check = 0; // varibili di utilità per i loop + check per il caso in cui non siano presenti comande
 
-// Comando stat del server in base alla lettera inserita (a, p, s)
-void stampa_stat_lettera(char lettera)
-{
-    int a, j, check = 0;
-    if (lettera == 's')
-    {
-        for (j = 0; j < quante_servite; j++)
-        {
+    // CASO 1: stampo le comande in servizio scorrendo l'array di comande servite (serv_comande_servite)
+    if (lettera == 's'){
+        // quante servite è il contatore per le comande in servizio che viene aggiornato ogni volta che un kd esegue il comando ready com. 
+        if (quante_servite == 0){
+            printf("NON SONO PRESENTI COMANDE IN SERVIZIO\n");
+        }
+        for (j = 0; j < quante_servite; j++){
             printf("Comanda %d del tavolo %s. Stato <In SERVIZIO>\n", serv_comande_servite[j].id + 1, serv_comande_servite[j].tav_num);
-            for (a = 0; a < serv_comande_servite[j].id_comanda; a++)
-            {
+            // stampo la lista dei piatti ordinati
+            for (a = 0; a < serv_comande_servite[j].id_comanda; a++){
                 printf("Piatto scelto: %s x %d\n", serv_comande_servite[j].desc[a], serv_comande_servite[j].quantita[a]);
             }
         }
-        if (quante_servite == 0)
-        {
-            printf("NESSUNA COMANDA IN SERVIZIO\n");
-        }
         printf("\n");
-    }
-    else
-    {
-        for (j = 0; j < quante_comande; j++)
-        {
-            if (serv_coda_comande[j].stato == lettera && lettera == 'a')
-            {
-                check = 1;
+    }else if(lettera == 'a' || lettera == 'p'){ // la lettera è 'a' o 'p'
+        // quante omande è il contatore per le comande che non sono ancora in servizio
+        for (j = 0; j < quante_comande; j++){
+            // CASO 2: stampo le comande in attesa scorrendo l'array delle comande gestite ma non ancora servite (serv_coda_comande)
+            if (serv_coda_comande[j].stato == lettera && lettera == 'a'){
+                check = 1; // aggiorno check perchè ho trovato almeno una comanda
                 printf("Comanda %d del tavolo %s. Stato <In ATTESA>\n", serv_coda_comande[j].id + 1, serv_coda_comande[j].tav_num);
-                for (a = 0; a < serv_coda_comande[j].id_comanda; a++)
-                {
+                // Stampo la lista dei piatti ordinati
+                for (a = 0; a < serv_coda_comande[j].id_comanda; a++){
                     printf("Piatto scelto: %s x %d\n", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
                 }
             }
-            else if (serv_coda_comande[j].stato == lettera && lettera == 'p')
-            {
-                check = 1;
+            // CASO 3: stampo le comande in preparazione scorrendo l'array delle comande gestite ma non ancora servite (serv_coda_comande)
+            else if (serv_coda_comande[j].stato == lettera && lettera == 'p'){
+                check = 1; // aggiorno check perchè ho trovato almeno una comanda
                 printf("Comanda %d del tavolo %s. Stato <In PREPARAZIONE>\n", serv_coda_comande[j].id + 1, serv_coda_comande[j].tav_num);
-                for (a = 0; a < serv_coda_comande[j].id_comanda; a++)
-                {
+                // Stampo la lista dei piatti ordinati
+                for (a = 0; a < serv_coda_comande[j].id_comanda; a++){
                     printf("Piatto scelto: %s x %d\n", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
                 }
             }
         }
-        if (check == 0)
-        {
-            printf("NESSUNA COMANDA PRESENTE\n");
+        if (check == 0){
+            printf("NON CI SONO COMANDE\n");
         }
         printf("\n");
+    }else{
+        printf("LETTERA INSERITA NON VALIDA, PROVA CON 'a' = COMANDE IN ATTESA | 'p' = COMANDE IN PREPARAZIONE | 's' = COMANDE IN SERVIZIO\n")
+        fflush(stdout);
     }
+    
     return;
 }
 
@@ -629,7 +627,7 @@ int main(int argc, char *argv[])
                             }
                             else if (copia[0] == 'a' || copia[0] == 'p' || copia[0] == 's')
                             {
-                                stampa_stat_lettera(copia[0]);
+                                stat_char(copia[0]);
                             }
                             else if (sscanf(copia, "T%d", &nT) == 1)
                             { // se dice il tavolo

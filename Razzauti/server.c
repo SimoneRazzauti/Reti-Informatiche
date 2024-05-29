@@ -173,7 +173,7 @@ int prenota(char *pathFile, int GG, int MM, int AA, int HH, char *cognome, char 
 }
 
 // Verifica che il codice inserito dal Table Device sia corretto.
-int autenticazione(char stringa[30]){
+int check_in_td(char stringa[30]){
     // prima devo trovare il file, se non esiste lo creo
     char arraycopia[DESCRIZIONE]; // array per la lettura del file
     char nomeFile[70] = "prenotazioni/"; // la radice del path del file in cui cerchiamo un match tra il codice inserito al tavolo e il codice della prenotazione salvato sul file
@@ -240,7 +240,7 @@ void stat_char(char lettera){
                 printf("Piatto scelto: %s x %d\n", serv_comande_servite[j].desc[a], serv_comande_servite[j].quantita[a]);
             }
         }
-        printf("\n");
+        printf("\n\n");
     }else if(lettera == 'a' || lettera == 'p'){ // la lettera è 'a' o 'p'
         // quante omande è il contatore per le comande che non sono ancora in servizio
         for (j = 0; j < quante_comande; j++){
@@ -266,58 +266,57 @@ void stat_char(char lettera){
         if (check == 0){
             printf("NON CI SONO COMANDE\n");
         }
-        printf("\n");
+        printf("\n\n");
     }
     return;
 }
 
-// stat in base al tavolino scritto.
-void stampa_stat_tavolo(char tavolino[5])
-{
-    int a, j, check = 0;
-    for (j = 0; j < quante_comande; j++)
-    {
-        if (strcmp(serv_coda_comande[j].tav_num, tavolino) == 0)
-        {
+// Comando stat in base al tavolino scelto
+void stat_table(char tavolino[5]){
+    int a, j, check = 0; // varibili di utilità per i loop + check per il caso in cui non siano presenti comande
+    for (j = 0; j < quante_comande; j++){
+        // se trovo il tavolo tra le comande in attesa o in preparazione stampo le comande con i piatti
+        if (strcmp(serv_coda_comande[j].tav_num, tavolino) == 0){
             printf("Comanda %d - Stato <", serv_coda_comande[j].id + 1);
             if (serv_coda_comande[j].stato == 'a')
                 printf("in ATTESA>\n");
             else if (serv_coda_comande[j].stato == 'p')
                 printf("in PREPARAZIONE>\n");
-            for (a = 0; a < serv_coda_comande[j].id_comanda; a++)
-            {
+            // stampa dei piatti
+            for (a = 0; a < serv_coda_comande[j].id_comanda; a++){
                 printf("Piatto scelto: %s x %d\n", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
             }
         }
+        // aggiorno check perchè ho trovato almeno una comanda
         check = 1;
     }
 
-    for (j = 0; j < quante_servite; j++)
-    {
-        if (strcmp(serv_comande_servite[j].tav_num, tavolino) == 0)
-        {
+    for (j = 0; j < quante_servite; j++){
+        // se trovo il tavolo tra le comande servite stampo le comande con i piatti
+        if (strcmp(serv_comande_servite[j].tav_num, tavolino) == 0){
             printf("Comanda %d - Stato <In SERVIZIO>\n", serv_comande_servite[j].id + 1);
-            for (a = 0; a < serv_comande_servite[j].id_comanda; a++)
-            {
+            // stampa dei piatti
+            for (a = 0; a < serv_comande_servite[j].id_comanda; a++){
                 printf("Piatto scelto: %s x %d\n", serv_comande_servite[j].desc[a], serv_comande_servite[j].quantita[a]);
             }
+        // aggiorno check perchè ho trovato almeno una comanda
             check = 1;
         }
     }
     if (check == 0)
-        printf("NESSUNA COMANDA PRESENTE\n");
+        printf("NON CI SONO COMANDE PER IL TAVOLO SCELTO\n");
 
-    printf("\n");
+    printf("\n\n");
 
     return;
 }
 
-// Comando stat che stampa tutto, senza specificare nulla.
-void stampa_stat_all()
-{
-    int a, j, check = 0;
-    for (j = 0; j < quante_comande; j++)
-    {
+// Comando stat che stampa tutte le comande del giorno, senza specificare lo stato.
+void stat_all(){
+    int a, j, check = 0; // varibili di utilità per i loop + check per il caso in cui non siano presenti comande
+    
+    // Cerco nelle comande pendenti
+    for (j = 0; j < quante_comande; j++){
         printf("Comanda %d - Stato <", serv_coda_comande[j].id + 1);
         if (serv_coda_comande[j].stato == 'a')
             printf("in ATTESA> del tavolo: %s\n", serv_coda_comande[j].tav_num);
@@ -330,6 +329,7 @@ void stampa_stat_all()
         check = 1;
     }
 
+    // Cerco nelle comande servite
     for (j = 0; j < quante_servite; j++)
     {
         printf("Comanda %d - Stato <In SERVIZIO> del tavolo: %s\n", serv_comande_servite[j].id + 1, serv_comande_servite[j].tav_num);
@@ -341,7 +341,7 @@ void stampa_stat_all()
     }
 
     if (check == 0)
-        printf("NESSUNA COMANDA PRESENTE\n");
+        printf("NON CI SONO COMANDE OGGI\n");
     printf("\n");
 
     return;
@@ -633,13 +633,13 @@ int main(int argc, char *argv[])
                                     fflush(stdout);
                                     continue;
                                 }
-                                stampa_stat_tavolo(copia);
+                                stat_table(copia);
                                 // stampa
                             }
                         }
                         else
                         { // tutto
-                            stampa_stat_all();
+                            stat_all();
                         }
                         fflush(stdout);
                     }
@@ -993,7 +993,7 @@ int main(int argc, char *argv[])
                         ret = recv(i, buffer, len_HO, 0);
                         errori_ritorno(ret, i, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                        if (autenticazione(buffer))
+                        if (check_in_td(buffer))
                         {
                             printf("Nuovo t. %d device arrivato al ristorante.\n", i);
 

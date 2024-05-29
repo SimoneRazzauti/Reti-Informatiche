@@ -311,7 +311,6 @@ void stat_table(char tavolino[5]){
         printf("NON CI SONO COMANDE PER IL TAVOLO SCELTO");
 
     printf("\n\n");
-
     return;
 }
 
@@ -326,28 +325,29 @@ void stat_all(){
             printf("in ATTESA> del tavolo: %s\n", serv_coda_comande[j].tav_num);
         else if (serv_coda_comande[j].stato == 'p')
             printf("in PREPARAZIONE> del tavolo: %s\n", serv_coda_comande[j].tav_num);
-        for (a = 0; a < serv_coda_comande[j].id_comanda; a++)
-        {
+        for (a = 0; a < serv_coda_comande[j].id_comanda; a++){
             printf("Piatto scelto: %s x %d\n", serv_coda_comande[j].desc[a], serv_coda_comande[j].quantita[a]);
         }
+        // aggiorno check perchè ho trovato almeno una comanda
         check = 1;
+        printf("\n");
     }
 
     // Cerco nelle comande servite
-    for (j = 0; j < quante_servite; j++)
-    {
+    for (j = 0; j < quante_servite; j++){
         printf("Comanda %d - Stato <In SERVIZIO> del tavolo: %s\n", serv_comande_servite[j].id + 1, serv_comande_servite[j].tav_num);
-        for (a = 0; a < serv_comande_servite[j].id_comanda; a++)
-        {
+        for (a = 0; a < serv_comande_servite[j].id_comanda; a++){
             printf("Piatto scelto: %s x %d\n", serv_comande_servite[j].desc[a], serv_comande_servite[j].quantita[a]);
         }
+        // aggiorno check perchè ho trovato almeno una comanda
         check = 1;
+        printf("\n");
     }
 
     if (check == 0)
         printf("NON CI SONO COMANDE OGGI\n");
-    printf("\n");
 
+    printf("\n\n");
     return;
 }
 

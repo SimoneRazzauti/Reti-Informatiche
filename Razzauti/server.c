@@ -267,11 +267,7 @@ void stat_char(char lettera){
             printf("NON CI SONO COMANDE\n");
         }
         printf("\n");
-    }else{
-        printf("LETTERA INSERITA NON VALIDA, PROVA CON 'a': PER COMANDE IN ATTESA | 'p': PER COMANDE IN PREPARAZIONE | 's': PER COMANDE IN SERVIZIO\n");
-        fflush(stdout);
     }
-
     return;
 }
 
@@ -621,7 +617,7 @@ int main(int argc, char *argv[])
                         {                                                                                 // e' stato inserito qualcosa dopo stat
                             if (copia[0] != 'a' && copia[0] != 'p' && copia[0] != 's' && copia[0] != 'T') // se dice lo stato
                             {                                                                             // vedo se lo stato indicato e' corretto
-                                printf("ERRORE: stato non valido.\n");
+                                printf("ERRORE: stato non valido.\nSi accettano solo lettere 'a' = attesa | 'p' = preparazione | 's' = servizio | num.Tavolo | Nessuna lettera\n\n");
                                 fflush(stdout);
                                 continue;
                             }

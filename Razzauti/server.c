@@ -577,7 +577,6 @@ int main(int argc, char *argv[]){
 	// Tengo traccia del nuovo fdmax
     printf(WELCOME_SERVER);
     fflush(stdout);
-    printf("1");
     while (1){
         memset(comando, 0, BUFFER_SIZE); // resetto il buffer comando
         // copio il master, la select agisce sul read_fds lasciando solo i socket pronti
@@ -641,57 +640,53 @@ int main(int argc, char *argv[]){
                         for (j = 0; j < quante_comande; j++){
                             if (serv_coda_comande[j].stato == 'p' || serv_coda_comande[j].stato == 'a'){
                                 printf("**ATTENZIONE: Ci sono comande in preparazione o in attesa. ATTENDERE. ** \n\n");
-                                stat_char('a');
-                                stat_char('p');
                                 fflush(stdout);
                                 ch = 1;
                                 break;
                             }
                         }
 
-                        if (ch == 0)
-                        {
+                        if (ch == 0){
+                            // invio il comando stop a tutti i peer
                             stop = "STOP\0";
-                            for (j = 0; j < n_clients; j++)
-                            {
-                                if (client_fds[j].socket != -1)
-                                {
+
+                            // INVIO AI CLIENTS
+                            for (j = 0; j < n_clients; j++){
+                                if (client_fds[j].socket != -1){
                                     len_HO = strlen(stop);
                                     len_NO = htonl(len_HO);
                                     ret = send(client_fds[j].socket, &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                                    if (ret < 0)
-                                    {
+                                    if (ret < 0){
                                         perror("Errore nell'invio del messaggio5 chiusura CLIENT");
                                         exit(1);
                                     }
                                     ret = send(client_fds[j].socket, stop, len_HO, 0); // mando il messaggio
-                                    if (ret < 0)
-                                    {
+                                    if (ret < 0){
                                         perror("Errore nell'invio del messaggio6 chiusura CLIENT2");
                                         exit(1);
                                     }
                                 }
                             }
-                            for (j = 0; j < n_kitchen; j++)
-                            {
-                                if (array_kds[j] != -1)
-                                {
+
+                            // INVIO AI KITCHEN
+                            for (j = 0; j < n_kitchen; j++){
+                                if (array_kds[j] != -1){
                                     len_HO = strlen(stop);
                                     len_NO = htonl(len_HO);
                                     ret = send(array_kds[j], &len_NO, sizeof(uint32_t), 0); // mando la dimensione
-                                    if (ret < 0)
-                                    {
+                                    if (ret < 0){
                                         perror("Errore nell'invio del messaggio7");
                                         exit(1);
                                     }
                                     ret = send(array_kds[j], stop, len_HO, 0); // mando il messaggio
-                                    if (ret < 0)
-                                    {
+                                    if (ret < 0){
                                         perror("Errore nell'invio del messaggio8");
                                         exit(1);
                                     }
                                 }
                             }
+
+                            // INVIO AI TABLE
                             for (j = 0; j < n_table; j++)
                             {
                                 if (array_tds[j] != -1)
@@ -712,6 +707,7 @@ int main(int argc, char *argv[]){
                                     }
                                 }
                             }
+
                             printf("** SERVER DISCONNESSO CORRETTAMENTE ** \n");
                             exit(0);
                             close(sockfd);

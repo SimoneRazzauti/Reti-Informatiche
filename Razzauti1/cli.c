@@ -217,7 +217,6 @@ int main(int argc, char *argv[]){
                         }
                         // stampo i tavoli che il server mi fornisce
                         tavoliDisp++;
-                        printf("I tavoli disponibili che soddisfano la tua richiesta sono:\n");
                         printf("%s\n", buffer);
                     }
                     fflush(stdout);

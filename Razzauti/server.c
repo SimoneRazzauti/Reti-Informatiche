@@ -291,6 +291,7 @@ void stat_table(char tavolino[5]){
         }
         // aggiorno check perchè ho trovato almeno una comanda
         check = 1;
+        printf("\n");
     }
 
     for (j = 0; j < quante_servite; j++){
@@ -301,9 +302,10 @@ void stat_table(char tavolino[5]){
             for (a = 0; a < serv_comande_servite[j].id_comanda; a++){
                 printf("Piatto scelto: %s x %d\n", serv_comande_servite[j].desc[a], serv_comande_servite[j].quantita[a]);
             }
-        // aggiorno check perchè ho trovato almeno una comanda
-            check = 1;
         }
+        // aggiorno check perchè ho trovato almeno una comanda
+        check = 1;
+        printf("\n");
     }
     if (check == 0)
         printf("NON CI SONO COMANDE PER IL TAVOLO SCELTO\n");

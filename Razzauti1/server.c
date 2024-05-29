@@ -23,10 +23,10 @@
 
 // funzione che serve per realizzare la lista da restituire al cliente che esegue la 'find', se un tavolo è occupato per la stessa data e ora, non viene inviato.
 int find_prenotazione(char *tableX, char *data, int ora, char *pathFile){
-    char arraycopia[DESCRIZIONE]; // array per la lettura del file
     int GG, MM, AA, HH, giorno, mese, anno;
     char tavolino[5];
     FILE *file = fopen(pathFile, "r"); // apre il file in modalità lettura
+    char arraycopia[DESCRIZIONE]; // array per la lettura del file
 
     // se il file è inesistente o si verifica un errore fase di apertura
     if (file == NULL){
@@ -50,12 +50,10 @@ int find_prenotazione(char *tableX, char *data, int ora, char *pathFile){
 
 // Funzione utile per avere la lista dei tavoli liberi. Leggo dal file nella cartella txts/tavoli.txt e con l'aiuto di find_prenotazione mi salvo SOLO i tavoli disponibili e che rispettano la quantita' di persone
 void check_tavoli_liberi(char *data, int ora, int numPersone, char *pathFile, int i){
-    char arraycopia[DESCRIZIONE]; // array per la lettura del file
-    int n = 0;
-
     char tavolino[5];
-
+    int n = 0;
     FILE *file = fopen("txts/tavoli.txt", "r"); // apre il file in modalita' lettura
+    char arraycopia[DESCRIZIONE]; // array per la lettura del file
     int quanti;
 
     // se il file è inesistente o si verifica un errore fase di apertura

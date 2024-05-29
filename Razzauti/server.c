@@ -586,7 +586,7 @@ int main(int argc, char *argv[]){
             perror("Errore nella SELECT:");
             exit(1);
         }
-        // scorro tutti i descrittori pronti, ci sono due casi 1) pronto il socket stdin 2) pronto il socket di ascolto
+        // scorro tutti i descrittori pronti, ci sono 3 casi 1) pronto il socket stdin 2) pronto il socket di ascolto 3) pronto socket connesso
         for (i = 0; i <= fdmax; i++){
             if (FD_ISSET(i, &read_fds)){
                 // CASO 1) PRONTO STDIN
@@ -722,31 +722,28 @@ int main(int argc, char *argv[]){
                 // CASO 2) PRONTO IL LISTENER
                 else if (i == sockfd){
                     socklen_t cli_len = sizeof(cli_addr);
+                    // creo un nuovo socket di ascolto
                     newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &cli_len);
-                    if (newsockfd < 0)
-                    {
+                    if (newsockfd < 0){
                         perror("Errore nell'accettazione della connessione");
                         exit(1);
                     }
+                    // Ricevo l'identificativo dai peer 'C' = CLIENT | 'K' = KD | 'T' = TD
                     n = recv(newsockfd, (void *)buffer, LEN_ID, 0);
                     errori_ritorno(n, newsockfd, fdmax, n_table, n_kitchen, n_clients, &master);
 
-                    switch (buffer[0])
-                    {
+                    switch (buffer[0]){
                     case 'C':
-                        if (n_clients >= MAX_CLIENTS)
-                        {
+                        if (n_clients >= MAX_CLIENTS){
                             fprintf(stderr, "Troppi client connessi, connessione rifiutata.\n");
                             fflush(stdout);
                             client_fds[i].socket = -1;
                             n_clients--;
                             FD_CLR(i, &master);
                             close(newsockfd);
-                        }
-                        else
-                        {
-                            if (send(newsockfd, (void *)id, LEN_ID, 0) == -1)
-                            {
+                        }else{
+                            // invio l'acknowledge al peer
+                            if (send(newsockfd, (void *)id, LEN_ID, 0) == -1){
                                 perror("Errore nella connessione al server");
                                 exit(1);
                             }
@@ -755,19 +752,16 @@ int main(int argc, char *argv[]){
                         }
                         break;
                     case 'K':
-                        if (n_kitchen >= MAX_KITCHENDEVICES)
-                        {
+                        if (n_kitchen >= MAX_KITCHENDEVICES){
                             fprintf(stderr, "Troppi kitchen device connessi, connessione rifiutata.\n");
                             fflush(stdout);
                             array_kds[i] = -1;
                             n_kitchen--;
                             FD_CLR(i, &master);
                             close(newsockfd);
-                        }
-                        else
-                        {
-                            if (send(newsockfd, (void *)id, LEN_ID, 0) == -1)
-                            {
+                        }else{
+                            // invio l'acknowledge al peer                            
+                            if (send(newsockfd, (void *)id, LEN_ID, 0) == -1){
                                 perror("Errore nella connessione al server");
                                 exit(1);
                             }
@@ -776,19 +770,16 @@ int main(int argc, char *argv[]){
                         }
                         break;
                     case 'T':
-                        if (n_table >= MAX_TAVOLI)
-                        {
+                        if (n_table >= MAX_TAVOLI){
                             fprintf(stderr, "Troppi tavoli connessi, connessione rifiutata.\n");
                             fflush(stdout);
                             array_tds[i] = -1;
                             n_table--;
                             FD_CLR(i, &master);
                             close(newsockfd);
-                        }
-                        else
-                        {
-                            if (send(newsockfd, (void *)id, LEN_ID, 0) == -1)
-                            {
+                        }else{
+                            // invio l'acknowledge al peer
+                            if (send(newsockfd, (void *)id, LEN_ID, 0) == -1){
                                 perror("Errore nella connessione al server");
                                 exit(1);
                             }
@@ -800,16 +791,17 @@ int main(int argc, char *argv[]){
                         break;
                     }
 
-                    FD_SET(newsockfd, &master); // se sono qui, identificazione e' andata bene. Allora adesso metto sockfd nel set.
-                    if (newsockfd > fdmax)
-                    {
+                    // se sono qui, identificazione e' andata bene. Allora adesso metto sockfd nel set.
+                    FD_SET(newsockfd, &master); 
+                    // aggiorno fdmax
+                    if (newsockfd > fdmax){
                         fdmax = newsockfd;
                     }
                 }
 
-                else
-                {
-                    memset(buffer, 0, sizeof(buffer));
+                // CASO 3) PRONTO SOCKET CONNESSO
+                else {
+                    memset(buffer, 0, BUFFER_SIZE);
                     n = recv(i, buffer, LEN_COMANDO, 0); // riceve il codice
                     errori_ritorno(n, i, fdmax, n_table, n_kitchen, n_clients, &master);
 

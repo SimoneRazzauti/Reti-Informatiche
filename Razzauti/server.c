@@ -397,7 +397,7 @@ void errori_ritorno(int ret, int i, int fdmax, int n_table, int n_kitchen, int n
                         if (serv_coda_comande[b].kd_assegnato == i){
                             if (serv_coda_comande[b].td_assegnato > 0){
                                 // Avviso i table devices che il kitchen device ha abbandonato la cucina
-                                strcpy(comando, "** Kitchen Device ha smesso di lavorare **\n");
+                                strcpy(comando, "** Kitchen Device in pausa, sìì paziente, la tua comanda verà presa in carico da un altro Kitchen Device **\n");
                                 len_H = strlen(comando) + 1;
                                 len_N = htonl(len_H);
                                 ret = send(serv_coda_comande[b].td_assegnato, &len_N, sizeof(uint32_t), 0); // Mando la dimensione

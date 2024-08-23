@@ -1,8 +1,0 @@
-A1 - 7 Euro - Antipasto di terra
-A2 - 8 Euro - Antipasto di mare
-P1 - 10 Euro -  Spaghetti alle vongole 
-P2 - 6 Euro - Rigatoni all’amatriciana
-S1 - 20 Euro -  Frittura di calamari 
-S2 - 15 Euro -  Arrosto misto 
-D1 - 5 Euro - Crostata di mele
-D2 - 5 Euro - Zuppa inglese
